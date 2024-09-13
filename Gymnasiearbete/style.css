@@ -72,6 +72,12 @@
     box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
 }
 
+#hemsida:hover {
+    background-color: rgb(193, 255, 47); /* Lighter blue on hover */
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
 /* Body Styles */
 body {
     font-family: 'Arial', sans-serif;
@@ -141,6 +147,9 @@ input[type="submit"] {
 }
 
 /* Button Hover and Active Effects */
+#text {
+    color: red;
+}
 input[type="submit"]:hover {
     background-color: #ff6666;
     transform: translateY(-3px);
@@ -203,8 +212,6 @@ input[type="submit"]:hover {
     box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-#black {
-    background-color: black;
-    width: 10px;
-    height: 10px;
+#text {
+    color: red;
 }

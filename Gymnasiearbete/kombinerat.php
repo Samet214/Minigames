@@ -3,7 +3,7 @@
 <head>
     <title>Registrera och Logga in</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="style.css?v=1.1">
 </head>
 <body>
     <!-- Registration Section -->

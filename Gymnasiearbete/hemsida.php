@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>Hemsida</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="style.css?v=1.1">
         <script src="script.js"></script>
     </head>
     <body>
@@ -12,7 +12,7 @@
             <button id="signin" onclick="redirect('signup.php')"><b>Registrera<b></button>
             <button id="hemsida" onclick="redirect('hemsida.php')"><b>Hemsida<b></button>
         </div>
-        <div id="black"></div>
+        <p id="text">Hey</p>
         <?php
 
         ?>
