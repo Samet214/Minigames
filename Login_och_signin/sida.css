@@ -1,0 +1,46 @@
+h1 {
+	margin-left: 25%;
+	white-space:nowrap;
+	text-shadow:5px 5px 5px #CCC;
+}
+table {
+/*	border-style: solid;
+	border-width: thin;*/
+	width:500px;
+    border: 1px solid black;
+    border-collapse: collapse;
+	position: relative;
+	margin-top: 2em;
+	left:25%;
+}
+th, td {
+/*	border-style: solid;
+	border-width: thin;*/
+    border: 1px solid black;
+    padding: 5px;
+}
+tr {
+    border: 1px solid black;
+	vertical-align:top;
+}
+#dbres tr:nth-child(odd) {
+	background-color:lightgray;
+}
+#dbres tr:first-child {
+	background-color:darkgray;
+}
+.imgRight {
+	float: right;
+	margin-right:10%;
+	margin-top:5%;
+	transition: width 2s, height 2s, transform 2s;
+}
+.imgRight:hover {
+	width:20%;
+	height:20%;
+	transform:rotate(180deg);
+}
+.textFiled {
+	width:28em;
+	background-color:khaki;
+}
