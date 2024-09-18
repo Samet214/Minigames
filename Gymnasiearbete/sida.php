@@ -1,23 +1,31 @@
 <?php
 session_start();
 
-// Check if user is logged in
+// If user is not logged in, redirect to login.php
 if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Check if the user clicked the logout link
+if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
+    // Destroy the session to log the user out
+    session_destroy();
+    // Redirect to login.php
     header("Location: login.php");
     exit();
 }
 
 $username = $_SESSION['username'];
 $level = 1;
-$current_exp = 0;
-$next_level_exp = 50; // The experience required to reach the next level
+$current_exp = 45;
+$next_level_exp = 50;
 
-// Path to the profile picture
+// Profile picture handling
 $profile_pic_dir = "uploads/";
 $default_pic = "default.png";
 $profile_pic = isset($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : $default_pic;
 
-// Handle profile picture upload
 if (isset($_FILES['profile_pic'])) {
     $target_file = $profile_pic_dir . basename($_FILES["profile_pic"]["name"]);
     if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file)) {
@@ -35,7 +43,6 @@ if (isset($_FILES['profile_pic'])) {
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Välkommen <?php echo htmlspecialchars($username); ?></h1>
 
     <!-- Button to open/close sidebar -->
     <div id="sidebar-toggle" onclick="toggleSidebar()">☰</div>
@@ -63,10 +70,10 @@ if (isset($_FILES['profile_pic'])) {
             <p><?php echo $current_exp . '/' . $next_level_exp; ?> EXP</p>
         </div>
         <hr>
-        <a href="login.php" id="a-tag1"><b>Logga ut</b></a>
+        <!-- Log out link -->
+        <a href="sida.php?logout=true" id="a-tag1"><b>Logga ut</b></a>
         <hr>
     </div>
-    
 
     <script>
         function toggleSidebar() {
@@ -75,11 +82,10 @@ if (isset($_FILES['profile_pic'])) {
 
             sidebar.classList.toggle("open");
 
-            // Check if sidebar is open and move the button accordingly
             if (sidebar.classList.contains("open")) {
-                toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+                toggleButton.style.left = "260px";
             } else {
-                toggleButton.style.left = "10px"; // Reset to original position
+                toggleButton.style.left = "10px";
             }
         }
 

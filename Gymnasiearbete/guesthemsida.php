@@ -10,10 +10,16 @@
         <div id="container1">
             <button id="login" onclick="redirect('login.php')"><b>Logga in<b></button>
             <button id="signin" onclick="redirect('signup.php')"><b>Registrera<b></button>
-            <button id="hemsida" onclick="redirect('hemsida.php')"><b>Hemsida<b></button>
+            <button id="hemsida" onclick="redirect('guesthemsida.php')"><b>Hemsida<b></button>
         </div>
         <?php
-
+        session_start();
+        
+        // Redirect to sida.php if the user is already logged in
+        if (isset($_SESSION['username'])) {
+            header("Location: sida.php");
+            exit();
+        }
         ?>
     </body>
 </html>
