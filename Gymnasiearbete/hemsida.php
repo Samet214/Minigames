@@ -12,7 +12,6 @@
             <button id="signin" onclick="redirect('signup.php')"><b>Registrera<b></button>
             <button id="hemsida" onclick="redirect('hemsida.php')"><b>Hemsida<b></button>
         </div>
-        <p id="text">Hey</p>
         <?php
 
         ?>

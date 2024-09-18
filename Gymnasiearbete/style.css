@@ -215,3 +215,119 @@ input[type="submit"]:hover {
 #text {
     color: red;
 }
+
+#sidebar-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 30px;
+    cursor: pointer;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    transition: left 0.5s;
+}
+
+/* Sidebar */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: black;
+    color: white;
+    overflow-x: hidden;
+    transition: width 0.5s;
+    padding-top: 20px;
+    box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar.open {
+    width: 250px;
+}
+
+/* Profile Section */
+.profile-section {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid white;
+}
+
+.profile-pic {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 15px;
+    position: relative;
+    cursor: pointer;
+    transition: filter 0.3s;
+}
+
+.profile-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-pic:hover {
+    filter: brightness(0.8);
+}
+
+.profile-pic::after {
+    content: "Ändra profilbild";
+    display: none;
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 12px;
+}
+
+.profile-pic:hover::after {
+    display: block;
+}
+
+.username {
+    color: white;
+}
+
+/* Level Section */
+.level-section {
+    padding: 20px;
+}
+
+.level-section h4 {
+    margin: 0;
+    color: #ffcc00;
+}
+
+.exp-bar {
+    width: 100%;
+    height: 15px;
+    background-color: #333;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.exp-progress {
+    height: 100%;
+    background-color: #ffcc00;
+    border-radius: 10px;
+}
+
+/* Level Text */
+.level-section p {
+    margin: 0;
+    color: white;
+}
+
+#a-tag1 {
+    color: white;
+    text-decoration: none;
+}
