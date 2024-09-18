@@ -9,7 +9,6 @@
 <body>
     <div id="container1">
         <button id="login" onclick="redirect('login.php')"><b>Logga in<b></button>
-        <button id="signin" onclick="redirect('signup.php')"><b>Registrera<b></button>
         <button id="hemsida" onclick="redirect('guesthemsida.php')"><b>Hemsida<b></button>
     </div>
     <h2>Registrera</h2>
