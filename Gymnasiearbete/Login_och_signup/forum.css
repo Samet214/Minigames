@@ -1,0 +1,51 @@
+h1 {
+	margin-left: 25%;
+	white-space: nowrap;
+	text-shadow: 5px 5px 5px #CCC; /* Textskugga för rubriken */
+}
+
+table {
+	width: 500px; /* Tabellen är 500px bred */
+	border: 1px solid black; /* En svart kantlinje runt tabellen */
+	border-collapse: collapse; /* Tar bort dubbla kantlinjer mellan celler */
+	position: relative;
+	margin-top: 2em; /* Marginal ovanför tabellen */
+	left: 25%; /* Tabellens vänstra marginal */
+}
+
+th, td {
+	border: 1px solid black; /* En svart kantlinje runt celler */
+	padding: 5px; /* Fyllning inom celler */
+}
+
+tr {
+	border: 1px solid black; /* En svart kantlinje runt rader */
+	vertical-align: top; /* Vertikal justering av cellinnehåll */
+}
+
+#dbres tr:nth-child(odd) {
+	background-color: lightgray; /* Bakgrundsfärg för udda rader */
+}
+
+#dbres tr:first-child {
+	background-color: darkgray; /* Bakgrundsfärg för den första raden */
+}
+
+.imgRight {
+	float: right; /* Bilden flyttas till höger */
+	margin-right: 10%; /* Höger marginal */
+	margin-top: 5%; /* Övre marginal */
+	transition: width 2s, height 2s, transform 2s; /* Övergångseffekter för bredd, höjd och transformering */
+}
+
+.imgRight:hover {
+	width: 20%; /* Bredden på bilden när den hovras */
+	height: 20%; /* Höjden på bilden när den hovras */
+	transform: rotate(180deg); /* Rotera bilden 180 grader vid hovring */
+}
+
+.textFiled {
+	width: 28em; /* Bredd på textfältet */
+	background-color: khaki; /* Bakgrundsfärg på textfältet */
+}
+
