@@ -14,7 +14,6 @@
         <?php
         session_start();
         
-        // Redirect to sida.php if the user is already logged in
         if (isset($_SESSION['username'])) {
             header("Location: sida.php");
             exit();
