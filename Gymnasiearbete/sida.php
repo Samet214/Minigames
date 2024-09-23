@@ -17,6 +17,9 @@ if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
 }
 
 $username = $_SESSION['username'];
+$password = $_SESSION['password'];
+
+
 $level = 1;
 $current_exp = 45;
 $next_level_exp = 50;

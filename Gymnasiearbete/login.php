@@ -6,6 +6,7 @@ if (isset($_SESSION['username'])) {
     header("Location: sida.php");
     exit();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -61,8 +62,8 @@ if (isset($_SESSION['username'])) {
                 $stmt->fetch();
 
                 if ($dbHashedPassword === $hashedCode) {
-                    session_start();
                     $_SESSION['username'] = $username;
+                    $_SESSION['password'] = $password;
                     header("Location: sida.php");
                     exit();
                 } else {

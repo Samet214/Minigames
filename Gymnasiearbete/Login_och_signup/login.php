@@ -93,7 +93,7 @@
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="sv">
     <head>
         <meta charset="utf-8">
         <title>Logga in</title>

@@ -44,6 +44,26 @@
         $username = strtolower($_POST['username']);
         $password = strtolower($_POST['password']);
 
+        $sql_check = "SELECT Namn FROM `Användare` WHERE Namn = ?";
+        if ($stmt = $conn->prepare($sql_check)) {
+            $stmt->bind_param("s", $username);
+            // Binder inmatade användarnamn och e-post för att kolla
+            $stmt->execute();
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                // Om något resultat hittades
+                $stmt->bind_result($existing_username);
+                $stmt->fetch();
+
+                if (!empty($existing_username)) {
+                    echo "<br>Användarkontot har redan skapats";
+                }
+            }
+        }
+
+        
+
         // Hash the password
         function hashString($input) {
             return hash('sha256', $input, false);
