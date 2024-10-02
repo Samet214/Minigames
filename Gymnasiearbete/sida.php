@@ -141,7 +141,7 @@
         <hr>
     </div>
 
-    <button onclick="gainExp(100)">+100 exp</button>
+    <button onclick="gainExp(1000000)">+100 exp</button>
 
 </body>
 </html>
