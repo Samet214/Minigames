@@ -256,42 +256,6 @@ input[type="submit"]:hover {
     border-bottom: 1px solid white;
 }
 
-.profile-pic {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-right: 15px;
-    position: relative;
-    cursor: pointer;
-    transition: filter 0.3s;
-}
-
-.profile-pic img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile-pic:hover {
-    filter: brightness(0.8);
-}
-
-.profile-pic::after {
-    content: "Ändra profilbild";
-    display: none;
-    position: absolute;
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    font-size: 12px;
-}
-
-.profile-pic:hover::after {
-    display: block;
-}
-
 .username {
     color: white;
 }
@@ -330,3 +294,143 @@ input[type="submit"]:hover {
     color: white;
     text-decoration: none;
 }
+
+/* Position the button to the top right of the screen */
+.search-profile-btn-container {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    z-index: 1000; /* Ensure it stays on top */
+}
+
+/* Styling for the button */
+#searchProfileBtn {
+    background-color: #1e90ff; /* Electric blue */
+    color: white; /* White text */
+    border: none;
+    padding: 10px 5px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 10px; /* More rounded corners */
+    font-family: 'Arial', sans-serif; /* Clean, modern font */
+    text-transform: uppercase; /* Make text uppercase */
+    font-weight: bold;
+    letter-spacing: 2px; /* Make the text more spaced out */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 15px #00ffea, 0 0 25px #00ffea; /* Add a glowing effect */
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+}
+
+#searchProfileBtn:hover {
+    background-color: #00ccff; /* Brighter blue on hover */
+    transform: translateY(-5px); /* Move the button up slightly on hover */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 20px #00ffea, 0 0 35px #00ffea; /* Enhance glow on hover */
+}
+
+#searchProfileBtn:active {
+    transform: translateY(0); /* Reset position when pressed */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 15px #00ffea, 0 0 25px #00ffea; /* Reset glow when pressed */
+}
+
+/* White square hidden by default */
+.profile-square {
+    width: 300px;
+    height: 250px;
+    background-color: white;
+    position: fixed;
+    top: 60px; /* Below the button */
+    right: 9px;
+    display: none; /* Initially hidden */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    z-index: 999; /* High z-index to overlay other elements */
+    opacity: 0; /* Start as invisible */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth fade and movement */
+}
+
+/* Visible state for the square */
+.profile-square.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(10px); /* Slight move-in effect */
+}
+
+/* Search container */
+.search-container {
+    position: relative;
+    width: 60%;
+    margin: 0px auto; /* Center the search bar inside the square */
+    right: 25px;
+}
+
+/* Search input box */
+#searchInput {
+    width: 100%;
+    padding: 10px 40px 10px 10px; /* Space for the search icon */
+    font-size: 14px;
+    border: 2px solid #1e90ff; /* Match the button's color */
+    border-radius: 5px;
+    outline: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    transition: border-color 0.3s ease; /* Smooth border color transition */
+}
+
+/* Change border color on focus */
+#searchInput:focus {
+    border-color: #00ccff;
+}
+
+/* Responsive handling: adjusts the size of the search container for smaller screens */
+@media (max-width: 768px) {
+    .search-container {
+        width: 90%;
+    }
+}
+
+.profile-picture {
+    position: relative;
+    width: 150px; /* Adjust size as needed */
+    height: 150px; /* Same as width to maintain the circle */
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  .profile-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This will make sure the image fits the circle */
+    transition: 0.3s ease;
+  }
+  
+  .profile-picture .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .profile-picture:hover .overlay {
+    opacity: 1;
+  }
+  
+  .profile-picture:hover img {
+    filter: brightness(70%); /* Slightly darken on hover */
+  }
+  
+  .edit-text {
+    color: white;
+    font-size: 18px;
+    display: none;
+  }
+  
+  .profile-picture:hover .edit-text {
+    display: block;
+  }
+  
