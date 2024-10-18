@@ -16,10 +16,6 @@ function toggleSidebar() {
     }
 }
 
-document.getElementById('profilePic').addEventListener('click', function() {
-    document.getElementById('fileInput').click();
-});
-
 function gainExp(expAmount) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "sida.php", true);
@@ -65,10 +61,6 @@ function gainExp(expAmount) {
 
     // Send the request to the server with the EXP amount
     xhr.send("add_exp=true&exp_amount=" + expAmount);
-}
-
-function profile() {
-    alert('Profile!');
 }
 
 function toggleProfile() {
@@ -119,44 +111,42 @@ function handleOutsideClick(event) {
     }
 }
 
-alert('hey');
-
 function searchProfiles() {
-    const query = document.getElementById('searchInput').value;
+    const searchInput = document.getElementById('searchInput').value.trim();
 
-    if (query.length > 0) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'search_profiles.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onload = function() {
-            if (this.status === 200) {
-                document.getElementById('searchResults').innerHTML = this.responseText;
-            }
-        };
-        xhr.send('query=' + encodeURIComponent(query));
-    } else {
-        document.getElementById('searchResults').innerHTML = ''; // Clear results when input is empty
+    // Clear the results if input is empty
+    if (searchInput === '') {
+        document.getElementById('searchResults').innerHTML = '';
+        return;
     }
-}
 
-const profileImg = document.getElementById('profile-img');
-const fileInput = document.getElementById('file-input');
+    // Create an AJAX request
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
 
-profileImg.addEventListener('click', () => {
-  fileInput.click(); // Simulate a click on the hidden file input
-});
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            const results = JSON.parse(xhr.responseText);
+            const searchResultsContainer = document.getElementById('searchResults');
 
-fileInput.addEventListener('change', (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-      profileImg.src = e.target.result; // Update the profile picture
+            // Clear previous results
+            searchResultsContainer.innerHTML = '';
 
-      // To ensure the image is cropped to fit the circle, make sure CSS `object-fit: cover` is applied
+            if (results.length > 0) {
+                results.forEach(function(username) {
+                    const resultItem = document.createElement('div');
+                    resultItem.classList.add('result-item');
+                    resultItem.textContent = username;
+                    searchResultsContainer.appendChild(resultItem);
+                });
+            } else {
+                const noUserFound = document.createElement('div');
+                noUserFound.classList.add('result-item');
+                noUserFound.textContent = 'Inga användare';
+                searchResultsContainer.appendChild(noUserFound);
+            }
+        }
     };
 
-    reader.readAsDataURL(file);
-  }
-});
+    xhr.send();
+}

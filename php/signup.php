@@ -3,13 +3,13 @@
 <head>
     <title>Minigames</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.1">
-    <script src="script.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/signup.css">
+    <script src="../js/signup.js"></script>
 </head>
 <body>
     <div id="container1">
         <button id="login" onclick="redirect('login.php')"><b>Logga in<b></button>
-        <button id="hemsida" onclick="redirect('guesthemsida.php')"><b>Hemsida<b></button>
+        <button id="hemsida" onclick="redirect('hemsida.php')"><b>Hemsida<b></button>
     </div>
     <h2>Registrera</h2>
     <form action="" method="post">

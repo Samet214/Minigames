@@ -7,6 +7,7 @@ if (isset($_SESSION['username'])) {
     exit();
 }
 
+include 'db.php';
 ?>
 
 <!DOCTYPE html>
@@ -14,13 +15,13 @@ if (isset($_SESSION['username'])) {
 <head>
     <title>Login</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.1">
-    <script src="script.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/login.css">
+    <script src="../js/login.js"></script>
 </head>
 <body>
     <div id="container1">
         <button id="signin" onclick="redirect('signup.php')"><b>Registrera</b></button>
-        <button id="hemsida" onclick="redirect('guesthemsida.php')"><b>Hemsida</b></button>
+        <button id="hemsida" onclick="redirect('hemsida.php')"><b>Hemsida</b></button>
     </div>
     <h2>Logga in</h2>
     <form action="" method="post">
@@ -31,16 +32,7 @@ if (isset($_SESSION['username'])) {
 
     <?php
     if (isset($_POST['submit'])) {
-        $servername = "localhost";
-        $dbUsername = "samet";
-        $dbPassword = "samet";
-        $dbname = "Användarinformation";
-
-        $conn = new mysqli($servername, $dbUsername, $dbPassword, $dbname);
-
-        if ($conn->connect_error) {
-            die("Koppling misslyckad: " . $conn->connect_error);
-        }
+        $conn = Användarinformation();
 
         $username = strtolower($_POST['username']);
         $password = strtolower($_POST['password']);

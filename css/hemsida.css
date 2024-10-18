@@ -1,0 +1,157 @@
+/* General Resets */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #131A20;
+    color: white;
+}
+
+/* Header Section */
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    height: 80px;
+    background-color: #0D1117;
+}
+
+#logo {
+    height: 80px;
+    width: 80px;
+    margin-top: 10px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.register {
+    background-color: green;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.login {
+    background-color: red;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#sidebar-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 30px;
+    cursor: pointer;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    transition: left 0.5s;
+}
+
+/* Sidebar */
+.sidebar {
+    height: 100%;
+    width: 0; /* Initial width is 0 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: black;
+    color: white;
+    overflow-x: hidden;
+    transition: width 0.5s; /* Transition for smooth open/close */
+    padding-top: 20px;
+    box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid white;
+}
+
+.username {
+    display: flex;
+    align-items: flex-start; /* Align items to the start */
+}
+
+.profile-circle {
+    width: 68px; /* Adjust size as needed */
+    height: 68px; /* Adjust size as needed */
+    border-radius: 50%; /* Makes the image circular */
+    background-position: center;
+    background-size: cover; /* Ensures the image covers the circle */
+    background-repeat: no-repeat;
+    margin-top: -10px;
+    margin-right: 10px;
+    margin-left: -10px;
+}
+
+/* Main Content */
+main {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+}
+
+section {
+    background-color: #1C2026;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h2 {
+    color: #00B9E8;
+    font-size: 24px;
+}
+
+.games p {
+    color: #FFEB3B;
+    margin: 10px 0;
+}
+
+.top-games p {
+    color: red;
+    margin: 10px 0;
+}
+
+.leaderboard {
+    color: white;
+    margin: 10px 0;
+}
+
+/* Footer */
+footer {
+    background-color: #0D1117;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    margin-top: 74px;
+}

@@ -1,0 +1,144 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-size: cover;
+}
+
+/* Container for the login and sign-in buttons */
+#container1 {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: -0.6%;
+    gap: 1.75%; /* Apply gap between all buttons */
+    background-color: transparent; /* Transparent background */
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Sign-in Button */
+#signin {
+    background-color: #4d94ff; /* Matching the blue from kombinerat.php */
+    border: none;
+    border-radius: 30px;
+    width: 150px;
+    height: 45px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#hemsida {
+    background-color: greenyellow; /* Matching the blue from kombinerat.php */
+    border: none;
+    border-radius: 30px;
+    width: 150px;
+    height: 45px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover Effect for Sign-in Button */
+#signin:hover {
+    background-color: #6abfff; /* Lighter blue on hover */
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+#hemsida:hover {
+    background-color: rgb(193, 255, 47); /* Lighter blue on hover */
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Form Styles */
+form {
+    background: rgba(255, 255, 255, 0.8);
+    display: inline-block;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+    margin: 20px auto;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="password"] {
+    width: 90%;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 30px;
+    border: 2px solid #ff4d4d;
+    font-size: 1.2em;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Input Focus Effect */
+input[type="text"]:focus,
+input[type="password"]:focus {
+    border-color: #4d94ff;
+    outline: none;
+    box-shadow: 0px 4px 12px rgba(77, 148, 255, 0.4);
+}
+
+/* Submit Buttons */
+input[type="submit"] {
+    width: 100%;
+    background-color: #ff4d4d;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Hover and Active Effects */
+input[type="submit"]:hover {
+    background-color: #ff6666;
+    transform: translateY(-3px);
+}
+
+input[type="submit"]:active {
+    background-color: #e63939;
+    transform: translateY(1px);
+}
+
+h2 {
+    font-size: 2em;
+    color: #ff4d4d;
+    text-shadow: 2px 2px #333;
+    margin-bottom: 20px;
+}
+
+input[type="submit"]:hover {
+    background-color: #ff6666;
+    transform: translateY(-3px);
+}
+
+input[type="submit"]:active {
+    background-color: #e63939;
+    transform: translateY(1px);
+}
+
+form {
+    width: 300px;
+    margin: 20px auto;
+}
