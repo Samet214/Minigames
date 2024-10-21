@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../css/hemsida.css?v=1.1" type="text/css" rel="stylesheet">
+    <link href="../css/hemsida.css" type="text/css" rel="stylesheet">
     <script src="../js/hemsida.js"></script>
     <title>Play Point</title>
 </head>
@@ -31,7 +31,7 @@
         <!-- Profile Picture Section -->
         <div class="profile-section">
             <div class="username">
-            <div class="profile-circle" style="background-image: url('../pfp/default.png')"></div>
+            <div class="profile-circle" style="background-image: url('default.png')"></div>
             <h3>Gäst</h3>
         </div>
     </div>
