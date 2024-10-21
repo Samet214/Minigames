@@ -21,24 +21,17 @@
     <?php
     session_start();
 
+    include 'db.php';
+
     if (isset($_SESSION['username'])) {
         header("Location: sida.php");
         exit();
     }
 
     if (isset($_POST['submit'])) {
-        $servername = "localhost";
-        $dbUsername = "samet";
-        $dbPassword = "samet";
-        $dbname = "Användarinformation";
 
         // Establish connection
-        $conn = new mysqli($servername, $dbUsername, $dbPassword, $dbname);
-
-        // Check connection
-        if ($conn->connect_error) {
-            die("Koppling misslyckad: " . $conn->connect_error);
-        }
+        $conn = Användarinformation();
 
         // Lowercase username and password
         $username = strtolower($_POST['username']);

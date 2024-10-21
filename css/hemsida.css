@@ -9,12 +9,17 @@ html, body {
 
 /* Header Section */
 #header {
+    position: fixed; /* Fixes the header at the top */
+    top: 0;
+    left: 0;
+    right: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 20px;
     height: 80px;
     background-color: #0D1117;
+    z-index: 1000; /* Ensures it's always on top */
 }
 
 #logo {
@@ -60,7 +65,7 @@ nav ul li a {
 
 #sidebar-toggle {
     position: fixed;
-    top: 10px;
+    top: 90px; /* Adjust this to be just below the header */
     left: 10px;
     font-size: 30px;
     cursor: pointer;
@@ -68,23 +73,23 @@ nav ul li a {
     color: white;
     padding: 10px;
     border-radius: 5px;
-    z-index: 1000;
+    z-index: 999; /* Ensure it's above other elements except the header */
     transition: left 0.5s;
 }
 
-/* Sidebar */
 .sidebar {
-    height: 100%;
-    width: 0; /* Initial width is 0 */
-    position: fixed;
-    top: 0;
+    position: fixed; /* Keeps the sidebar fixed while scrolling */
+    top: 80px; /* Sidebar stays just below the header */
     left: 0;
+    width: 0; /* Initial width is 0 */
+    height: calc(100% - 80px); /* 100% height minus header height */
     background-color: black;
     color: white;
     overflow-x: hidden;
-    transition: width 0.5s; /* Transition for smooth open/close */
+    transition: width 0.5s;
     padding-top: 20px;
     box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 998; /* Below the toggle button */
 }
 
 
@@ -153,5 +158,5 @@ footer {
     text-align: center;
     padding: 20px;
     font-size: 14px;
-    margin-top: 74px;
+    margin-top: 120px;
 }
