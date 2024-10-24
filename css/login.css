@@ -187,25 +187,6 @@ h2 {
     left: 20px;
 }
 
-@media (max-width: 800px) {
-    /* Reduce font size on smaller screens */
-    #container1 h1 {
-        font-size: 2em;
-        letter-spacing: 2px;
-    }
-
-    #signin, #hemsida {
-        width: 100px;
-        height: 30px;
-        font-size: 0.7em;
-        padding: 8px 16px;
-    }
-
-    .buttons {
-        margin-right: 10px;
-    }
-}
-
 #login-info {
     background-color: #1C2026;
     color: #FFD700; /* Gold text to match the game theme */
