@@ -230,16 +230,6 @@ h2 {
     color: white;
 }
 
-/* Fade-in animation for the background */
-@keyframes fade-in {
-    from {
-        background-color: rgba(0, 0, 0, 0);
-    }
-    to {
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-}
-
 #circle-container {
     position: relative;
     display: inline-block;
