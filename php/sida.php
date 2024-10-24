@@ -204,7 +204,6 @@ if (isset($_GET['search'])) {
     <title>Välkommen</title>
     <meta charset="utf-8">
     <link href="../css/sida.css" rel="stylesheet" type="text/css">
-    <script src="../js/sida.js"></script>
 </head>
 <body>
     <div class="search-profile-btn-container">
@@ -264,4 +263,5 @@ if (isset($_GET['search'])) {
         <hr>
     </div>
 </body>
+<script src="../js/sida.js"></script>
 </html>

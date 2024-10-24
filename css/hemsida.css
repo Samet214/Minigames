@@ -24,9 +24,15 @@ html, body {
 }
 
 #logo {
-    height: 80px;
-    width: 80px;
-    margin-top: 10px;
+    cursor: pointer;
+    height: 48px; /* Circle height */
+    width: 48px;  /* Circle width */
+    margin-top: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+#logo:hover {
+    transform: scale(1.1) translateY(-3px); /* Scale up and move up */
 }
 
 nav ul {
@@ -161,4 +167,86 @@ footer {
 .leaderboard {
     color: white;
     margin: 10px 0;
+}
+
+.buttons {
+    display: flex; /* Ensures buttons stay side by side */
+    gap: 20px; /* Space between buttons */
+}
+
+#logo-title {
+    display: flex;
+    align-items: center; /* Aligns logo and title vertically */
+    gap: 10px; /* Space between logo and title */
+}
+
+
+#signin, #login {
+    background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+    color: #FFFFFF; /* White text for strong contrast */
+    padding: 10px 20px;
+    border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+    border-radius: 8px; /* Softer button shape */
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+    width: 120px;
+    height: 40px;
+}
+
+/* Hover Effect */
+#signin:hover, #login:hover {
+    background-color: #293845; /* Slightly lighter on hover */
+    border-color: #FFEB3B; /* Maintain the yellow border */
+    box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+    transform: translateY(-3px); /* Small lift effect */
+}
+
+/* Active Effect */
+#signin:active, #login:active {
+    background-color: #17202B; /* Darker on click */
+    transform: translateY(1px);
+    box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+#circle-container {
+    position: relative;
+    display: inline-block;
+}
+
+#hover-circle {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the circle */
+    height: 60px; /* Circle height */
+    width: 55px;  /* Circle width */
+    border-radius: 50%; /* Makes it a circle */
+    border-color: rgba(0, 255, 255, 0.8);
+    border-width: 5px;
+    border-style: solid; /* Ensure the border appears */
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 
+                0 0 45px rgba(0, 255, 255, 0.5), 
+                0 0 60px rgba(0, 255, 255, 0.4);
+    opacity: 0; /* Start invisible */
+    z-index: -1; /* Ensure it's behind the logo */
+    transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+#circle-container:hover #hover-circle {
+    opacity: 1; /* Make it visible when hovering */
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 
+                0 0 30px rgba(0, 255, 255, 0.7), 
+                0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+    }
 }

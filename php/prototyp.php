@@ -4,7 +4,6 @@
         <meta charset="utf-8">
         <title>Box Highlight Game</title>
         <link href="../css/prototyp.css" rel="stylesheet" type="text/css">
-        <script src="../js/prototyp.js"></script>
     </head>
     <body>
         <h1 id="level-display"></h1>
@@ -23,9 +22,6 @@
 
         <button id="spelknapp">Börja spela!</button>
 
-        <script src="prototyp.js?v=1.4"></script>
-        <link href="prototyp.css?v=1.4" rel="stylesheet" type="text/css">
-
         <div id="timer-display">Tid kvar: 0s</div>
         <div id="tries-display">Antal försök: 3</div>
 
@@ -42,4 +38,5 @@
     </div>
 
     </body>
+    <script src="../js/prototyp.js"></script>
 </html>

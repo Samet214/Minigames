@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../css/hemsida.css" type="text/css" rel="stylesheet">
-    <script src="../js/hemsida.js"></script>
     <title>Play Point</title>
 </head>
 <body>
-    <!-- Header Section -->
     <header id="header">
-        <img src="../bilder/Logotyp.png" id="logo">
+        <div id="circle-container" style="position: relative; display: inline-block;">
+            <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;"> <!-- Replace with your logo image -->
+            <div id="hover-circle"></div> <!-- This will be the neon circle -->
+        </div>
         <nav>
             <ul>
                 <li><a href="#">Spel</a></li>
@@ -20,8 +21,8 @@
             </ul>
         </nav>
         <div class="buttons">
-            <button class="register" onclick="redirect('signup.php')">Registrera</button>
-            <button class="login" onclick="redirect('login.php')">Log In</button>
+            <button id="signin" onclick="redirect('signup.php')">Registrera</button>
+            <button id="login" onclick="redirect('login.php')">Logga in</button>
         </div>
     </header>
 
@@ -69,4 +70,5 @@
         <p>Senast uppdaterad: 2024-10-08</p>
     </footer>
 </body>
+<script src="../js/hemsida.js"></script>
 </html>

@@ -185,3 +185,55 @@ h1 {
         background-color: rgba(0, 0, 0, 0.5);
     }
 }
+
+#circle-container {
+    position: relative;
+    display: inline-block;
+}
+
+#hover-circle {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the circle */
+    height: 60px; /* Circle height */
+    width: 55px;  /* Circle width */
+    border-radius: 50%; /* Makes it a circle */
+    border-color: rgba(0, 255, 255, 0.8);
+    border-width: 5px;
+    border-style: solid; /* Ensure the border appears */
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 
+                0 0 45px rgba(0, 255, 255, 0.5), 
+                0 0 60px rgba(0, 255, 255, 0.4);
+    opacity: 0; /* Start invisible */
+    z-index: -1; /* Ensure it's behind the logo */
+    transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+#circle-container:hover #hover-circle {
+    opacity: 1; /* Make it visible when hovering */
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 
+                0 0 30px rgba(0, 255, 255, 0.7), 
+                0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+    }
+}
+
+#logo {
+    cursor: pointer;
+    height: 48px; /* Circle height */
+    width: 48px;  /* Circle width */
+    margin-top: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+#logo:hover {
+    transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
