@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+include 'db.php';
+
 $conn = Användarinformation();
 
 if (!isset($_SESSION['username'])) {
