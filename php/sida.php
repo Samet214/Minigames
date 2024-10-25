@@ -1,16 +1,7 @@
 <?php
 session_start();
-$servername = "localhost";
-$username = "samet";
-$password = "samet";
-$dbname = "användarinformation";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+$conn = Användarinformation();
 
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
@@ -18,19 +9,6 @@ if (!isset($_SESSION['username'])) {
 }
 
 $username = $_SESSION['username'];
-
-session_start();
-$servername = "localhost";
-$username = "samet";
-$password = "samet";
-$dbname = "användarinformation";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
