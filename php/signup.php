@@ -57,7 +57,7 @@
         $username = strtolower($_POST['username']);
         $password = strtolower($_POST['password']);
 
-        $sql_check = "SELECT Namn FROM `Användare` WHERE Namn = ?";
+        $sql_check = "SELECT Namn FROM `användare` WHERE Namn = ?";
         if ($stmt = $conn->prepare($sql_check)) {
             $stmt->bind_param("s", $username);
             // Binder inmatade användarnamn och e-post för att kolla
@@ -85,7 +85,7 @@
         $hashedCode = hashString($password);
 
         // Prepare SQL statement (including the time column)
-        $sql = "INSERT INTO Användare (Namn, Lösenord, time) VALUES (?, ?, NOW())";
+        $sql = "INSERT INTO användare (Namn, Lösenord, time) VALUES (?, ?, NOW())";
         if ($stmt = $conn->prepare($sql)) {
             $stmt->bind_param("ss", $username, $hashedCode);
 

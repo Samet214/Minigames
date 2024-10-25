@@ -3,7 +3,7 @@ session_start();
 $servername = "localhost";
 $username = "samet";
 $password = "samet";
-$dbname = "Användarinformation";
+$dbname = "användarinformation";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -23,7 +23,7 @@ session_start();
 $servername = "localhost";
 $username = "samet";
 $password = "samet";
-$dbname = "Användarinformation";
+$dbname = "användarinformation";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
 
         if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
             // Fetch current profile picture from the database
-            $query = $conn->prepare("SELECT Profil_bild FROM Användare WHERE Namn = ?");
+            $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
             $query->bind_param("s", $username);
             $query->execute();
             $result = $query->get_result();
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
             // Move the file to the pfp directory
             if (move_uploaded_file($fileTmpPath, $destPath)) {
                 // Update the database with the new file name
-                $updateQuery = $conn->prepare("UPDATE Användare SET Profil_bild = ? WHERE Namn = ?");
+                $updateQuery = $conn->prepare("UPDATE användare SET Profil_bild = ? WHERE Namn = ?");
                 $updateQuery->bind_param("ss", $newFileName, $username);
                 if ($updateQuery->execute()) {
                     // File successfully uploaded and profile updated
@@ -97,8 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
 
 
 
-// Fetch user data from the Poängssystem table
-$query = $conn->prepare("SELECT * FROM Poängssystem WHERE Namn = ?");
+// Fetch user data from the poängssystem table
+$query = $conn->prepare("SELECT * FROM poängssystem WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
 $result = $query->get_result();
@@ -109,17 +109,17 @@ if ($result->num_rows === 1) {
     $current_exp = $user['EXP'];
     $next_level_exp = $user['EXP_GRÄNS'];
 } else {
-    // Default values if the user doesn't exist in Poängssystem
+    // Default values if the user doesn't exist in poängssystem
     $level = 1;
     $current_exp = 0;
     $next_level_exp = 50;
     $avi = 0;
-    $insert = $conn->prepare("INSERT INTO Poängssystem (Namn, Levels, EXP, EXP_GRÄNS, AVI) VALUES (?, ?, ?, ?, ?)");
+    $insert = $conn->prepare("INSERT INTO poängssystem (Namn, Levels, EXP, EXP_GRÄNS, AVI) VALUES (?, ?, ?, ?, ?)");
     $insert->bind_param("siiii", $username, $level, $current_exp, $next_level_exp, $avi);
     $insert->execute();
 }
 
-$query = $conn->prepare("SELECT Profil_bild FROM Användare WHERE Namn = ?");
+$query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
 $result = $query->get_result();
@@ -133,7 +133,7 @@ if ($result->num_rows === 1) {
         $profile_picture = 'default.png';
     }
 } else {
-    // If the user doesn't exist in Användare, use default profile picture
+    // If the user doesn't exist in användare, use default profile picture
     $profile_picture = 'default.png';
 }
 
@@ -160,7 +160,7 @@ if (isset($_POST['add_exp'])) {
     }
 
     // Update user data in the database
-    $update = $conn->prepare("UPDATE Poängssystem SET Levels = ?, EXP = ?, EXP_GRÄNS = ? WHERE Namn = ?");
+    $update = $conn->prepare("UPDATE poängssystem SET Levels = ?, EXP = ?, EXP_GRÄNS = ? WHERE Namn = ?");
     $update->bind_param("iiis", $level, $current_exp, $next_level_exp, $username);
     $update->execute();
 
@@ -176,7 +176,7 @@ if (isset($_POST['add_exp'])) {
 if (isset($_GET['search'])) {
     $searchTerm = $_GET['search'] . '%'; // Adding '%' for wildcard search
 
-    $searchQuery = $conn->prepare("SELECT Namn FROM Användare WHERE Namn LIKE ?");
+    $searchQuery = $conn->prepare("SELECT Namn FROM användare WHERE Namn LIKE ?");
     $searchQuery->bind_param("s", $searchTerm);
     $searchQuery->execute();
     $result = $searchQuery->get_result();

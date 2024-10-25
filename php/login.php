@@ -64,7 +64,7 @@ include 'db.php';
 
         $hashedCode = hashString($password);
 
-        $sql = "SELECT Lösenord FROM Användare WHERE Namn = ?";
+        $sql = "SELECT Lösenord FROM användare WHERE Namn = ?";
         if ($stmt = $conn->prepare($sql)) {
             $stmt->bind_param("s", $username);
             $stmt->execute();

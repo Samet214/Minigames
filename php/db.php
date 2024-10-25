@@ -3,7 +3,7 @@ function Användarinformation() {
     $servername = "localhost";
     $dbUsername = "samet";
     $dbPassword = "samet";
-    $dbname = "Användarinformation";
+    $dbname = "användarinformation";
 
     $conn = new mysqli($servername, $dbUsername, $dbPassword, $dbname);
 
