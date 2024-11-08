@@ -31,7 +31,6 @@ body {
     gap: 10px; /* Space between logo and title */
 }
 
-
 #signin, #hemsida {
     background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
     color: #FFFFFF; /* White text for strong contrast */
@@ -99,27 +98,33 @@ input[type="password"]:focus {
 
 /* Submit Button Styling */
 input[type="submit"] {
-    width: 100%;
-    background-color: #FF4D4D; /* Same red as the login button in hemsida.php */
-    color: white;
-    padding: 15px;
-    border: none;
-    border-radius: 5px; /* Matching hemsida.php button style */
-    font-size: 1.2em;
+    background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+    color: #FFFFFF; /* White text for strong contrast */
+    padding: 10px 20px;
+    border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+    border-radius: 8px; /* Softer button shape */
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    font-size: 1.5em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+    width: 303px;
+    height: 50px;
+    margin-top: 10px;
 }
 
 /* Hover and Active Effects for Submit Button */
 input[type="submit"]:hover {
-    background-color: #ff6666;
-    transform: translateY(-3px);
+    background-color: #293845; /* Slightly lighter on hover */
+    border-color: #FFEB3B; /* Maintain the yellow border */
+    box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+    transform: translateY(-3px); /* Small lift effect */
 }
 
 input[type="submit"]:active {
-    background-color: #e63939;
+    background-color: #17202B; /* Darker on click */
     transform: translateY(1px);
+    box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
 }
 
 /* Heading Styling (matching the game theme) */
@@ -187,30 +192,12 @@ h2 {
     left: 20px;
 }
 
-@media (max-width: 800px) {
-    /* Reduce font size on smaller screens */
-    #container1 h1 {
-        font-size: 2em;
-        letter-spacing: 2px;
-    }
-
-    #signin, #hemsida {
-        width: 100px;
-        height: 30px;
-        font-size: 0.7em;
-        padding: 8px 16px;
-    }
-
-    .buttons {
-        margin-right: 10px;
-    }
-}
-
 #login-info {
     background-color: #1C2026;
     color: #FFD700; /* Gold text to match the game theme */
     padding: 20px;
     margin-top: 40px;
+    margin-bottom: 60px; /* Added margin below */
     border-radius: 10px;
     box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.5);
     width: 80%;
@@ -290,4 +277,94 @@ h2 {
 
 #logo:hover {
     transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+/* Parent container for form and error message */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+#error-message {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    max-width: 90%;
+    padding: 10px; /* Increased padding */
+    box-sizing: border-box;
+    position: absolute;
+    top: 510px;
+    left: 50%;
+    transform: translate(-50%, 0); /* Center horizontally */
+    width: 100%;
+    visibility: visible; /* Make it visible by default */
+    font-size: 1.5em; /* Increase font size */
+    text-shadow: 
+        0 0 5px rgba(255, 0, 0, 0.8),
+        0 0 10px rgba(255, 0, 0, 0.8),
+        0 0 15px rgba(255, 0, 0, 0.8),
+        0 0 20px rgba(255, 0, 0, 0.8); /* Neon glow effect */
+    animation: neon-pulse 1.5s infinite alternate; /* Apply the pulsing animation */
+}
+
+/* Neon pulse animation */
+@keyframes neon-pulse {
+    0% {
+        text-shadow: 
+            0 0 5px rgba(255, 0, 0, 0.8),
+            0 0 10px rgba(255, 0, 0, 0.8),
+            0 0 15px rgba(255, 0, 0, 0.8),
+            0 0 20px rgba(255, 0, 0, 0.8);
+        transform: translate(-50%, 0) scale(1); /* Normal size */
+    }
+    100% {
+        text-shadow: 
+            0 0 10px rgba(255, 0, 0, 1),
+            0 0 20px rgba(255, 0, 0, 1),
+            0 0 30px rgba(255, 0, 0, 1),
+            0 0 40px rgba(255, 0, 0, 1);
+        transform: translate(-50%, 0) scale(1.05); /* Slightly larger */
+    }
+}
+
+#currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 100px;
+    position: relative;
+}
+
+#add-currency {
+    background-color: #007bff; /* Blue button */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+#currency-amount {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+#currency-icon {
+    position: absolute;
+    height: 30px;
+    right: 3px;
+}
+
+#currency-icon {
+    position: absolute;
+    height: 30px;
+    right: 3px;
 }

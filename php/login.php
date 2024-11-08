@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+ini_set('display_errors', 0);
+
 // Redirect to sida.php if the user is already logged in
 if (isset($_SESSION['username'])) {
     header("Location: sida.php");
@@ -29,16 +31,24 @@ include 'db.php';
             </div>
             <div class="buttons">
                 <button id="signin" onclick="redirect('signup.php')">Registrera</button>
-                <button id="hemsida" onclick="redirect('hemsida.php')">Hemsida</button>
+                <button id="hemsida" onclick="redirect('index.php')">Hemsida</button>
             </div>
+        </div>
+        <div id="currency-bar">
+            <button id="add-currency" onclick="gainCurrency(10)">+</button>
+            <span id="currency-amount">0</span>
+            <img src="../bilder/mynt.png" id="currency-icon" alt="Coin Icon">
         </div>
     </header>
     <h2>Logga in</h2>
     <form action="" method="post">
         <input type="text" name="username" placeholder="Lägg in användarnamn" required />
         <input type="password" name="password" placeholder="Lägg in lösenord" required />
-        <input type="submit" name="submit" value="Logga in" />
+        <input type="submit" name="submit" value="Logga in"/>
     </form>
+
+    <p id="error-message" style="display: none;">Fel användarnamn eller lösenord</p>
+    <p id="error-message" style="display: none;">Användarkonto ej skapat</p>
 
     <div id="login-info">
         <h3>Välkommen till Arcade Point!</h3>
@@ -52,6 +62,7 @@ include 'db.php';
 
 
     <?php
+    ini_set('display_errors', 0);
     if (isset($_POST['submit'])) {
         $conn = Användarinformation();
 
@@ -80,15 +91,15 @@ include 'db.php';
                     header("Location: sida.php");
                     exit();
                 } else {
-                    echo "<br>Fel användarnamn eller lösenord";
+                    echo '<p id="error-message" style="display: block;">Fel användarnamn eller lösenord</p>';
                 }
             } else {
-                echo "<br>Användarkonto ej skapat";
+                echo '<p id="error-message" style="display: block;">Användarkonto ej skapat</p>';
             }
 
             $stmt->close();
         } else {
-            echo "<br>Kunde inte förbereda SQL: " . $conn->error;
+           
         }
 
         $conn->close();

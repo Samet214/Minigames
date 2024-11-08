@@ -17,8 +17,13 @@
             </div>
             <div class="buttons">
                 <button id="signin" onclick="redirect('login.php')">Logga in</button>
-                <button id="hemsida" onclick="redirect('hemsida.php')">Hemsida</button>
+                <button id="hemsida" onclick="redirect('index.php')">Hemsida</button>
             </div>
+        </div>
+        <div id="currency-bar">
+            <button id="add-currency" onclick="gainCurrency(10)">+</button>
+            <span id="currency-amount">0</span>
+            <img src="../bilder/mynt.png" id="currency-icon" alt="Coin Icon">
         </div>
     </header>
     <h2>Registrera</h2>
@@ -27,6 +32,9 @@
         <input type="password" name="password" placeholder="Lägg in lösenord" required/>
         <input type="submit" name="submit" value="Registrera" />
     </form>
+
+    <p id="success-message" style="display: none;">Användarkonto skapat!</p>
+    <p id="error-message" style="display: none;">Användarkontot har redan skapats</p>
 
     <div id="signup-info">
         <h3>Välkommen till Arcade Point!</h3>
@@ -40,6 +48,8 @@
 
     <?php
     session_start();
+
+    ini_set('display_errors', 0);
 
     include 'db.php';
 
@@ -57,7 +67,7 @@
         $username = strtolower($_POST['username']);
         $password = strtolower($_POST['password']);
 
-        $sql_check = "SELECT Namn FROM `användare` WHERE Namn = ?";
+        $sql_check = "SELECT Namn FROM användare WHERE Namn = ?";
         if ($stmt = $conn->prepare($sql_check)) {
             $stmt->bind_param("s", $username);
             // Binder inmatade användarnamn och e-post för att kolla
@@ -70,7 +80,7 @@
                 $stmt->fetch();
 
                 if (!empty($existing_username)) {
-                    echo "<br>Användarkontot har redan skapats";
+                    echo '<p id="error-message" style="display: block;">Användarkonto finns redan';
                 }
             }
         }
@@ -91,15 +101,15 @@
 
             // Execute the prepared statement
             if ($stmt->execute()) {
-                echo "<br>Användarkonto skapat!";
+                echo '<p id="success-message" style="display: block;">Användarkonto skapat!';
             } else {
-                echo "<br>Fel vid inmatning: " . $stmt->error;
+                
             }
 
             // Close statement
             $stmt->close();
         } else {
-            echo "<br>Kunde inte förbereda SQL: " . $conn->error;
+            
         }
 
         // Close connection

@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.getElementById("logo").addEventListener("click", function() {
-    redirect('hemsida.php');
+    redirect('index.php');
 });
 
 const logo = document.getElementById('logo');
@@ -29,3 +29,10 @@ logo.addEventListener('mouseout', () => {
     hoverCircle.style.opacity = '0'; // Fade out
     hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
 });
+
+let currency = 0;
+
+function gainCurrency(amount) {
+    currency += amount;
+    document.getElementById('currency-amount').textContent = currency;
+}

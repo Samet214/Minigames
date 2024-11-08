@@ -1,4 +1,5 @@
 <?php
+ini_set('display_errors', 0);
 function Användarinformation() {
     $servername = "localhost";
     $dbUsername = "samet";
@@ -6,10 +7,6 @@ function Användarinformation() {
     $dbname = "användarinformation";
 
     $conn = new mysqli($servername, $dbUsername, $dbPassword, $dbname);
-
-    if ($conn->connect_error) {
-        die("Koppling misslyckad: " . $conn->connect_error);
-    }
 
     return $conn;
 }

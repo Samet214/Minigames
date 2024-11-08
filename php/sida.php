@@ -1,16 +1,11 @@
 <?php
 session_start();
 
+ini_set('display_errors', 0);
+
 include 'db.php';
 
 $conn = Användarinformation();
-
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
-
-$username = $_SESSION['username'];
 
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
@@ -117,10 +112,6 @@ if ($result->num_rows === 1) {
     $profile_picture = 'default.png';
 }
 
-
-
-
-
 // Handle logout
 if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
     session_destroy();
@@ -154,29 +145,60 @@ if (isset($_POST['add_exp'])) {
 
 // Add this at the top of sida.php to handle live search requests
 if (isset($_GET['search'])) {
-    $searchTerm = $_GET['search'] . '%'; // Adding '%' for wildcard search
+    $searchTerm = $_GET['search'] . '%';
 
-    $searchQuery = $conn->prepare("SELECT Namn FROM användare WHERE Namn LIKE ?");
+    // Join användare and poängssystem tables to fetch profile and level data
+    $searchQuery = $conn->prepare("SELECT användare.Namn, Profil_bild, Levels, EXP, EXP_GRÄNS 
+                                    FROM användare 
+                                    JOIN poängssystem ON användare.Namn = poängssystem.Namn 
+                                    WHERE användare.Namn LIKE ?");
     $searchQuery->bind_param("s", $searchTerm);
     $searchQuery->execute();
     $result = $searchQuery->get_result();
 
-    $usernames = [];
+    $data = [];
     while ($row = $result->fetch_assoc()) {
-        $usernames[] = $row['Namn'];
+        $data[] = [
+            'Namn' => $row['Namn'],
+            'Profil_bild' => $row['Profil_bild'],
+            'Levels' => $row['Levels'],
+            'EXP' => $row['EXP'],
+            'EXP_GRÄNS' => $row['EXP_GRÄNS']
+        ];
     }
 
-    if (empty($usernames)) {
-        echo json_encode(['Inga användare']);
-    } else {
-        echo json_encode($usernames);
-    }
+    echo empty($data) ? json_encode(['message' => 'Inga användare']) : json_encode($data);
     exit();
 }
 
 
+
+
 ?>
 
+<?php
+$conn = Användarinformation();
+
+$query = "SELECT Levels, EXP, EXP_GRÄNS FROM poängssystem WHERE Namn = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $username);
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $level = $row['Levels'];
+        $exp = $row['EXP'];
+        $exp_req = $row['EXP_GRÄNS'];
+    }
+} else {
+    echo "No data found";
+}
+
+$stmt->close();
+$conn->close();
+?>
 
 <!DOCTYPE html>
 <html lang="sv">
