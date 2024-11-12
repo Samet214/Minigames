@@ -20,6 +20,14 @@ session_start();
             <div id="logo-title">
                 <h1>Arcade Point</h1>
             </div>
+            <nav>
+                <ul>
+                    <li><a href="spel.php">Spel</a></li>
+                    <li><a href="ledartavlor.php">Ledartavla</a></li>
+                    <li><a href="info.php">Info</a></li>
+                    <li><a href="profile.php" id="a-tag4">Profil</a></li>
+                </ul>
+            </nav>
             <div class="buttons">
                 <?php if (!isset($_SESSION['username'])): ?>
                     <button id="signin" onclick="redirect('signup.php')">Registrera</button>
@@ -39,20 +47,56 @@ session_start();
         <div class="game-container">
             <img src="../bilder/game1.jpg" alt="Game 1">
             <h2>Game 1</h2>
-            <p>An exciting game where you explore new worlds.</p>
-            <button class="open-modal-button" onclick="openModal()">Play Now</button>
+            <p>Memory spel</p>
+            <button class="open-modal-button" onclick="openModal('game1')">Play Now</button>
         </div>
         <div class="game-container">
             <img src="../bilder/game2.jpg" alt="Game 2">
             <h2>Game 2</h2>
-            <p>A challenging game of skill and strategy.</p>
-            <button class="open-modal-button" onclick="openModal()">Play Now</button>
+            <p>Rädda krokodilen!</p>
+            <button class="open-modal-button" onclick="openModal('game2')">Play Now</button>
         </div>
         <div class="game-container">
             <img src="../bilder/game3.jpg" alt="Game 3">
             <h2>Game 3</h2>
+            <p>Färg spel</p>
+            <button class="open-modal-button" onclick="openModal('game3')">Play Now</button>
+        </div>
+        <div class="game-container">
+            <img src="../bilder/game4.jpg" alt="Game 4">
+            <h2>Game 4</h2>
             <p>Join the adventure and level up your skills!</p>
-            <button class="open-modal-button" onclick="openModal()">Play Now</button>
+            <button class="open-modal-button" onclick="openModal('game4')">Play Now</button>
+        </div>
+        <div class="game-container">
+            <img src="../bilder/game5.jpg" alt="Game 5">
+            <h2>Game 5</h2>
+            <p>Join the adventure and level up your skills!</p>
+            <button class="open-modal-button" onclick="openModal('game5')">Play Now</button>
+        </div>
+        <div class="game-container">
+            <img src="../bilder/game6.jpg" alt="Game 6">
+            <h2>Game 6</h2>
+            <p>Join the adventure and level up your skills!</p>
+            <button class="open-modal-button" onclick="openModal('game6')">Play Now</button>
+        </div>
+        <div class="game-container">
+            <img src="../bilder/game7.jpg" alt="Game 7">
+            <h2>Game 7</h2>
+            <p>Memory spel</p>
+            <button class="open-modal-button" onclick="openModal('game7')">Play Now</button>
+        </div>
+        <div class="game-container">
+            <img src="../bilder/game8.jpg" alt="Game 8">
+            <h2>Game 8</h2>
+            <p>Rädda krokodilen!</p>
+            <button class="open-modal-button" onclick="openModal('game8')">Play Now</button>
+        </div>
+        <div class="game-container">
+            <img src="../bilder/game9.jpg" alt="Game 9">
+            <h2>Game 9</h2>
+            <p>Färg spel</p>
+            <button class="open-modal-button" onclick="openModal('game9')">Play Now</button>
         </div>
     </main>
 

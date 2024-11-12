@@ -23,8 +23,8 @@ session_start();
             <nav>
                 <ul>
                     <li><a href="spel.php">Spel</a></li>
-                    <li><a href="#">Ledartavla</a></li>
-                    <li><a href="#">Info</a></li>
+                    <li><a href="ledartavlor.php">Ledartavla</a></li>
+                    <li><a href="info.php">Info</a></li>
                     <li><a href="#" id="a-tag4">Profil</a></li>
                 </ul>
             </nav>

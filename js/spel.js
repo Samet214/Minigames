@@ -2,12 +2,31 @@ function redirect(url) {
     window.location.href = url;
 }
 
-function openModal() {
+function openModal(gameId) {
     const overlay = document.getElementById("overlay");
     const modal = document.getElementById("modal");
     overlay.style.display = "block"; 
     overlay.style.animation = "fadeIn 1.5s ease-out forwards"; 
-    modal.style.animation = "modalResizeIn 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards"; 
+    modal.style.animation = "modalResizeIn 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards";
+    
+    // Get the iframe element inside modal
+    const gameIframe = document.getElementById("game-iframe");
+
+    // Update the iframe source based on the gameId
+    switch (gameId) {
+        case "game1":
+            gameIframe.src = "../php/spel1.php";  // URL of the first game
+            break;
+        case "game2":
+            gameIframe.src = "../php/spel2.php";  // URL of the second game
+            break;
+        case "game3":
+            gameIframe.src = "../php/spel3.php";  // URL of the third game
+            break;
+        // Add more cases as needed
+        default:
+            gameIframe.src = "";
+    }
 }
 
 function closeModal() {
