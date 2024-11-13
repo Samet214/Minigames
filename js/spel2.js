@@ -10,6 +10,12 @@ let drawing = false;
 let lastPoint = null;
 let currentLine = [];
 const drawnPoints = new Set();
+const platformHeight = 5; // Platform height in custom coordinates
+const ballRadius = 1; // Radius of the ball in custom coordinates
+let ballPosition = { x: -45, y: -25 }; // Starting position on left platform
+let ballVelocity = { x: 0, y: 0 };
+let isDragging = false;
+let joystickStrength = 0; // For acceleration based on distance from click
 
 // History stacks
 let undoStack = [];
@@ -41,32 +47,26 @@ function drawDot(x, y) {
     ctx.fillRect(x - 0.25 * scaleX, y - 0.25 * scaleY, 0.5 * scaleX, 0.5 * scaleY);
 }
 
+function drawLine(x1, y1, x2, y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+}
+
 // Function to add and draw individual points along a line
 function addLinePoint(x1, y1, x2, y2) {
     const start = toCustomCoords(x1, y1);
     const end = toCustomCoords(x2, y2);
 
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const steps = Math.max(Math.abs(dx), Math.abs(dy)) * 2;
-    const stepX = dx / steps;
-    const stepY = dy / steps;
-    const linePoints = [];
+    currentLine.push(start, end);
 
-    for (let i = 0; i <= steps; i++) {
-        const x = snapToHalf(start.x + stepX * i);
-        const y = snapToHalf(start.y + stepY * i);
-        const pointKey = `${x},${y}`;
-
-        if (!drawnPoints.has(pointKey)) {
-            const canvasPos = toCanvasCoords(x, y);
-            drawDot(canvasPos.x, canvasPos.y);
-            linePoints.push({ x, y });
-            drawnPoints.add(pointKey);
-        }
-    }
-
-    return linePoints;
+    // Draw on canvas
+    const canvasStart = toCanvasCoords(start.x, start.y);
+    const canvasEnd = toCanvasCoords(end.x, end.y);
+    drawLine(canvasStart.x, canvasStart.y, canvasEnd.x, canvasEnd.y);
 }
 
 // Function to detect and adjust vertical lines
@@ -129,27 +129,47 @@ function redo() {
 
 // Reset function to clear everything
 function resetCanvas() {
-    allLines = [];
-    undoStack = [];
-    redoStack = [];
-    drawnPoints.clear();
-    ctx.clearRect(0, 0, width, height);
+    allLines = []; // Clear all user-drawn lines
+    undoStack = []; // Clear undo history
+    redoStack = []; // Clear redo history
+    drawnPoints.clear(); // Clear drawn points
+    ctx.clearRect(0, 0, width, height); // Clear the entire canvas
+
     console.clear();
-    saveToLocalStorage();
+    drawPermanentLine(); // Redraw the permanent line
+    saveToLocalStorage(); // Save the updated state
 }
+
+
+function drawPermanentLine() {
+    const yPosition = -5; // Set the y-coordinate slightly lower than the middle
+    const start = toCanvasCoords(-50, yPosition); // Start point (left edge, lower-middle)
+    const end = toCanvasCoords(-40, yPosition); // End point (right edge, same height)
+
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3; // Thickness of 3
+    ctx.stroke();
+}
+
 
 // Function to redraw the entire canvas
 function redrawCanvas() {
-    ctx.clearRect(0, 0, width, height);
-    drawnPoints.clear();
+    ctx.clearRect(0, 0, width, height); // Clear the canvas
+    drawPermanentLine(); // Draw the permanent line first
     allLines.forEach(line => {
-        line.forEach(point => {
-            const canvasPos = toCanvasCoords(point.x, point.y);
-            drawDot(canvasPos.x, canvasPos.y);
-            drawnPoints.add(`${point.x},${point.y}`);
-        });
+        if (line.length > 1) {
+            for (let i = 1; i < line.length; i++) {
+                const start = toCanvasCoords(line[i - 1].x, line[i - 1].y);
+                const end = toCanvasCoords(line[i].x, line[i].y);
+                drawLine(start.x, start.y, end.x, end.y);
+            }
+        }
     });
 }
+
 
 // Refresh console output with all current lines
 function refreshConsole() {
@@ -170,6 +190,8 @@ function restoreFromLocalStorage() {
     allLines = storedLines;
     undoStack = storedUndoStack;
     redoStack = storedRedoStack;
+
+    // Redraw the canvas with smooth lines
     redrawCanvas();
     refreshConsole();
 }
@@ -185,16 +207,10 @@ canvas.addEventListener('mousedown', (event) => {
 
 canvas.addEventListener('mousemove', (event) => {
     if (!drawing) return;
+
     const { offsetX, offsetY } = event;
-
-    const lastCoords = toCustomCoords(lastPoint.x, lastPoint.y);
-    const currentCoords = toCustomCoords(offsetX, offsetY);
-
-    if (lastCoords.x !== currentCoords.x || lastCoords.y !== currentCoords.y) {
-        const lineSegment = addLinePoint(lastPoint.x, lastPoint.y, offsetX, offsetY);
-        currentLine.push(...lineSegment);
-        lastPoint = { x: offsetX, y: offsetY };
-    }
+    addLinePoint(lastPoint.x, lastPoint.y, offsetX, offsetY);
+    lastPoint = { x: offsetX, y: offsetY };
 });
 
 canvas.addEventListener('mouseup', () => {
@@ -217,4 +233,7 @@ document.getElementById('redoButton').addEventListener('click', redo);
 document.getElementById('resetButton').addEventListener('click', resetCanvas); // Reset button
 
 // Restore canvas on page load
-window.addEventListener('load', restoreFromLocalStorage);
+window.addEventListener('load', () => {
+    restoreFromLocalStorage();
+    drawPermanentLine();
+});

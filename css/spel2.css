@@ -15,5 +15,29 @@ h1 {
 canvas {
     border: 1px solid black;
     background-color: #fff;
+    margin-top: 60px;
+}
+
+#undoButton, #redoButton, #resetButton {
+    width: 50px;
+    height: 50px;
+    display: flex; /* Change to flexbox for centering */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
     margin-top: 20px;
+    background-color: grey;
+    border: 2px solid black;
+    text-align: center; /* Optional: Keeps text alignment */
+    font-size: 70px;
+}
+
+#resetButton {
+    color: darkred;
+    font-size: 60px;
+}
+
+#buttonContainer {
+    display: flex; /* Use flexbox for layout */
+    gap: 10px; /* Add space between buttons */
+    cursor: pointer;
 }
