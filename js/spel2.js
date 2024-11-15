@@ -15,13 +15,18 @@ let isDragging = false;
 let joystickStrength = 0; // For acceleration based on distance from click
 const ballRadius = 4; // Ball radius in custom coordinates
 let ballPosition = { x: -45, y: 2.6 - ballRadius }; // Starting on the left end of the permanent line
-const gravity = 0.1; // Gravity strength (adjust for faster or slower fall)
+const gravity = 0.05; // Gravity strength (adjust for faster or slower fall)
 const bounce = 0.2; // A small bounce effect (set to 0 for no bounce)
 let ballVelocity = { x: 0, y: 0 }; // Velocity of the ball (initially at rest)
 let isOnPlatform = false; // Flag to check if the ball is on the platform
-const maxVelocity = 1.2;  // Max horizontal speed for the ball
+const maxVelocity = 1.5;  // Max horizontal speed for the ball
 const acceleration = 0.3;  // Acceleration when the arrow keys are pressed
 const deceleration = 0.05;  // Deceleration when the keys are released
+const offscreenCanvas = document.createElement('canvas');
+offscreenCanvas.width = canvas.width;
+offscreenCanvas.height = canvas.height;
+const offscreenCtx = offscreenCanvas.getContext('2d');
+const spatialGrid = new Map();
 
 let isMovingLeft = false;
 let isMovingRight = false;
@@ -55,6 +60,17 @@ function snapToHalf(value) {
     return Math.round(value * 2) / 2;
 }
 
+function addToSpatialGrid(line) {
+    line.forEach(point => {
+        const key = `${Math.floor(point.x)},${Math.floor(point.y)}`;
+        if (!spatialGrid.has(key)) spatialGrid.set(key, []);
+        spatialGrid.get(key).push(line);
+    });
+}
+
+// On adding a new line:
+addToSpatialGrid(currentLine);
+
 // Helper to convert canvas pixels to custom coordinates
 function toCustomCoords(x, y) {
     const customX = snapToHalf((x - width / 2) / scaleX);
@@ -84,23 +100,23 @@ function drawLine(x1, y1, x2, y2) {
     ctx.stroke();
 }
 
-// Function to add and draw individual points along a line
 function addLinePoint(x1, y1, x2, y2) {
     const start = toCustomCoords(x1, y1);
     const end = toCustomCoords(x2, y2);
 
-    // Add points to the current line and update in allLines to be drawn immediately
     currentLine.push(start, end);
     allLines.push(currentLine);
 
-    // Draw on canvas
+    ctx.beginPath();
     const canvasStart = toCanvasCoords(start.x, start.y);
     const canvasEnd = toCanvasCoords(end.x, end.y);
-    drawLine(canvasStart.x, canvasStart.y, canvasEnd.x, canvasEnd.y);
-
-    // Trigger canvas redraw to display the new line segment immediately
-    redrawCanvas();
+    ctx.moveTo(canvasStart.x, canvasStart.y);
+    ctx.lineTo(canvasEnd.x, canvasEnd.y);
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.stroke();
 }
+
 
 // Function to detect and adjust vertical lines
 function adjustVerticalLines() {
@@ -187,11 +203,28 @@ function drawPermanentLine() {
     ctx.stroke();
 }
 
+function drawPermanentLineOffscreen() {
+    offscreenCtx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    const yPosition = -5;
+    const start = toCanvasCoords(-50, yPosition);
+    const end = toCanvasCoords(-40, yPosition);
+
+    offscreenCtx.beginPath();
+    offscreenCtx.moveTo(start.x, start.y);
+    offscreenCtx.lineTo(end.x, end.y);
+    offscreenCtx.strokeStyle = 'black';
+    offscreenCtx.lineWidth = 3;
+    offscreenCtx.stroke();
+}
+
 
 // Function to redraw the entire canvas
 function redrawCanvas() {
     ctx.clearRect(0, 0, width, height); // Clear the canvas
     drawPermanentLine(); // Draw the permanent line first
+    ctx.drawImage(offscreenCanvas, 0, 0); // Use pre-rendered lines
+    drawBall(); // Draw the ball
+
     allLines.forEach(line => {
         if (line.length > 1) {
             for (let i = 1; i < line.length; i++) {
@@ -201,7 +234,6 @@ function redrawCanvas() {
             }
         }
     });
-    drawBall(); // Draw the ball
 }
 
 
@@ -238,15 +270,16 @@ canvas.addEventListener('mousedown', (event) => {
     saveState();
 });
 
+let lastMouseMove = 0;
 canvas.addEventListener('mousemove', (event) => {
-    if (!drawing) return;
+    const now = Date.now();
+    if (now - lastMouseMove < 16) return; // Limit to ~60 FPS
+    lastMouseMove = now;
 
+    if (!drawing) return;
     const { offsetX, offsetY } = event;
     addLinePoint(lastPoint.x, lastPoint.y, offsetX, offsetY);
     lastPoint = { x: offsetX, y: offsetY };
-
-    // Update the ball position to reflect changes
-    redrawCanvas();
 });
 
 canvas.addEventListener('mouseup', () => {
@@ -292,13 +325,14 @@ function drawBall() {
     ctx.stroke();
 }
 
-// Function to check if the ball collides with a line segment
+// Function to check if the ball collides with a line segment and adjust velocity
 function checkLineCollision(ballPos) {
-    const ballBottomY = ballPos.y - ballRadius; // Use the bottom of the ball for collision detection
+    const ballBottomY = ballPos.y - ballRadius; // Bottom of the ball
     let closestY = null;
+    let closestLine = null;
     let minDistance = Infinity;
 
-    // Iterate through all lines to find the closest line segment to the bottom of the ball
+    // Iterate through all lines to find the closest line segment
     for (let line of allLines) {
         for (let i = 1; i < line.length; i++) {
             const start = line[i - 1];
@@ -306,17 +340,18 @@ function checkLineCollision(ballPos) {
 
             // Check if the ball's x-position is within the line segment's x-range
             if ((ballPos.x >= Math.min(start.x, end.x)) && (ballPos.x <= Math.max(start.x, end.x))) {
-                // Calculate the y-value on the line segment for the ball's x-position using linear interpolation
+                // Calculate the y-value on the line segment for the ball's x-position
                 const t = (ballPos.x - start.x) / (end.x - start.x);
                 const yOnLine = start.y + t * (end.y - start.y);
 
                 // Calculate the distance between the bottom of the ball and the y-value on the line
                 const distance = Math.abs(ballBottomY - yOnLine);
 
-                // If this is the closest line segment, update closestY
+                // If this is the closest line segment, update closestY and closestLine
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestY = yOnLine;
+                    closestLine = { start, end };
                 }
             }
         }
@@ -333,18 +368,45 @@ function checkLineCollision(ballPos) {
         if (distance < minDistance) {
             minDistance = distance;
             closestY = yOnPermanentLine;
+            closestLine = { start: permanentStart, end: permanentEnd };
         }
     }
 
-    // If a closest line segment was found, align the bottom of the ball to the line segment
+    // If a closest line segment was found, align the ball and adjust velocity
     if (closestY !== null && minDistance < ballRadius) {
-        ballPos.y = closestY + ballRadius - 0.5; // Align the bottom of the ball to the line
-        ballVelocity.y = 0; // Stop downward movement
+        ballPos.y = closestY + ballRadius - 0.5; // Align the bottom of the ball
+
+    if (closestLine) {
+        const slope = (closestLine.end.y - closestLine.start.y) / (closestLine.end.x - closestLine.start.x);
+        const slopeAngle = Math.atan(slope); // Slope angle in radians
+
+        // Adjust horizontal velocity based on slope angle
+        const slopeEffectStrength = 0.2; // Tune this value for responsiveness to the slope
+        const acceleration = Math.sin(slopeAngle) * slopeEffectStrength;
+
+        // Apply acceleration from the slope
+        ballVelocity.x -= acceleration;
+
+        // Apply deceleration when no longer accelerating (e.g., flat or opposite direction)
+        const deceleration = 0.0001; // Tune this value for smooth deceleration
+        if (Math.abs(acceleration) < deceleration || Math.sign(acceleration) !== Math.sign(ballVelocity.x)) {
+            // Gradually reduce velocity if not accelerating
+            if (Math.abs(ballVelocity.x) > deceleration) {
+                ballVelocity.x -= Math.sign(ballVelocity.x) * deceleration;
+            } else {
+                ballVelocity.x = 0; // Stop completely if velocity is very low
+            }
+        }
+    }
+
+    ballVelocity.y = 0; // Stop vertical movement
+
         return true;
     }
 
     return false;
 }
+
 
 
 
@@ -430,4 +492,3 @@ window.addEventListener('load', () => {
     drawBall();
     requestAnimationFrame(updateBall); // Start the ball update loop
 });
-
