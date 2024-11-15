@@ -19,7 +19,30 @@ const gravity = 0.1; // Gravity strength (adjust for faster or slower fall)
 const bounce = 0.2; // A small bounce effect (set to 0 for no bounce)
 let ballVelocity = { x: 0, y: 0 }; // Velocity of the ball (initially at rest)
 let isOnPlatform = false; // Flag to check if the ball is on the platform
+const maxVelocity = 1.2;  // Max horizontal speed for the ball
+const acceleration = 0.3;  // Acceleration when the arrow keys are pressed
+const deceleration = 0.05;  // Deceleration when the keys are released
 
+let isMovingLeft = false;
+let isMovingRight = false;
+
+window.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+        isMovingLeft = true;
+    }
+    if (event.key === 'ArrowRight') {
+        isMovingRight = true;
+    }
+});
+
+window.addEventListener('keyup', (event) => {
+    if (event.key === 'ArrowLeft') {
+        isMovingLeft = false;
+    }
+    if (event.key === 'ArrowRight') {
+        isMovingRight = false;
+    }
+});
 
 
 // History stacks
@@ -66,12 +89,17 @@ function addLinePoint(x1, y1, x2, y2) {
     const start = toCustomCoords(x1, y1);
     const end = toCustomCoords(x2, y2);
 
+    // Add points to the current line and update in allLines to be drawn immediately
     currentLine.push(start, end);
+    allLines.push(currentLine);
 
     // Draw on canvas
     const canvasStart = toCanvasCoords(start.x, start.y);
     const canvasEnd = toCanvasCoords(end.x, end.y);
     drawLine(canvasStart.x, canvasStart.y, canvasEnd.x, canvasEnd.y);
+
+    // Trigger canvas redraw to display the new line segment immediately
+    redrawCanvas();
 }
 
 // Function to detect and adjust vertical lines
@@ -84,7 +112,6 @@ function adjustVerticalLines() {
             if (point.x === lastX) {
                 if (!inVerticalSegment) {
                     // Start of a new vertical segment
-                    console.log(`x = ${point.x} for line ${index + 1}`);
                     inVerticalSegment = true;
                 }
             } else {
@@ -183,7 +210,6 @@ function refreshConsole() {
     console.clear();
     allLines.forEach((line, index) => {
         const lineString = line.map(point => `(${point.x}, ${point.y})`).join(' ');
-        console.log(`Line ${index + 1}: ${lineString}`);
     });
     adjustVerticalLines();
 }
@@ -218,6 +244,9 @@ canvas.addEventListener('mousemove', (event) => {
     const { offsetX, offsetY } = event;
     addLinePoint(lastPoint.x, lastPoint.y, offsetX, offsetY);
     lastPoint = { x: offsetX, y: offsetY };
+
+    // Update the ball position to reflect changes
+    redrawCanvas();
 });
 
 canvas.addEventListener('mouseup', () => {
@@ -265,29 +294,59 @@ function drawBall() {
 
 // Function to check if the ball collides with a line segment
 function checkLineCollision(ballPos) {
-    const ballCanvasPos = toCanvasCoords(ballPos.x, ballPos.y);
+    const ballBottomY = ballPos.y - ballRadius; // Use the bottom of the ball for collision detection
+    let closestY = null;
+    let minDistance = Infinity;
 
+    // Iterate through all lines to find the closest line segment to the bottom of the ball
     for (let line of allLines) {
         for (let i = 1; i < line.length; i++) {
-            const start = toCanvasCoords(line[i - 1].x, line[i - 1].y);
-            const end = toCanvasCoords(line[i].x, line[i].y);
+            const start = line[i - 1];
+            const end = line[i];
 
-            // Check if the ball intersects with this line segment
-            if (lineSegmentIntersectsCircle(start, end, ballCanvasPos, ballRadius * scaleX)) {
-                return true;
+            // Check if the ball's x-position is within the line segment's x-range
+            if ((ballPos.x >= Math.min(start.x, end.x)) && (ballPos.x <= Math.max(start.x, end.x))) {
+                // Calculate the y-value on the line segment for the ball's x-position using linear interpolation
+                const t = (ballPos.x - start.x) / (end.x - start.x);
+                const yOnLine = start.y + t * (end.y - start.y);
+
+                // Calculate the distance between the bottom of the ball and the y-value on the line
+                const distance = Math.abs(ballBottomY - yOnLine);
+
+                // If this is the closest line segment, update closestY
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestY = yOnLine;
+                }
             }
         }
     }
 
     // Also check the permanent line
-    const startPermanent = toCanvasCoords(-50, -5);
-    const endPermanent = toCanvasCoords(-40, -5);
-    if (lineSegmentIntersectsCircle(startPermanent, endPermanent, ballCanvasPos, ballRadius * scaleX)) {
+    const permanentStart = { x: -50, y: -5 };
+    const permanentEnd = { x: -40, y: -5 };
+    if ((ballPos.x >= permanentStart.x) && (ballPos.x <= permanentEnd.x)) {
+        const t = (ballPos.x - permanentStart.x) / (permanentEnd.x - permanentStart.x);
+        const yOnPermanentLine = permanentStart.y + t * (permanentEnd.y - permanentStart.y);
+        const distance = Math.abs(ballBottomY - yOnPermanentLine);
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestY = yOnPermanentLine;
+        }
+    }
+
+    // If a closest line segment was found, align the bottom of the ball to the line segment
+    if (closestY !== null && minDistance < ballRadius) {
+        ballPos.y = closestY + ballRadius - 0.5; // Align the bottom of the ball to the line
+        ballVelocity.y = 0; // Stop downward movement
         return true;
     }
 
     return false;
 }
+
+
 
 // Helper function to check if a line segment intersects a circle
 function lineSegmentIntersectsCircle(start, end, circle, radius) {
@@ -306,9 +365,26 @@ function lineSegmentIntersectsCircle(start, end, circle, radius) {
 }
 
 // Update the ball position with collision detection
+// Define the initial respawn position
+const initialBallPosition = { x: -45, y: 2.6 - ballRadius }; // Customize starting position as needed
+
 function updateBall() {
     // Apply gravity (downwards)
     ballVelocity.y -= gravity;
+
+    // Horizontal movement based on key presses
+    if (isMovingLeft) {
+        ballVelocity.x = Math.max(ballVelocity.x - acceleration, -maxVelocity);
+    } else if (isMovingRight) {
+        ballVelocity.x = Math.min(ballVelocity.x + acceleration, maxVelocity);
+    } else {
+        // Decelerate if no keys are pressed
+        if (ballVelocity.x > 0) {
+            ballVelocity.x = Math.max(0, ballVelocity.x - deceleration);
+        } else if (ballVelocity.x < 0) {
+            ballVelocity.x = Math.min(0, ballVelocity.x + deceleration);
+        }
+    }
 
     // Update the ball's position
     ballPosition.x += ballVelocity.x;
@@ -316,17 +392,25 @@ function updateBall() {
 
     // Check for collision with lines
     if (checkLineCollision(ballPosition)) {
-        ballVelocity.y = 0; // Stop the downward movement
-        // Adjust the position to ensure the ball stays above the line
-        ballPosition.y += gravity;
+        ballVelocity.y = 0; // Stop downward movement
+        ballPosition.y += gravity; // Adjust position above the line
+    }
+
+    // Wrap around the horizontal edges if above the bottom
+    if (ballPosition.y + ballRadius > -25) { // Assuming -25 is the bottom boundary in custom coords
+        if (ballPosition.x > 50) { // Right boundary in custom coords
+            ballPosition.x = -50; // Wrap to the left
+        } else if (ballPosition.x < -50) { // Left boundary in custom coords
+            ballPosition.x = 50; // Wrap to the right
+        }
     }
 
     // Check if the ball hits the bottom of the canvas
     const ballCanvasPos = toCanvasCoords(ballPosition.x, ballPosition.y + ballRadius);
     if (ballCanvasPos.y >= height) {
-        ballPosition.y = toCustomCoords(ballCanvasPos.x, height).y - ballRadius;
-        ballVelocity.y *= -bounce; // Apply bounce effect
-        ballVelocity.x *= 0.9; // Reduce horizontal velocity for friction
+        // Respawn the ball at the initial position with zero velocity
+        ballPosition = { ...initialBallPosition };
+        ballVelocity = { x: 0, y: 0 };
     }
 
     // Redraw the canvas
@@ -335,6 +419,8 @@ function updateBall() {
     // Continue the game loop
     requestAnimationFrame(updateBall);
 }
+
+
 
 
 // Start the game loop when the page loads
