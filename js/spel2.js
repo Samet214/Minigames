@@ -13,12 +13,12 @@ const drawnPoints = new Set();
 const platformHeight = 5; // Platform height in custom coordinates
 const ballRadius = 4; // Ball radius in custom coordinates
 let ballPosition = { x: -45, y: 2.6 - ballRadius }; // Starting on the left end of the permanent line
-const gravity = 0.2; // Gravity strength (adjust for faster or slower fall)
+const gravity = 0.1; // Gravity strength (adjust for faster or slower fall)
 const bounce = 0.2; // A small bounce effect (set to 0 for no bounce)
 let ballVelocity = { x: 0, y: 0 }; // Velocity of the ball (initially at rest)
 let isOnPlatform = false; // Flag to check if the ball is on the platform
-const maxVelocity = 0.5;  // Max horizontal speed for the ball
-const acceleration = 0.2;  // Acceleration when the arrow keys are pressed
+const maxVelocity = 1.5;  // Max horizontal speed for the ball
+const acceleration = 0.3;  // Acceleration when the arrow keys are pressed
 const deceleration = 0.05;  // Deceleration when the keys are released
 const offscreenCanvas = document.createElement('canvas');
 offscreenCanvas.width = canvas.width;
@@ -242,10 +242,10 @@ function adjustVerticalLines() {
 
 
 // Function to save the current canvas state
-function saveState() {
-    undoStack.push(JSON.parse(JSON.stringify(allLines))); // deep copy
-    redoStack.length = 0;
-    saveToLocalStorage();
+function saveState(newLine) {
+    undoStack.push(newLine); // Add the new line to the undo stack
+    redoStack.length = 0;    // Clear redoStack whenever a new action occurs
+    saveStacksToLocalStorage();
 }
 
 // Function to save data to localStorage
@@ -263,35 +263,39 @@ function saveToLocalStorage() {
 // Undo function
 function undo() {
     if (undoStack.length > 0) {
-        // Save current state to redo stack
-        redoStack.push(JSON.parse(JSON.stringify(allLines))); // Deep copy
+        // Remove the last action from undoStack and add it to redoStack
+        const lastLine = undoStack.pop();
+        redoStack.push(lastLine);
 
-        // Restore the previous state
-        allLines = undoStack.pop();
+        // Remove the last line from allLines
+        allLines.pop();
 
-        // Redraw the canvas and recalculate intersections
+        // Redraw the canvas
         redrawCanvas();
         findAndLogIntersections();
 
-        // Save the updated state to localStorage
-        saveToLocalStorage();
+        // Save stacks and lines to localStorage
+        saveStacksToLocalStorage();
     }
 }
 
+
+
 function redo() {
     if (redoStack.length > 0) {
-        // Save current state to undo stack
-        undoStack.push(JSON.parse(JSON.stringify(allLines))); // Deep copy
+        // Remove the last undone action from redoStack and add it back to undoStack
+        const lastLine = redoStack.pop();
+        undoStack.push(lastLine);
 
-        // Restore the next state
-        allLines = redoStack.pop();
+        // Add the line back to allLines
+        allLines.push(lastLine);
 
-        // Redraw the canvas and recalculate intersections
+        // Redraw the canvas
         redrawCanvas();
         findAndLogIntersections();
 
-        // Save the updated state to localStorage
-        saveToLocalStorage();
+        // Save stacks and lines to localStorage
+        saveStacksToLocalStorage();
     }
 }
 
@@ -303,29 +307,33 @@ function clearSavedData() {
 
 clearSavedData();
 
+function saveStacksToLocalStorage() {
+    localStorage.setItem('undoStack', JSON.stringify(undoStack));
+    localStorage.setItem('redoStack', JSON.stringify(redoStack));
+    localStorage.setItem('allLines', JSON.stringify(allLines));
+}
 
 
 // Reset function to clear everything
 function resetCanvas() {
-    allLines = []; // Clear all user-drawn lines
-    undoStack = []; // Clear undo history
-    redoStack = []; // Clear redo history
-    drawnPoints.clear(); // Clear drawn points
-    ctx.clearRect(0, 0, width, height); // Clear the entire canvas
+    allLines = [];
+    undoStack = [];
+    redoStack = [];
+    ctx.clearRect(0, 0, width, height); // Clear the canvas
 
-    // Clear intersection logs
-    localStorage.setItem('intersectionLogs', JSON.stringify([]));
-    console.clear();
+    // Save cleared state to localStorage
+    saveStacksToLocalStorage();
 
     drawPermanentLine(); // Redraw the permanent line
-    drawBall(); // Redraw the ball
-    saveToLocalStorage(); // Save the updated state
+    drawBall();          // Redraw the ball
 }
 
 
 
+
+
 function drawPermanentLine() {
-    const yPosition = -5; // Set the y-coordinate slightly lower than the middle
+    const yPosition = -9.3; // Set the y-coordinate slightly lower than the middle
     const start = toCanvasCoords(-50, yPosition); // Start point (left edge, lower-middle)
     const end = toCanvasCoords(-40, yPosition); // End point (right edge, same height)
 
@@ -425,18 +433,12 @@ function refreshConsole() {
 
 // Restore data from localStorage
 function restoreFromLocalStorage() {
-    const storedLines = JSON.parse(localStorage.getItem('allLines')) || [];
-    const storedUndoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
-    const storedRedoStack = JSON.parse(localStorage.getItem('redoStack')) || [];
+    allLines = JSON.parse(localStorage.getItem('allLines')) || [];
+    undoStack = JSON.parse(localStorage.getItem('undoStack')) || [];
+    redoStack = JSON.parse(localStorage.getItem('redoStack')) || [];
 
-    allLines = storedLines;
-    undoStack = storedUndoStack;
-    redoStack = storedRedoStack;
-
-    // Redraw the canvas with the restored lines
+    // Redraw the canvas with restored data
     redrawCanvas();
-
-    // Recalculate intersections and update logs
     findAndLogIntersections();
 }
 
@@ -494,12 +496,12 @@ canvas.addEventListener('mouseup', () => {
     if (isDrawing) {
         isDrawing = false;
         if (currentLine.length > 1) {
-            allLines.push(currentLine); // Save the current line
+            allLines.push(currentLine); // Save the current line to allLines
+            saveState(currentLine);    // Save the state for undo functionality
         }
         currentLine = [];
         redrawCanvas(); // Redraw the canvas with the new line
         findAndLogIntersections(); // Detect and log intersections
-        saveState(); // Save the state to localStorage
     }
 });
 
@@ -526,7 +528,7 @@ window.addEventListener('load', () => {
     restoreConsoleState(); // Restore console logs
     drawPermanentLine();
     drawBall();
-    requestAnimationFrame(updateBall); // Resume ball updates
+    requestAnimationFrame(updateBall); // Start the ball update loop
 });
 
 function getLineIntersection(line1, line2) {
@@ -583,10 +585,8 @@ function isInsideBall(x, y) {
 }
 
 function findAndLogIntersections() {
-    console.clear(); // Clear the console first to avoid overwriting previous logs
-
-    const intersectionLogs = [];
-    const intersectionPoints = []; // Clear previous intersection points
+    console.clear(); // Clear the console for fresh output
+    const intersectionPoints = []; // Clear previous intersection pointsintersectionPoints = []; // Clear previous intersection points
 
     // Iterate over every pair of lines
     for (let i = 0; i < allLines.length; i++) {
@@ -603,167 +603,164 @@ function findAndLogIntersections() {
                     );
 
                     if (intersection) {
-                        const intersectionStr = `(${intersection.x.toFixed(2)}, ${intersection.y.toFixed(2)})`;
-                        console.log(intersectionStr);
-
-                        intersectionLogs.push(intersectionStr);
-                        intersectionPoints.push({
+                         // Log intersection point without altering the lines
+                         intersectionPoints.push({
                             x: intersection.x,
                             y: intersection.y,
-                            lines: [line1, line2]
+                            lines: [[line1[k - 1], line1[k]], [line2[l - 1], line2[l]]],
                         });
+                        console.log(`Intersection at (${intersection.x.toFixed(2)}, ${intersection.y.toFixed(2)})`);
                     }
                 }
             }
         }
     }
-
-    // Save intersections to localStorage for persistence
-    localStorage.setItem('intersectionLogs', JSON.stringify(intersectionLogs));
 }
 
-
-
-
-
+function handleIntersection(ballPos) {
+    for (const intersection of intersectionPoints) {
+        const dx = ballPos.x - intersection.x;
+        const dy = ballPos.y - intersection.y;
+        if (Math.sqrt(dx ** 2 + dy ** 2) <= ballRadius) {
+            const [line1, line2] = intersection.lines;
+            const bestLine = selectNextLine(ballVelocity, line1, line2); // Define a selection rule
+            alignBallWithLine(ballPos, bestLine);
+            return true;
+        }
+    }
+    return false;
+}
 
 // Function to check if the ball collides with a line segment and adjust velocity
 function checkLineCollision(ballPos) {
     const ballBottomY = ballPos.y - ballRadius; // Bottom of the ball
-    let closestY = null;
-    let closestLine = null;
-    let minDistance = Infinity;
-    let isVerticalCollision = false;
+    let isCollisionDetected = false; // Flag for any collision
+    let isOnLine = false; // Flag to track if the ball is on a line
+    let correctionVector = { x: 0, y: 0 }; // To resolve overlapping collisions
 
-    // Iterate through all lines to find the closest line segment
+    // Gravity settings
+    const gravity = -0.01; // Strength of gravity
+    const slopeEffectStrength = 0.15; // Strength of slope effect
+    const deceleration = 0.0001; // Slow down on slopes
+
+    // Iterate through all lines to detect collisions
     for (let line of allLines) {
         for (let i = 1; i < line.length; i++) {
             const start = line[i - 1];
             const end = line[i];
 
-            // Check for vertical line segment
+            // Handle vertical line segments
             if (start.x === end.x && start.y !== end.y) {
                 const verticalX = start.x;
-
-                // Calculate the height of the vertical line
                 const minY = Math.min(start.y, end.y);
                 const maxY = Math.max(start.y, end.y);
-                const verticalHeight = maxY - minY;
 
                 if (Math.abs(ballPos.x - verticalX) <= ballRadius &&
                     ballPos.y >= minY &&
                     ballPos.y <= maxY) {
+                    // Collision detected with vertical line
+                    const overlapX = ballPos.x < verticalX ? verticalX - ballPos.x - ballRadius
+                                                           : verticalX - ballPos.x + ballRadius;
+                    correctionVector.x += overlapX;
+                    ballVelocity.x = -ballVelocity.x; // Reverse horizontal velocity
 
-                    if (verticalHeight < ballRadius) {
-                        // Short vertical line: teleport the ball above it
-                        ballPos.y = maxY + ballRadius + 0.5;
-                        ballVelocity.y = 0; // Reset vertical velocity
-                    } else {
-                        // Taller vertical line: bounce as usual
-                        isVerticalCollision = true;
-
-                        // Reverse x-velocity for bounce effect
-                        ballVelocity.x = -ballVelocity.x;
-
-                        // Adjust ball position to avoid getting stuck
-                        if (ballPos.x < verticalX) {
-                            ballPos.x = verticalX - ballRadius;
-                        } else {
-                            ballPos.x = verticalX + ballRadius;
-                        }
-                    }
-
-                    return true; // Return immediately since we handled the collision
+                    isCollisionDetected = true;
                 }
             }
 
-            // Check if the ball's x-position is within the line segment's x-range (for non-vertical lines)
-            if ((ballPos.x >= Math.min(start.x, end.x)) && (ballPos.x <= Math.max(start.x, end.x))) {
-                // Calculate the y-value on the line segment for the ball's x-position
+            // Handle non-vertical line segments
+            if (ballPos.x >= Math.min(start.x, end.x) &&
+                ballPos.x <= Math.max(start.x, end.x)) {
                 const t = (ballPos.x - start.x) / (end.x - start.x);
                 const yOnLine = start.y + t * (end.y - start.y);
-
-                // Calculate the distance between the bottom of the ball and the y-value on the line
                 const distance = Math.abs(ballBottomY - yOnLine);
 
-                // If this is the closest line segment, update closestY and closestLine
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestY = yOnLine;
-                    closestLine = { start, end };
+                if (distance < ballRadius) {
+                    // Collision detected with sloped or horizontal line
+                    const overlapY = ballBottomY < yOnLine ? yOnLine - ballBottomY - ballRadius
+                                                           : yOnLine - ballBottomY + ballRadius;
+                    correctionVector.y += overlapY;
+
+                    isCollisionDetected = true;
+                    isOnLine = true; // Ball is on the line
+
+                    // Handle slope effects
+                    const slope = (end.y - start.y) / (end.x - start.x);
+                    const slopeAngle = Math.atan(slope);
+
+                    // Adjust ball's horizontal velocity based on the slope
+                    const slopeForce = Math.sin(slopeAngle) * slopeEffectStrength;
+
+                    // Always move the ball downwards along the slope
+                    ballVelocity.x -= slopeForce;
+
+                    // Apply deceleration to simulate friction
+                    if (Math.abs(slopeForce) < deceleration || Math.sign(slopeForce) !== Math.sign(ballVelocity.x)) {
+                        if (Math.abs(ballVelocity.x) > deceleration) {
+                            ballVelocity.x -= Math.sign(ballVelocity.x) * deceleration;
+                        } else {
+                            ballVelocity.x = 0; // Stop completely if velocity is very low
+                        }
+                    }
+
+                    ballVelocity.y = 0; // Stop vertical movement on the line
                 }
             }
         }
     }
 
-    // Also check the permanent line
-    const permanentStart = { x: -50, y: -5 };
-    const permanentEnd = { x: -40, y: -5 };
-    if ((ballPos.x >= permanentStart.x) && (ballPos.x <= permanentEnd.x)) {
+    // Handle collisions with the permanent line
+    const permanentStart = { x: -50, y: -10 };
+    const permanentEnd = { x: -40, y: -10 };
+    if (ballPos.x >= permanentStart.x && ballPos.x <= permanentEnd.x) {
         const t = (ballPos.x - permanentStart.x) / (permanentEnd.x - permanentStart.x);
         const yOnPermanentLine = permanentStart.y + t * (permanentEnd.y - permanentStart.y);
         const distance = Math.abs(ballBottomY - yOnPermanentLine);
 
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestY = yOnPermanentLine;
-            closestLine = { start: permanentStart, end: permanentEnd };
-        }
-    }
+        if (distance < ballRadius) {
+            const overlapY = ballBottomY < yOnPermanentLine ? yOnPermanentLine - ballBottomY - ballRadius
+                                                            : yOnPermanentLine - ballBottomY + ballRadius;
+            correctionVector.y += overlapY;
 
-    // If a closest line segment was found, align the ball and adjust velocity
-    if (closestY !== null && minDistance < ballRadius) {
-        ballPos.y = closestY + ballRadius - 0.5; // Align the bottom of the ball
+            isCollisionDetected = true;
+            isOnLine = true; // Ball is on the permanent line
 
-        if (closestLine) {
-            const slope = (closestLine.end.y - closestLine.start.y) / (closestLine.end.x - closestLine.start.x);
-            const slopeAngle = Math.atan(slope); // Slope angle in radians
+            // Maintain hovering state
+            ballVelocity.y = 0;
 
-            // Adjust horizontal velocity based on slope angle
-            const slopeEffectStrength = 0.03; // Tune this value for responsiveness to the slope
-            const acceleration = Math.sin(slopeAngle) * slopeEffectStrength;
+            // Optionally adjust horizontal velocity (if permanent line is sloped)
+            const slope = (permanentEnd.y - permanentStart.y) / (permanentEnd.x - permanentStart.x);
+            const slopeAngle = Math.atan(slope);
+            const slopeForce = Math.sin(slopeAngle) * slopeEffectStrength;
 
-            // Apply acceleration from the slope
-            ballVelocity.x -= acceleration;
+            ballVelocity.x -= slopeForce;
 
-            // Apply deceleration when no longer accelerating (e.g., flat or opposite direction)
-            const deceleration = 0.0001; // Tune this value for smooth deceleration
-            if (Math.abs(acceleration) < deceleration || Math.sign(acceleration) !== Math.sign(ballVelocity.x)) {
-                // Gradually reduce velocity if not accelerating
+            // Apply deceleration to simulate friction
+            if (Math.abs(slopeForce) < deceleration || Math.sign(slopeForce) !== Math.sign(ballVelocity.x)) {
                 if (Math.abs(ballVelocity.x) > deceleration) {
                     ballVelocity.x -= Math.sign(ballVelocity.x) * deceleration;
                 } else {
-                    ballVelocity.x = 0; // Stop completely if velocity is very low
+                    ballVelocity.x = 0;
                 }
             }
         }
-
-        ballVelocity.y = 0; // Stop vertical movement
-        return true;
     }
 
-    return false;
+    // Resolve collisions by applying the correction vector
+    if (isOnLine) {
+        ballPos.x += correctionVector.x;
+        ballPos.y += correctionVector.y ;
+    }
+
+    // Apply gravity or maintain hovering state
+    if (!isOnLine) {
+        ballVelocity.y += gravity; // Apply gravity when not on any line
+    }
+
+    return isCollisionDetected; // Return whether any collision occurred
 }
 
 
-// Helper function to check if a line segment intersects a circle
-function lineSegmentIntersectsCircle(start, end, circle, radius) {
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const length = Math.sqrt(dx * dx + dy * dy);
-
-    // Project circle center onto the line segment
-    const t = Math.max(0, Math.min(1, ((circle.x - start.x) * dx + (circle.y - start.y) * dy) / (length * length)));
-    const closestPoint = { x: start.x + t * dx, y: start.y + t * dy };
-
-    // Check if the distance to the closest point is less than the radius
-    const distX = circle.x - closestPoint.x;
-    const distY = circle.y - closestPoint.y;
-    return (distX * distX + distY * distY) <= radius * radius;
-}
-
-// Update the ball position with collision detection
-// Define the initial respawn position
 const initialBallPosition = { x: -45, y: 2.6 - ballRadius }; // Customize starting position as needed
 
 function updateBall() {
@@ -827,53 +824,6 @@ function updateBall() {
 
     // Continue the game loop
     requestAnimationFrame(updateBall);
-}
-
-function stopBallAtIntersection(ballPos) {
-    // Iterate over every pair of lines
-    for (let i = 0; i < allLines.length; i++) {
-        const line1 = allLines[i];
-        for (let j = i + 1; j < allLines.length; j++) {
-            const line2 = allLines[j];
-
-            // Check each segment of line1 against each segment of line2
-            for (let k = 1; k < line1.length; k++) {
-                for (let l = 1; l < line2.length; l++) {
-                    const intersection = getLineIntersection(
-                        [line1[k - 1], line1[k]],
-                        [line2[l - 1], line2[l]]
-                    );
-
-                    if (intersection) {
-                        const dx = intersection.x - ballPos.x;
-                        const dy = intersection.y - ballPos.y;
-                        const distanceToIntersection = Math.sqrt(dx ** 2 + dy ** 2);
-
-                        // Check if the ball is close enough to the intersection point
-                        if (distanceToIntersection <= ballRadius) {
-                            // Calculate the direction from the ball to the intersection
-                            const directionX = dx / distanceToIntersection;
-                            const directionY = dy / distanceToIntersection;
-
-                            // Position the ball so its edge touches the intersection
-                            ballPos.x = intersection.x - directionX * ballRadius;
-                            ballPos.y = intersection.y - directionY * ballRadius;
-
-                            // Reduce velocity to simulate stopping, but allow a slight motion
-                            ballVelocity.x *= 0; // Dampen horizontal velocity
-                            ballVelocity.y *= 0; // Dampen vertical velocity
-
-                            console.log(
-                                `Ball stopped near intersection (${intersection.x.toFixed(2)}, ${intersection.y.toFixed(2)})`
-                            );
-                            return true; // Exit early after adjusting the ball
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false; // No intersection detected
 }
 
 
