@@ -17,7 +17,7 @@ const gravity = 0.1; // Gravity strength (adjust for faster or slower fall)
 const bounce = 0.2; // A small bounce effect (set to 0 for no bounce)
 let ballVelocity = { x: 0, y: 0 }; // Velocity of the ball (initially at rest)
 let isOnPlatform = false; // Flag to check if the ball is on the platform
-const maxVelocity = 1.5;  // Max horizontal speed for the ball
+const maxVelocity = 0.7;  // Max horizontal speed for the ball
 const acceleration = 0.3;  // Acceleration when the arrow keys are pressed
 const deceleration = 0.05;  // Deceleration when the keys are released
 const offscreenCanvas = document.createElement('canvas');
@@ -639,8 +639,8 @@ function checkLineCollision(ballPos) {
     let correctionVector = { x: 0, y: 0 }; // To resolve overlapping collisions
 
     // Gravity settings
-    const gravity = -0.01; // Strength of gravity
-    const slopeEffectStrength = 0.15; // Strength of slope effect
+    const gravity = -0.05; // Strength of gravity
+    const slopeEffectStrength = 0.03; // Strength of slope effect
     const deceleration = 0.0001; // Slow down on slopes
 
     // Iterate through all lines to detect collisions
@@ -650,23 +650,32 @@ function checkLineCollision(ballPos) {
             const end = line[i];
 
             // Handle vertical line segments
+            // Handle vertical line segments
             if (start.x === end.x && start.y !== end.y) {
                 const verticalX = start.x;
                 const minY = Math.min(start.y, end.y);
                 const maxY = Math.max(start.y, end.y);
 
-                if (Math.abs(ballPos.x - verticalX) <= ballRadius &&
-                    ballPos.y >= minY &&
-                    ballPos.y <= maxY) {
-                    // Collision detected with vertical line
-                    const overlapX = ballPos.x < verticalX ? verticalX - ballPos.x - ballRadius
-                                                           : verticalX - ballPos.x + ballRadius;
-                    correctionVector.x += overlapX;
-                    ballVelocity.x = -ballVelocity.x; // Reverse horizontal velocity
+                // Check if ball is near enough horizontally
+                if (Math.abs(ballPos.x - verticalX) <= ballRadius) {
+                    const ballCenterY = ballPos.y; // Center Y of the ball
 
-                    isCollisionDetected = true;
+                    if (ballCenterY < maxY) {
+                        // Ball hits the vertical wall, no bounce
+                        const overlapX = ballPos.x < verticalX
+                            ? verticalX - ballPos.x - ballRadius
+                            : verticalX - ballPos.x + ballRadius;
+                        correctionVector.x += overlapX;
+
+                        ballVelocity.x = 0; // Stop horizontal movement
+                        isCollisionDetected = true;
+                    } else {
+                        // Ball "hops over" the vertical line
+                        ballPos.y = maxY + ballRadius; // Place ball on top of the vertical line
+                    }
                 }
             }
+
 
             // Handle non-vertical line segments
             if (ballPos.x >= Math.min(start.x, end.x) &&
@@ -677,9 +686,11 @@ function checkLineCollision(ballPos) {
 
                 if (distance < ballRadius) {
                     // Collision detected with sloped or horizontal line
-                    const overlapY = ballBottomY < yOnLine ? yOnLine - ballBottomY - ballRadius
-                                                           : yOnLine - ballBottomY + ballRadius;
+                    const overlapY = ballBottomY < yOnLine 
+                        ? yOnLine - ballBottomY 
+                        : yOnLine - ballBottomY;
                     correctionVector.y += overlapY;
+
 
                     isCollisionDetected = true;
                     isOnLine = true; // Ball is on the line
@@ -703,7 +714,7 @@ function checkLineCollision(ballPos) {
                         }
                     }
 
-                    ballVelocity.y = 0; // Stop vertical movement on the line
+                    ballVelocity.y *= -0.5; // Simulate a bounce or reduce velocity
                 }
             }
         }
@@ -718,15 +729,19 @@ function checkLineCollision(ballPos) {
         const distance = Math.abs(ballBottomY - yOnPermanentLine);
 
         if (distance < ballRadius) {
-            const overlapY = ballBottomY < yOnPermanentLine ? yOnPermanentLine - ballBottomY - ballRadius
-                                                            : yOnPermanentLine - ballBottomY + ballRadius;
+            const overlapY = ballBottomY < yOnPermanentLine
+                ? yOnPermanentLine - ballBottomY
+                : yOnPermanentLine - ballBottomY;
             correctionVector.y += overlapY;
+
 
             isCollisionDetected = true;
             isOnLine = true; // Ball is on the permanent line
 
             // Maintain hovering state
-            ballVelocity.y = 0;
+            ballVelocity.y *= -0.5;
+
+          
 
             // Optionally adjust horizontal velocity (if permanent line is sloped)
             const slope = (permanentEnd.y - permanentStart.y) / (permanentEnd.x - permanentStart.x);
@@ -749,13 +764,11 @@ function checkLineCollision(ballPos) {
     // Resolve collisions by applying the correction vector
     if (isOnLine) {
         ballPos.x += correctionVector.x;
-        ballPos.y += correctionVector.y ;
+        ballPos.y += correctionVector.y;
     }
 
     // Apply gravity or maintain hovering state
-    if (!isOnLine) {
-        ballVelocity.y += gravity; // Apply gravity when not on any line
-    }
+    ballVelocity.y += gravity; // Apply gravity when not on any line
 
     return isCollisionDetected; // Return whether any collision occurred
 }
@@ -764,7 +777,7 @@ function checkLineCollision(ballPos) {
 const initialBallPosition = { x: -45, y: 2.6 - ballRadius }; // Customize starting position as needed
 
 function updateBall() {
-    const substeps = 5; // Number of substeps
+    const substeps = 10; // Increase substeps for finer collision detection
     const deltaTime = 1 / substeps;
 
     for (let i = 0; i < substeps; i++) {
@@ -791,32 +804,34 @@ function updateBall() {
             y: ballPosition.y + ballVelocity.y * deltaTime,
         };
 
-        // Check for collision
-        if (checkLineCollision(newPosition)) {
-            ballVelocity.y = 0; // Stop downward movement
-            newPosition.y += gravity * deltaTime; // Adjust position above the line
-        }
+        // Check for collisions along the path
+        const collisionResolved = checkLineCollision(newPosition);
 
-        // Wrap around the horizontal edges if above the bottom
-        if (newPosition.y + ballRadius > -25) { // Assuming -25 is the bottom boundary in custom coords
-            if (newPosition.x > 50) { // Right boundary in custom coords
-                newPosition.x = -50; // Wrap to the left
-            } else if (newPosition.x < -50) { // Left boundary in custom coords
-                newPosition.x = 50; // Wrap to the right
+        // Prevent tunneling by resolving any predicted collisions
+        if (!collisionResolved) {
+            // Check if the ball tunnels through a line segment
+            for (const line of allLines) {
+                for (let j = 1; j < line.length; j++) {
+                    const segmentStart = line[j - 1];
+                    const segmentEnd = line[j];
+
+                    if (sweptCircleLineCollision(ballPosition, newPosition, ballRadius, segmentStart, segmentEnd)) {
+                        // Resolve tunneling
+                        alignBallWithLine(newPosition, { start: segmentStart, end: segmentEnd });
+                        break;
+                    }
+                }
             }
         }
-        
 
         // Update the ball's position
         ballPosition = newPosition;
-    }
 
-    // Check if the ball hits the bottom of the canvas
-    const ballCanvasPos = toCanvasCoords(ballPosition.x, ballPosition.y + ballRadius);
-    if (ballCanvasPos.y >= height) {
-        // Respawn the ball at the initial position with zero velocity
-        ballPosition = { ...initialBallPosition };
-        ballVelocity = { x: 0, y: 0 };
+        // Check if the ball falls off the canvas
+        if (ballPosition.y + ballRadius < -25) { // Assuming -25 is the bottom boundary in custom coords
+            resetBallToInitialPosition();
+            break; // No need to process further substeps
+        }
     }
 
     // Redraw the canvas
@@ -824,6 +839,34 @@ function updateBall() {
 
     // Continue the game loop
     requestAnimationFrame(updateBall);
+}
+
+// Function to reset the ball to its initial position
+function resetBallToInitialPosition() {
+    ballPosition = { x: -45, y: 2.6 - ballRadius }; // Replace with your initial position
+    ballVelocity = { x: 0, y: 0 }; // Reset velocity
+    console.log("Ball reset to starting position.");
+}
+
+
+function alignBallWithLine(ballPos, line) {
+    const { start, end } = line;
+
+    // Calculate the direction of the line
+    const lineVector = { x: end.x - start.x, y: end.y - start.y };
+    const magnitude = Math.sqrt(lineVector.x ** 2 + lineVector.y ** 2);
+
+    // Normalize line direction
+    const normalizedLine = { x: lineVector.x / magnitude, y: lineVector.y / magnitude };
+
+    // Project the ball's velocity onto the line
+    const dotProduct = ballVelocity.x * normalizedLine.x + ballVelocity.y * normalizedLine.y;
+    ballVelocity.x = normalizedLine.x * dotProduct;
+    ballVelocity.y = normalizedLine.y * dotProduct;
+
+    // Adjust the ball's position to lie directly on the line
+    ballPos.x = Math.max(Math.min(ballPos.x, Math.max(start.x, end.x)), Math.min(start.x, end.x));
+    ballPos.y = start.y + ((ballPos.x - start.x) / (end.x - start.x)) * (end.y - start.y) + 3;
 }
 
 
