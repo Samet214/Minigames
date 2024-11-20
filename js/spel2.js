@@ -11,22 +11,22 @@ let lastPoint = null;
 let currentLine = [];
 const drawnPoints = new Set();
 const platformHeight = 5; // Platform height in custom coordinates
-let isDragging = false;
-let joystickStrength = 0; // For acceleration based on distance from click
 const ballRadius = 4; // Ball radius in custom coordinates
 let ballPosition = { x: -45, y: 2.6 - ballRadius }; // Starting on the left end of the permanent line
 const gravity = 0.2; // Gravity strength (adjust for faster or slower fall)
 const bounce = 0.2; // A small bounce effect (set to 0 for no bounce)
 let ballVelocity = { x: 0, y: 0 }; // Velocity of the ball (initially at rest)
 let isOnPlatform = false; // Flag to check if the ball is on the platform
-const maxVelocity = 1.5;  // Max horizontal speed for the ball
-const acceleration = 0.1;  // Acceleration when the arrow keys are pressed
+const maxVelocity = 0.5;  // Max horizontal speed for the ball
+const acceleration = 0.2;  // Acceleration when the arrow keys are pressed
 const deceleration = 0.05;  // Deceleration when the keys are released
 const offscreenCanvas = document.createElement('canvas');
 offscreenCanvas.width = canvas.width;
 offscreenCanvas.height = canvas.height;
 const offscreenCtx = offscreenCanvas.getContext('2d');
 const spatialGrid = new Map();
+let isDrawing = false;
+
 
 let isMovingLeft = false;
 let isMovingRight = false;
@@ -48,6 +48,58 @@ window.addEventListener('keyup', (event) => {
         isMovingRight = false;
     }
 });
+
+function switchToIntersectionPath(ballPos) {
+    for (const intersection of intersectionPoints) {
+        const dx = ballPos.x - intersection.x;
+        const dy = ballPos.y - intersection.y;
+        const distance = Math.sqrt(dx ** 2 + dy ** 2);
+
+        if (distance <= ballRadius) {
+            // Found a close intersection
+            const [line1, line2] = intersection.lines;
+
+            // Determine the next line to follow (based on a rule, e.g., closest angle)
+            const currentVelocityAngle = Math.atan2(ballVelocity.y, ballVelocity.x);
+            let bestLine = line1; // Default to line1
+            let smallestAngleDiff = Math.PI;
+
+            for (const line of [line1, line2]) {
+                const lineAngle = Math.atan2(
+                    line[1].y - line[0].y,
+                    line[1].x - line[0].x
+                );
+                const angleDiff = Math.abs(lineAngle - currentVelocityAngle);
+
+                if (angleDiff < smallestAngleDiff) {
+                    bestLine = line;
+                    smallestAngleDiff = angleDiff;
+                }
+            }
+
+            // Adjust the ball's velocity to follow the chosen line
+            const newDirection = {
+                x: bestLine[1].x - bestLine[0].x,
+                y: bestLine[1].y - bestLine[0].y,
+            };
+            const magnitude = Math.sqrt(newDirection.x ** 2 + newDirection.y ** 2);
+
+            ballVelocity.x = (newDirection.x / magnitude) * maxVelocity;
+            ballVelocity.y = (newDirection.y / magnitude) * maxVelocity;
+
+            // Reposition ball on the intersection
+            ballPos.x = intersection.x;
+            ballPos.y = intersection.y;
+
+            console.log(
+                `Ball switched to new path at intersection (${intersection.x.toFixed(2)}, ${intersection.y.toFixed(2)})`
+            );
+            return true; // Stop further processing
+        }
+    }
+    return false;
+}
+
 
 // Check if the ball sweeps through a line segment
 function sweptCircleLineCollision(ballStart, ballEnd, radius, lineStart, lineEnd) {
@@ -112,16 +164,13 @@ function toCustomCoords(x, y) {
 
 // Helper to convert custom coordinates to canvas pixels
 function toCanvasCoords(x, y) {
-    const canvasX = x * scaleX + width / 2;
-    const canvasY = -y * scaleY + height / 2;
-    return { x: canvasX, y: canvasY };
+    return { x: x * scaleX + width / 2, y: height / 2 - y * scaleY };
 }
 
-// Function to draw a dot
-function drawDot(x, y) {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(x - 0.25 * scaleX, y - 0.25 * scaleY, 0.5 * scaleX, 0.5 * scaleY);
+function toScreenCoords(x, y) {
+    return { x: (x - width / 2) / scaleX, y: (height / 2 - y) / scaleY };
 }
+
 
 function drawLine(x1, y1, x2, y2) {
     ctx.beginPath();
@@ -204,29 +253,56 @@ function saveToLocalStorage() {
     localStorage.setItem('allLines', JSON.stringify(allLines));
     localStorage.setItem('undoStack', JSON.stringify(undoStack));
     localStorage.setItem('redoStack', JSON.stringify(redoStack));
+    localStorage.setItem('intersectionLogs', JSON.stringify(intersectionPoints.map(point => ({
+        x: point.x,
+        y: point.y
+    }))));
     refreshConsole();
 }
 
 // Undo function
 function undo() {
     if (undoStack.length > 0) {
+        // Save current state to redo stack
         redoStack.push(JSON.parse(JSON.stringify(allLines))); // Deep copy
+
+        // Restore the previous state
         allLines = undoStack.pop();
+
+        // Redraw the canvas and recalculate intersections
         redrawCanvas();
+        findAndLogIntersections();
+
+        // Save the updated state to localStorage
         saveToLocalStorage();
-        updateIntersectionLogs(); // Recalculate intersections
     }
 }
 
 function redo() {
     if (redoStack.length > 0) {
+        // Save current state to undo stack
         undoStack.push(JSON.parse(JSON.stringify(allLines))); // Deep copy
+
+        // Restore the next state
         allLines = redoStack.pop();
+
+        // Redraw the canvas and recalculate intersections
         redrawCanvas();
+        findAndLogIntersections();
+
+        // Save the updated state to localStorage
         saveToLocalStorage();
-        updateIntersectionLogs(); // Recalculate intersections
     }
 }
+
+
+function clearSavedData() {
+    localStorage.removeItem('intersectionLogs');
+    console.log("Cleared intersection logs from localStorage.");
+}
+
+clearSavedData();
+
 
 
 // Reset function to clear everything
@@ -240,7 +316,6 @@ function resetCanvas() {
     // Clear intersection logs
     localStorage.setItem('intersectionLogs', JSON.stringify([]));
     console.clear();
-    console.log("Canvas reset. All intersections cleared.");
 
     drawPermanentLine(); // Redraw the permanent line
     drawBall(); // Redraw the ball
@@ -279,21 +354,35 @@ function drawPermanentLineOffscreen() {
 
 // Function to redraw the entire canvas
 function redrawCanvas() {
-    ctx.clearRect(0, 0, width, height); // Clear the canvas
-    drawPermanentLine(); // Draw the permanent line first
-    ctx.drawImage(offscreenCanvas, 0, 0); // Use pre-rendered lines
-    drawBall(); // Draw the ball
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    allLines.forEach(line => {
+    drawLine();
+    for (const line of allLines) {
         if (line.length > 1) {
+            ctx.moveTo(...Object.values(toCanvasCoords(line[0].x, line[0].y)));
             for (let i = 1; i < line.length; i++) {
-                const start = toCanvasCoords(line[i - 1].x, line[i - 1].y);
-                const end = toCanvasCoords(line[i].x, line[i].y);
-                drawLine(start.x, start.y, end.x, end.y);
+                const point = line[i];
+                ctx.lineTo(...Object.values(toCanvasCoords(point.x, point.y)));
             }
         }
-    });
+    }
+    ctx.stroke();
+
+    // Draw the current line being drawn
+    if (currentLine.length > 1) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'blue'; // Different color for the active line
+        ctx.moveTo(...Object.values(toCanvasCoords(currentLine[0].x, currentLine[0].y)));
+        for (let i = 1; i < currentLine.length; i++) {
+            const point = currentLine[i];
+            ctx.lineTo(...Object.values(toCanvasCoords(point.x, point.y)));
+        }
+        ctx.stroke();
+    }
+    drawBall();
+    drawPermanentLine();
 }
+
 
 function lineIntersectsBall(x1, y1, x2, y2) {
     const ballCanvasPos = toCanvasCoords(ballPosition.x, ballPosition.y);
@@ -348,40 +437,26 @@ function restoreFromLocalStorage() {
     redrawCanvas();
 
     // Recalculate intersections and update logs
-    updateIntersectionLogs(); // Recalculate based on current allLines
+    findAndLogIntersections();
 }
 
 
 
-canvas.addEventListener('mousedown', (event) => {
-    const { offsetX, offsetY } = event;
-    if (isInsideBall(offsetX, offsetY)) return; // Ignore if starting inside the ball
-    lastPoint = { x: offsetX, y: offsetY };
-    currentLine = [];
-    drawing = true;
-    saveState();
+canvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    const pos = toScreenCoords(e.offsetX, e.offsetY);
+    currentLine = [{ x: pos.x, y: pos.y }];
 });
 
 
 
 let lastMouseMove = 0;
-canvas.addEventListener('mousemove', (event) => {
-    const now = Date.now();
-    if (now - lastMouseMove < 16) return; // Limit to ~60 FPS
-    lastMouseMove = now;
-
-    if (!drawing) return;
-
-    const { offsetX, offsetY } = event;
-
-    // Stop drawing if the line intersects with the ball's boundary
-    if (lineIntersectsBall(lastPoint.x, lastPoint.y, offsetX, offsetY)) {
-        drawing = false; // Stop drawing
-        return;
+canvas.addEventListener('mousemove', (e) => {
+    if (isDrawing) {
+        const pos = toScreenCoords(e.offsetX, e.offsetY);
+        currentLine.push({ x: pos.x, y: pos.y });
+        redrawCanvas(); // Show the line dynamically
     }
-
-    addLinePoint(lastPoint.x, lastPoint.y, offsetX, offsetY);
-    lastPoint = { x: offsetX, y: offsetY };
 });
 
 function logAllPoints() {
@@ -416,26 +491,28 @@ function interpolatePoints(start, end, step = 0.5) {
 
 
 canvas.addEventListener('mouseup', () => {
-    if (drawing) {
-        allLines.push(currentLine);
-        saveToLocalStorage();
-        adjustVerticalLines();
-
-        // Check for intersections
-        findAndLogIntersections();
+    if (isDrawing) {
+        isDrawing = false;
+        if (currentLine.length > 1) {
+            allLines.push(currentLine); // Save the current line
+        }
+        currentLine = [];
+        redrawCanvas(); // Redraw the canvas with the new line
+        findAndLogIntersections(); // Detect and log intersections
+        saveState(); // Save the state to localStorage
     }
-
-    drawing = false;
-    lastPoint = null;
 });
 
 
-
-
-
 canvas.addEventListener('mouseleave', () => {
-    drawing = false;
-    lastPoint = null;
+    if (isDrawing) {
+        isDrawing = false;
+        if (currentLine.length > 1) {
+            allLines.push(currentLine); // Save the current line
+        }
+        currentLine = [];
+        redrawCanvas();
+    }
 });
 
 // Button event listeners
@@ -446,8 +523,10 @@ document.getElementById('resetButton').addEventListener('click', resetCanvas); /
 // Restore canvas on page load
 window.addEventListener('load', () => {
     restoreFromLocalStorage();
+    restoreConsoleState(); // Restore console logs
     drawPermanentLine();
     drawBall();
+    requestAnimationFrame(updateBall); // Resume ball updates
 });
 
 function getLineIntersection(line1, line2) {
@@ -504,9 +583,10 @@ function isInsideBall(x, y) {
 }
 
 function findAndLogIntersections() {
-    const intersectionLogs = JSON.parse(localStorage.getItem('intersectionLogs')) || [];
+    console.clear(); // Clear the console first to avoid overwriting previous logs
 
-    let newLogs = [];
+    const intersectionLogs = [];
+    const intersectionPoints = []; // Clear previous intersection points
 
     // Iterate over every pair of lines
     for (let i = 0; i < allLines.length; i++) {
@@ -525,31 +605,11 @@ function findAndLogIntersections() {
                     if (intersection) {
                         const intersectionStr = `(${intersection.x.toFixed(2)}, ${intersection.y.toFixed(2)})`;
                         console.log(intersectionStr);
-                        newLogs.push(intersectionStr);
-                    }
-                }
-            }
-        }
-    }
 
-    // Merge new logs with existing logs and save to localStorage
-    const updatedLogs = [...intersectionLogs, ...newLogs];
-    localStorage.setItem('intersectionLogs', JSON.stringify(updatedLogs));
-
-    const intersections = []; // Reset intersections
-    for (let i = 0; i < allLines.length; i++) {
-        const line1 = allLines[i];
-        for (let j = i + 1; j < allLines.length; j++) {
-            const line2 = allLines[j];
-            for (let k = 1; k < line1.length; k++) {
-                for (let l = 1; l < line2.length; l++) {
-                    const intersection = getLineIntersection(
-                        [line1[k - 1], line1[k]],
-                        [line2[l - 1], line2[l]]
-                    );
-                    if (intersection) {
-                        intersections.push({
-                            point: intersection,
+                        intersectionLogs.push(intersectionStr);
+                        intersectionPoints.push({
+                            x: intersection.x,
+                            y: intersection.y,
                             lines: [line1, line2]
                         });
                     }
@@ -557,7 +617,12 @@ function findAndLogIntersections() {
             }
         }
     }
+
+    // Save intersections to localStorage for persistence
+    localStorage.setItem('intersectionLogs', JSON.stringify(intersectionLogs));
 }
+
+
 
 
 
@@ -655,7 +720,7 @@ function checkLineCollision(ballPos) {
             const slopeAngle = Math.atan(slope); // Slope angle in radians
 
             // Adjust horizontal velocity based on slope angle
-            const slopeEffectStrength = 0.05; // Tune this value for responsiveness to the slope
+            const slopeEffectStrength = 0.03; // Tune this value for responsiveness to the slope
             const acceleration = Math.sin(slopeAngle) * slopeEffectStrength;
 
             // Apply acceleration from the slope
@@ -853,9 +918,18 @@ function updateIntersectionLogs() {
 
 function restoreConsoleState() {
     const savedLogs = JSON.parse(localStorage.getItem('intersectionLogs')) || [];
-    console.clear();
-    savedLogs.forEach(log => console.log(log));
+
+    console.clear(); // Clear the console first
+    savedLogs.forEach(log => {
+        if (log && typeof log.x === 'number' && typeof log.y === 'number') {
+            console.log(`(${log.x.toFixed(2)}, ${log.y.toFixed(2)})`);
+        } else {
+            console.log(log); // Warn if a log entry is malformed
+        }
+    });
 }
+
+redrawCanvas();
 
 window.addEventListener('load', () => {
     restoreFromLocalStorage();
