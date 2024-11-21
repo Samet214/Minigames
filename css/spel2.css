@@ -28,7 +28,7 @@ canvas {
     background-color: grey;
     border: 2px solid black;
     text-align: center; /* Optional: Keeps text alignment */
-    font-size: 70px;
+    font-size: 50px;
 }
 
 #resetButton {

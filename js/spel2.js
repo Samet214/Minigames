@@ -100,13 +100,13 @@ canvas.addEventListener('mouseup', () => {
             lineSegments.push(segment);
         }
 
-        // Store the full line (group of segments)
         if (lineSegments.length > 0) {
             allLines.push(lineSegments);
-            lines.push(...lineSegments); // Maintain compatibility with the existing logic
+            lines.push(...lineSegments);
+            saveLines(); // Save after adding new lines
         }
         points = [];
-        undoneLines = []; // Clear redo stack
+        undoneLines = [];
     }
 });
 
@@ -117,6 +117,7 @@ document.getElementById('resetButton').addEventListener('click', () => {
     lines = [];
     allLines = [];
     undoneLines = [];
+    localStorage.removeItem('savedLines'); // Clear saved lines
 });
 
 // Undo Button
@@ -124,8 +125,9 @@ document.getElementById('undoButton').addEventListener('click', () => {
     if (allLines.length > 0) {
         const lastLine = allLines.pop();
         undoneLines.push(lastLine); // Save for redo
-        lastLine.forEach((segment) => World.remove(world, segment)); // Remove all segments in the group
-        lines = lines.filter((line) => !lastLine.includes(line)); // Update single-segment list
+        lastLine.forEach(segment => World.remove(world, segment));
+        lines = lines.filter(line => !lastLine.includes(line));
+        saveLines(); // Save after undo
     }
 });
 
@@ -133,10 +135,12 @@ document.getElementById('redoButton').addEventListener('click', () => {
     if (undoneLines.length > 0) {
         const restoredLine = undoneLines.pop();
         allLines.push(restoredLine);
-        restoredLine.forEach((segment) => World.add(world, segment)); // Add all segments back
-        lines.push(...restoredLine); // Update single-segment list
+        restoredLine.forEach(segment => World.add(world, segment));
+        lines.push(...restoredLine);
+        saveLines(); // Save after redo
     }
 });
+
 
 // Ball Movement
 let isMovingLeft = false;
@@ -145,6 +149,10 @@ let isMovingRight = false;
 window.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') isMovingLeft = true;
     if (e.key === 'ArrowRight') isMovingRight = true;
+    if (e.key === ' ' && isOnSurface) {
+        // Apply upward velocity to create a bounce effect
+        Body.setVelocity(ball, { x: ball.velocity.x, y: -10 });
+    }
 });
 
 window.addEventListener('keyup', (e) => {
@@ -164,4 +172,63 @@ Events.on(engine, 'afterUpdate', () => {
         Body.setPosition(ball, { x: 100, y: 100 });
         Body.setVelocity(ball, { x: 0, y: 0 });
     }
+});
+
+function saveLines() {
+    const savedLines = allLines.map(lineGroup =>
+        lineGroup.map(line => ({
+            start: { x: line.vertices[0].x, y: line.vertices[0].y },
+            end: { x: line.vertices[1].x, y: line.vertices[1].y },
+        }))
+    );
+    localStorage.setItem('savedLines', JSON.stringify(savedLines));
+}
+
+window.addEventListener('load', () => {
+    const savedLines = JSON.parse(localStorage.getItem('savedLines') || '[]');
+    savedLines.forEach(lineGroup => {
+        const restoredLineGroup = lineGroup.map(lineData => {
+            const start = lineData.start;
+            const end = lineData.end;
+            const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+            const angle = Math.atan2(end.y - start.y, end.x - start.x);
+
+            const segment = Bodies.rectangle(
+                (start.x + end.x) / 2,
+                (start.y + end.y) / 2,
+                length,
+                5, // Thickness
+                {
+                    isStatic: true,
+                    angle: angle,
+                    render: {
+                        fillStyle: 'black',
+                    },
+                }
+            );
+            World.add(world, segment);
+            return segment;
+        });
+        allLines.push(restoredLineGroup);
+        lines.push(...restoredLineGroup); // Update single-segment list
+    });
+});
+
+let isOnSurface = false; // Tracks if the ball is on a surface
+
+// Detect collisions to check if the ball is on a surface
+Events.on(engine, 'collisionStart', (event) => {
+    event.pairs.forEach((pair) => {
+        if (pair.bodyA === ball || pair.bodyB === ball) {
+            isOnSurface = true;
+        }
+    });
+});
+
+Events.on(engine, 'collisionEnd', (event) => {
+    event.pairs.forEach((pair) => {
+        if (pair.bodyA === ball || pair.bodyB === ball) {
+            isOnSurface = false;
+        }
+    });
 });
