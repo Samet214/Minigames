@@ -51,48 +51,76 @@ const ground = Bodies.rectangle(width / 2, height - 10, width, 20, {
 });
 World.add(world, ground);
 
+// Create Static Boundaries
+const ceiling = Bodies.rectangle(width / 2, 10, width, 20, { isStatic: true, render: { fillStyle: 'black' } });
+const leftWall = Bodies.rectangle(10, height / 2, 20, height, { isStatic: true, render: { fillStyle: 'black' } });
+const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { isStatic: true, render: { fillStyle: 'black' } });
+World.add(world, [ceiling, leftWall, rightWall]);
+
 // User-Drawn Lines
 let lines = [];
 let isDrawing = false;
 let points = [];
+let inactivityTimeout; // Timeout to monitor inactivity
+const inactivityDuration = 100; // Duration to detect inactivity
 
 canvas.addEventListener('mousedown', (e) => {
     isDrawing = true;
     points = [{ x: e.offsetX, y: e.offsetY }];
+    clearTimeout(inactivityTimeout); // Clear inactivity timeout when drawing starts
 });
 
 canvas.addEventListener('mousemove', (e) => {
     if (isDrawing) {
+        clearTimeout(inactivityTimeout); // Reset inactivity timeout on movement
+
         const lastPoint = points[points.length - 1];
         const currentPoint = { x: e.offsetX, y: e.offsetY };
-        
-        // Calculate the distance between the last point and the current point
+
         const dx = currentPoint.x - lastPoint.x;
         const dy = currentPoint.y - lastPoint.y;
         const distance = Math.sqrt(dx ** 2 + dy ** 2);
 
-        // Only create a new segment if the distance exceeds a threshold (e.g., 10px)
         if (distance > 10) {
             const angle = Math.atan2(dy, dx);
             const segment = Bodies.rectangle(
                 (lastPoint.x + currentPoint.x) / 2,
                 (lastPoint.y + currentPoint.y) / 2,
                 distance,
-                5, // Thickness
+                5,
                 {
                     isStatic: true,
                     angle: angle,
                     render: {
-                        fillStyle: 'black',
+                        fillStyle: 'rgba(0, 0, 255, 0.5)', // Blue with opacity
                     },
                 }
             );
+
+            // Highlight and reset the last two segments
+            const highlightDuration = 100; // Highlight duration
+            if (lines.length > 0) {
+                const recentSegments = lines.slice(-2);
+                recentSegments.forEach(segment => {
+                    segment.render.fillStyle = 'rgba(0, 0, 255, 0.5)';
+                    setTimeout(() => {
+                        segment.render.fillStyle = 'black'; // Reset to black
+                    }, highlightDuration);
+                });
+            }
+
+            // Reset all other segments to black immediately
+            lines.forEach(segment => {
+                if (!lines.slice(-2).includes(segment)) {
+                    segment.render.fillStyle = 'black';
+                }
+            });
+
             World.add(world, segment);
-            lines.push(segment); // Keep track of all created lines
-            points.push(currentPoint); // Update the last point to the current point
+            lines.push(segment);
+            points.push(currentPoint);
         }
 
-        // Optionally draw a visual preview of the curve
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, width, height);
         ctx.beginPath();
@@ -101,6 +129,13 @@ canvas.addEventListener('mousemove', (e) => {
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.lineWidth = 2;
         ctx.stroke();
+
+        // Restart inactivity detection timeout
+        inactivityTimeout = setTimeout(() => {
+            lines.forEach(segment => {
+                segment.render.fillStyle = 'black'; // Reset all segments to black
+            });
+        }, inactivityDuration);
     }
 });
 
@@ -108,82 +143,52 @@ canvas.addEventListener('mouseup', () => {
     if (isDrawing) {
         isDrawing = false;
 
-        const lineSegments = [];
-        for (let i = 0; i < points.length - 1; i++) {
-            const startPoint = points[i];
-            const endPoint = points[i + 1];
-            const length = Math.sqrt((endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2);
-            const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+        if (points.length > 1) {
+            const lineSegments = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                const startPoint = points[i];
+                const endPoint = points[i + 1];
+                const length = Math.sqrt((endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2);
+                const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
 
-            const segment = Bodies.rectangle(
-                (startPoint.x + endPoint.x) / 2,
-                (startPoint.y + endPoint.y) / 2,
-                length,
-                5, // Thickness
-                {
-                    isStatic: true,
-                    angle: angle,
-                    render: {
-                        fillStyle: 'black',
-                    },
-                }
-            );
-            World.add(world, segment);
-            lineSegments.push(segment);
+                const segment = Bodies.rectangle(
+                    (startPoint.x + endPoint.x) / 2,
+                    (startPoint.y + endPoint.y) / 2,
+                    length,
+                    5,
+                    {
+                        isStatic: true,
+                        angle: angle,
+                        render: { fillStyle: 'black' },
+                    }
+                );
+
+                World.add(world, segment);
+                lineSegments.push(segment);
+            }
+
+            if (lineSegments.length > 0) {
+                allLines.push(lineSegments);
+                lines.push(...lineSegments);
+                saveLines(); // Save after adding new lines
+            }
         }
 
-        if (lineSegments.length > 0) {
-            allLines.push(lineSegments);
-            lines.push(...lineSegments);
-            saveLines(); // Save after adding new lines
-        }
         points = [];
         undoneLines = [];
         saveLines(); // Save the completed drawing
+        clearTimeout(inactivityTimeout); // Clear inactivity timeout on mouse release
     }
 });
 
-const ceiling = Bodies.rectangle(width / 2, 10, width, 20, { // Position near the top
-    isStatic: true,
-    render: {
-        fillStyle: 'black',
-    },
-});
-
-const leftWall = Bodies.rectangle(10, height / 2, 20, height, { // Position on the left
-    isStatic: true,
-    render: {
-        fillStyle: 'black',
-    },
-});
-
-const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { // Position on the right
-    isStatic: true,
-    render: {
-        fillStyle: 'black',
-    },
-});
-
-World.add(world, [ceiling, leftWall, rightWall]);
-
-// Add the ceiling to the reset functionality as well
-document.getElementById('resetButton').addEventListener('click', () => {
-    World.clear(world);
-    World.add(world, [ball, ground, ceiling, leftWall, rightWall]); // Reset to initial objects
-    lines = [];
-    allLines = [];
-    undoneLines = [];
-    localStorage.removeItem('savedLines'); // Clear saved lines
-});
-
-// Undo Button
+// Save/Undo/Redo/Reset Functions
 document.getElementById('undoButton').addEventListener('click', () => {
     if (allLines.length > 0) {
         const lastLine = allLines.pop();
-        undoneLines.push(lastLine); // Save for redo
+        undoneLines.push(lastLine);
         lastLine.forEach(segment => World.remove(world, segment));
         lines = lines.filter(line => !lastLine.includes(line));
-        saveLines(); // Save after undo
+        saveLines();
     }
 });
 
@@ -193,8 +198,17 @@ document.getElementById('redoButton').addEventListener('click', () => {
         allLines.push(restoredLine);
         restoredLine.forEach(segment => World.add(world, segment));
         lines.push(...restoredLine);
-        saveLines(); // Save after redo
+        saveLines();
     }
+});
+
+document.getElementById('resetButton').addEventListener('click', () => {
+    World.clear(world);
+    World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
+    lines = [];
+    allLines = [];
+    undoneLines = [];
+    localStorage.removeItem('savedLines');
 });
 
 
