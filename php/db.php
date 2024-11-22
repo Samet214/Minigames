@@ -8,16 +8,14 @@ function Användarinformation() {
     $dbUsername = "samet";  // Default username
     $dbPassword = "samet";  // Default password
 
-    // Get the client IP address
-    $clientIP = $_SERVER['REMOTE_ADDR'];
+    // Get local IP address
+    $localIP = trim(shell_exec("hostname -I")); // Remove any trailing whitespace
 
     // Check for specific IP addresses and adjust the servername, username, and password
-    if ($clientIP === '192.168.49.238') {
-        $servername = "192.168.49.238"; // First exception
+    if ($localIP === '192.168.49.238') {
         $dbUsername = "samet";
         $dbPassword = "samet";
-    } elseif ($clientIP === '192.168.49.218') {
-        $servername = "192.168.49.218"; // Second exception
+    } elseif ($localIP === '192.168.49.218') {
         $dbUsername = "andreas";
         $dbPassword = "andreas";
     }
