@@ -63,7 +63,34 @@ canvas.addEventListener('mousedown', (e) => {
 
 canvas.addEventListener('mousemove', (e) => {
     if (isDrawing) {
-        points.push({ x: e.offsetX, y: e.offsetY });
+        const lastPoint = points[points.length - 1];
+        const currentPoint = { x: e.offsetX, y: e.offsetY };
+        
+        // Calculate the distance between the last point and the current point
+        const dx = currentPoint.x - lastPoint.x;
+        const dy = currentPoint.y - lastPoint.y;
+        const distance = Math.sqrt(dx ** 2 + dy ** 2);
+
+        // Only create a new segment if the distance exceeds a threshold (e.g., 10px)
+        if (distance > 10) {
+            const angle = Math.atan2(dy, dx);
+            const segment = Bodies.rectangle(
+                (lastPoint.x + currentPoint.x) / 2,
+                (lastPoint.y + currentPoint.y) / 2,
+                distance,
+                5, // Thickness
+                {
+                    isStatic: true,
+                    angle: angle,
+                    render: {
+                        fillStyle: 'black',
+                    },
+                }
+            );
+            World.add(world, segment);
+            lines.push(segment); // Keep track of all created lines
+            points.push(currentPoint); // Update the last point to the current point
+        }
 
         // Optionally draw a visual preview of the curve
         const ctx = canvas.getContext('2d');
@@ -112,6 +139,7 @@ canvas.addEventListener('mouseup', () => {
         }
         points = [];
         undoneLines = [];
+        saveLines(); // Save the completed drawing
     }
 });
 
