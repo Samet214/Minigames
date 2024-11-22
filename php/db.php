@@ -11,11 +11,8 @@ function Användarinformation() {
     // Get local IP address
     $localIP = trim(shell_exec("hostname -I")); // Remove any trailing whitespace
 
-    // Check for specific IP addresses and adjust the servername, username, and password
-    if ($localIP === '192.168.49.238') {
-        $dbUsername = "samet";
-        $dbPassword = "samet";
-    } elseif ($localIP === '192.168.49.218') {
+    if ($localIP === '192.168.49.218') {
+        $servername = "192.168.49.238"; // Second exception (other computer)
         $dbUsername = "andreas";
         $dbPassword = "andreas";
     }
