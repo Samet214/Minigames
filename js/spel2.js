@@ -11,6 +11,11 @@ engine.gravity.y = 4; // Adjust gravity strength
 
 let allLines = [];
 let undoneLines = [];
+let isOnSurface = false; // Tracks if the ball is on a surface
+let jumpAllowed = true; // Allows jump only if the ball is on a surface
+const initialJumpHeight = -5; // Initial jump height
+let currentJumpHeight = initialJumpHeight;
+let jumpHoldTime = 0; // How long the spacebar has been held down
 
 const render = Render.create({
     canvas: canvas,
@@ -110,10 +115,33 @@ canvas.addEventListener('mouseup', () => {
     }
 });
 
-// Undo, Redo, Reset
+const ceiling = Bodies.rectangle(width / 2, 10, width, 20, { // Position near the top
+    isStatic: true,
+    render: {
+        fillStyle: 'black',
+    },
+});
+
+const leftWall = Bodies.rectangle(10, height / 2, 20, height, { // Position on the left
+    isStatic: true,
+    render: {
+        fillStyle: 'black',
+    },
+});
+
+const rightWall = Bodies.rectangle(width - 10, height / 2, 20, height, { // Position on the right
+    isStatic: true,
+    render: {
+        fillStyle: 'black',
+    },
+});
+
+World.add(world, [ceiling, leftWall, rightWall]);
+
+// Add the ceiling to the reset functionality as well
 document.getElementById('resetButton').addEventListener('click', () => {
     World.clear(world);
-    World.add(world, [ball, ground]); // Reset to initial objects
+    World.add(world, [ball, ground, ceiling, leftWall, rightWall]); // Reset to initial objects
     lines = [];
     allLines = [];
     undoneLines = [];
@@ -146,21 +174,54 @@ document.getElementById('redoButton').addEventListener('click', () => {
 let isMovingLeft = false;
 let isMovingRight = false;
 
+let spacebarHoldInterval;
+
+const maxJumpHeight = -40;  // Maximum jump height
+const minJumpHeight = -5;   // Minimum jump height
+
+const accelerationFactor = 1.2;  // Controls how quickly the jump accelerates (higher is faster acceleration)
+const maxHoldTime = 2;  // Maximum time (in seconds) for the jump hold
+
 window.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') isMovingLeft = true;
     if (e.key === 'ArrowRight') isMovingRight = true;
+
+    if (e.key === ' ' && jumpAllowed && isOnSurface) {
+        if (!spacebarHoldInterval) {
+            // Start counting hold time when spacebar is first pressed
+            spacebarHoldInterval = setInterval(() => {
+                if (jumpHoldTime < maxHoldTime) { // Transition over 2 seconds
+                    jumpHoldTime += 0.1; // Increment time by 100ms
+                    // Apply an exponential growth (acceleration) to the jump height
+                    // The formula (jumpHoldTime ** accelerationFactor) accelerates the height change
+                    currentJumpHeight = minJumpHeight + (jumpHoldTime ** accelerationFactor) * (maxJumpHeight - minJumpHeight);
+                }
+            }, 100); // Update every 100ms
+        }
+    }
 });
 
 window.addEventListener('keyup', (e) => {
     if (e.key === 'ArrowLeft') isMovingLeft = false;
     if (e.key === 'ArrowRight') isMovingRight = false;
-    let jumppower = 35   ;
-    jumppower *= -1
-    if (e.key === ' ' && isOnSurface) {
-        // Apply upward velocity to create a bounce effect
-        Body.setVelocity(ball, { x: ball.velocity.x, y: jumppower });
+
+    if (e.key === ' ') {
+        // Apply jump force with current jump height when spacebar is released
+        if (jumpAllowed && isOnSurface) {
+            Body.setVelocity(ball, { x: ball.velocity.x, y: currentJumpHeight });
+            jumpAllowed = false; // Disable jump until ball hits a surface again
+        }
+        
+        // Reset jump variables
+        clearInterval(spacebarHoldInterval);
+        spacebarHoldInterval = null;
+        jumpHoldTime = 0;
+        currentJumpHeight = minJumpHeight; // Reset to initial height
     }
 });
+
+
+
 
 Events.on(engine, 'beforeUpdate', () => {
     const force = 0.03;
@@ -216,21 +277,47 @@ window.addEventListener('load', () => {
     });
 });
 
-let isOnSurface = false; // Tracks if the ball is on a surface
-
 // Detect collisions to check if the ball is on a surface
 Events.on(engine, 'collisionStart', (event) => {
     event.pairs.forEach((pair) => {
-        if (pair.bodyA === ball || pair.bodyB === ball) {
-            isOnSurface = true;
+        const { bodyA, bodyB } = pair;
+        
+        if (bodyA === ball || bodyB === ball) {
+            const otherBody = bodyA === ball ? bodyB : bodyA;
+            
+            // Check if colliding with ground or a line (allow jump)
+            if (otherBody === ground || allLines.some(lineGroup => lineGroup.includes(otherBody))) {
+                isOnSurface = true;
+                jumpAllowed = true;
+                currentJumpHeight = initialJumpHeight; // Reset to initial height on landing
+            }
+            
+            // Check if colliding with ceiling or walls (disable jump)
+            if (otherBody === ceiling || otherBody === leftWall || otherBody === rightWall) {
+                jumpAllowed = false; // Disable jump if touching ceiling or walls
+            }
         }
     });
 });
 
 Events.on(engine, 'collisionEnd', (event) => {
     event.pairs.forEach((pair) => {
-        if (pair.bodyA === ball || pair.bodyB === ball) {
-            isOnSurface = false;
+        const { bodyA, bodyB } = pair;
+        
+        if (bodyA === ball || bodyB === ball) {
+            const otherBody = bodyA === ball ? bodyB : bodyA;
+
+            // Only reset surface state when leaving the ground or lines
+            if (otherBody === ground || allLines.some(lineGroup => lineGroup.includes(otherBody))) {
+                isOnSurface = false;
+            }
         }
     });
+});
+
+window.addEventListener('keyup', (e) => {
+    if (e.key === ' ' && jumpAllowed && isOnSurface) {
+        Body.setVelocity(ball, { x: ball.velocity.x, y: maxJumpHeight });
+        jumpAllowed = false; // Disable jump until ball hits a surface again
+    }
 });
