@@ -7,7 +7,7 @@ const height = canvas.height;
 
 const engine = Engine.create();
 const world = engine.world;
-engine.gravity.y = 2; // Adjust gravity strength
+engine.gravity.y = 4; // Adjust gravity strength
 
 let allLines = [];
 let undoneLines = [];
@@ -149,19 +149,21 @@ let isMovingRight = false;
 window.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') isMovingLeft = true;
     if (e.key === 'ArrowRight') isMovingRight = true;
-    if (e.key === ' ' && isOnSurface) {
-        // Apply upward velocity to create a bounce effect
-        Body.setVelocity(ball, { x: ball.velocity.x, y: -10 });
-    }
 });
 
 window.addEventListener('keyup', (e) => {
     if (e.key === 'ArrowLeft') isMovingLeft = false;
     if (e.key === 'ArrowRight') isMovingRight = false;
+    let jumppower = 35   ;
+    jumppower *= -1
+    if (e.key === ' ' && isOnSurface) {
+        // Apply upward velocity to create a bounce effect
+        Body.setVelocity(ball, { x: ball.velocity.x, y: jumppower });
+    }
 });
 
 Events.on(engine, 'beforeUpdate', () => {
-    const force = 0.05;
+    const force = 0.03;
     if (isMovingLeft) Body.applyForce(ball, ball.position, { x: -force, y: 0 });
     if (isMovingRight) Body.applyForce(ball, ball.position, { x: force, y: 0 });
 });
