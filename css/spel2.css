@@ -8,36 +8,159 @@ body {
     padding: 0;
 }
 
-h1 {
-    margin-top: 20px;
-}
-
 canvas {
     border: 1px solid black;
     background-color: #fff;
-    margin-top: 60px;
 }
 
-#undoButton, #redoButton, #resetButton {
-    width: 50px;
-    height: 50px;
-    display: flex; /* Change to flexbox for centering */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    margin-top: 20px;
-    background-color: grey;
-    border: 2px solid black;
-    text-align: center; /* Optional: Keeps text alignment */
-    font-size: 50px;
+#hamburger {
+    position: fixed;
+    top: 10px; /* Fixed distance from the top */
+    left: 10px; /* Fixed distance from the left */
+    background: linear-gradient(135deg, rgb(78, 162, 247), rgb(35, 116, 230));
+    color: white;
+    font-size: 24px;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1000;
+    width: 60px;
+    height: 60px;
+    transition: transform 0.3s, box-shadow 0.3s; /* Transition for hover effects */
 }
 
-#resetButton {
-    color: darkred;
-    font-size: 60px;
+/* Hover effect for #hamburger */
+#hamburger:hover {
+    transform: scale(1.1); /* Slightly enlarge the button */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Add a shadow for depth */
+    background: linear-gradient(135deg, rgb(35, 116, 230), rgb(78, 162, 247)); /* Invert gradient for effect */
 }
+
 
 #buttonContainer {
-    display: flex; /* Use flexbox for layout */
-    gap: 10px; /* Add space between buttons */
+    position: fixed; /* Fixed positioning ensures it stays relative to the viewport */
+    bottom: 20px; /* Fixed distance from the bottom */
+    left: 50%; /* Centered horizontally in the viewport */
+    transform: translateX(-50%); /* Center the container based on its own width */
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgb(78, 162, 247), rgb(35, 116, 230));
+    height: 80px;
+    width: auto;
+    border-radius: 20px;
+    padding: 0 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+
+/* Responsive styles for buttons inside the container */
+#buttonContainer button {
+    background: white;
+    color: rgb(35, 116, 230);
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s, transform 0.3s;
+    height: 60px;
+    width: 60px;
+}
+
+/* Hover effect for buttons */
+#buttonContainer button:hover {
+    background: rgb(35, 116, 230);
+    color: white;
+    transform: scale(1.05);
+}
+
+#startingScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e90ff, #00bcd4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    z-index: 1000; /* Ensure it covers everything */
+}
+
+#startingScreen h1 {
+    text-align: center;
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+#storyModeButton {
+    background: white;
+    color: #1e90ff;
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 5px;
+    margin: 0.5rem;
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    
+}
+
+#storyModeButton:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Style for Multiplayer Mode button */
+#multiplayerModeButton {
+    background: white;
+    color: #1e90ff;
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 5px;
+    margin: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    top: 200px;
+}
+
+#multiplayerModeButton:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+#menuButton {
+    position: fixed;
+    top: 10px; /* Align with the hamburger button */
+    left: 80px; /* Position next to the hamburger button, accounting for its width + margin */
+    background: linear-gradient(135deg, #34d399, #059669); /* Complementary gradient for contrast */
+    color: white;
+    font-size: 20px;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 1000;
+    width: 120px;
+    height: 60px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Hover effect for the side button */
+#menuButton:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #059669, #065f);
 }
