@@ -23,6 +23,9 @@ function openModal(gameId) {
         case "game3":
             gameIframe.src = "../php/spel3.php";  // URL of the third game
             break;
+        case "game4":
+            gameIframe.src = "../php/spel4.php";  // URL of the third game
+            break;
         // Add more cases as needed
         default:
             gameIframe.src = "";

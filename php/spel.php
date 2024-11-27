@@ -68,36 +68,6 @@ session_start();
             <p>Join the adventure and level up your skills!</p>
             <button class="open-modal-button" onclick="openModal('game4')">Play Now</button>
         </div>
-        <div class="game-container">
-            <img src="../bilder/game5.jpg" alt="Game 5">
-            <h2>Game 5</h2>
-            <p>Join the adventure and level up your skills!</p>
-            <button class="open-modal-button" onclick="openModal('game5')">Play Now</button>
-        </div>
-        <div class="game-container">
-            <img src="../bilder/game6.jpg" alt="Game 6">
-            <h2>Game 6</h2>
-            <p>Join the adventure and level up your skills!</p>
-            <button class="open-modal-button" onclick="openModal('game6')">Play Now</button>
-        </div>
-        <div class="game-container">
-            <img src="../bilder/game7.jpg" alt="Game 7">
-            <h2>Game 7</h2>
-            <p>Memory spel</p>
-            <button class="open-modal-button" onclick="openModal('game7')">Play Now</button>
-        </div>
-        <div class="game-container">
-            <img src="../bilder/game8.jpg" alt="Game 8">
-            <h2>Game 8</h2>
-            <p>Rädda krokodilen!</p>
-            <button class="open-modal-button" onclick="openModal('game8')">Play Now</button>
-        </div>
-        <div class="game-container">
-            <img src="../bilder/game9.jpg" alt="Game 9">
-            <h2>Game 9</h2>
-            <p>Färg spel</p>
-            <button class="open-modal-button" onclick="openModal('game9')">Play Now</button>
-        </div>
     </main>
 
     <!-- Overlay and Modal -->

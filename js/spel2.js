@@ -54,9 +54,6 @@ document.getElementById('storyModeButton').addEventListener('click', () => {
     localStorage.setItem('currentMode', 'storyMode');
 });
 
-
-
-
 // Prevent the spacebar from toggling the button
 hamburger.addEventListener('keydown', (event) => {
     if (event.code === 'Space') {
