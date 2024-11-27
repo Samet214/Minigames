@@ -329,14 +329,14 @@ class MazeBuilder {
     }
 
     generateNewMaze() {
-        let width = Math.floor(Math.random() * 100) + 4; // Random width (min: 4)
-        let height = Math.floor(Math.random() * 100) + 4; // Random height (min: 4)
+        let width = Math.floor(Math.random() * 20) + 4; // Random width (min: 4)
+        let height = Math.floor(Math.random() * 20) + 4; // Random height (min: 4)
         const newMaze = new MazeBuilder(width, height); // Create a new maze
         newMaze.placeKey(); // Place the key in the new maze
         newMaze.display("maze_container"); // Display the new maze
     
         this.maze = newMaze; // Update the player's maze reference
-        this.position = { row: newMaze.rows - 1, col: newMaze.cols - 2 }; // Reset player position
+        this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 }; // Reset player position
         this.hasKey = false; // Reset the key
         this.updatePlayerPosition(); // Update the player position in the UI
     }

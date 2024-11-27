@@ -83,6 +83,10 @@ if ($result->num_rows === 1) {
     $level = $user['Levels'];
     $current_exp = $user['EXP'];
     $next_level_exp = $user['EXP_GRÄNS'];
+    $_SESSION['Namn'] = $username;
+    $_SESSION['Levels'] = $user['Levels'];
+    $_SESSION['EXP'] = $user['EXP'];
+    $_SESSION['EXP_GRÄNS'] = $user['EXP_GRÄNS'];
 } else {
     // Default values if the user doesn't exist in poängssystem
     $level = 1;
@@ -92,6 +96,10 @@ if ($result->num_rows === 1) {
     $insert = $conn->prepare("INSERT INTO poängssystem (Namn, Levels, EXP, EXP_GRÄNS, AVI) VALUES (?, ?, ?, ?, ?)");
     $insert->bind_param("siiii", $username, $level, $current_exp, $next_level_exp, $avi);
     $insert->execute();
+    $_SESSION['Namn'] = $username;
+    $_SESSION['Levels'] = 1;
+    $_SESSION['EXP'] = 0;
+    $_SESSION['EXP_GRÄNS'] = 50;
 }
 
 $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
@@ -170,9 +178,6 @@ if (isset($_GET['search'])) {
     echo empty($data) ? json_encode(['message' => 'Inga användare']) : json_encode($data);
     exit();
 }
-
-
-
 
 ?>
 
