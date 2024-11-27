@@ -59,20 +59,21 @@ function toggleFullScreen(event) {
     }
 }
 
-
 function toggleSidebar() {
     var sidebar = document.getElementById("sidebar");
     var toggleButton = document.getElementById("sidebar-toggle");
 
     sidebar.classList.toggle("open");
 
+    // Check if sidebar is open and move the button accordingly
     if (sidebar.classList.contains("open")) {
-        toggleButton.style.left = "260px";
+        toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
     } else {
-        toggleButton.style.left = "10px";
+        toggleButton.style.left = "10px"; // Reset to original position
     }
 }
 
+// Define gainExp with an additional callback parameter
 function gainExp(expAmount, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "sida.php", true);
@@ -160,6 +161,26 @@ function closeProfile() {
     document.removeEventListener('click', handleOutsideClick);
 }
 
+// Handle clicks outside of the square
+function handleOutsideClick(event) {
+    const profileSquare = document.getElementById('profileSquare');
+    const searchProfileBtn = document.getElementById('searchProfileBtn');
+    
+    // Check if the click is outside profileSquare and not on result-item or close-button
+    if (
+        !profileSquare.contains(event.target) &&
+        event.target !== searchProfileBtn &&
+        !event.target.classList.contains('result-item') &&
+        !event.target.classList.contains('close-button') &&
+        !event.target.classList.contains('profile-image') &&
+        event.target.id !== 'sidebar-toggle' &&
+        !event.target.classList.contains('messagebutton')
+    ) {
+        closeProfile();
+    }
+}
+
+// Assuming searchProfiles is where you create and display search results
 function searchProfiles() {
     const searchInput = document.getElementById('searchInput').value.trim();
 
