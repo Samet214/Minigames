@@ -205,11 +205,11 @@ $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html>
+<html data-page="spel">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../css/spel.css" type="text/css" rel="stylesheet">
+    <link href="../style.css" type="text/css" rel="stylesheet">
     <title>Spel</title>
 </head>
 <body>
@@ -349,7 +349,7 @@ $conn->close();
         <hr>
         <a id="a-tag1" href="logout.php">Logga ut</a>
         <hr>
-
-    <script src="../js/spel.js"></script>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+    <script src="../script.js"></script>
 </body>
 </html>

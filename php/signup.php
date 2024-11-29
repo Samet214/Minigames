@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="sv" data-page="signup">
 <head>
     <title>Minigames</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="../css/signup.css">
+    <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 <body>
     <header id="header">
@@ -117,5 +117,6 @@
     }
     ?>
 </body>
-<script src="../js/signup.js"></script>
+<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+<script src="../script.js"></script>
 </html>

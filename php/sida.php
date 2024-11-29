@@ -206,11 +206,11 @@ $conn->close();
 ?>
 
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="sv" data-page="sida">
 <head>
     <title>Välkommen</title>
     <meta charset="utf-8">
-    <link href="../css/sida.css" rel="stylesheet" type="text/css">
+    <link href="../style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
     <div class="search-profile-btn-container">
@@ -270,5 +270,6 @@ $conn->close();
         <hr>
     </div>
 </body>
-<script src="../js/sida.js"></script>
+<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+<script src="../script.js"></script>
 </html>

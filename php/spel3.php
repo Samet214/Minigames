@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html data-page="spel3">
 <head>
     <meta charset="utf-8">
-    <link href="../css/spel3.css" rel="stylesheet" type="text/css">
+    <link href="../style.css" rel="stylesheet" type="text/css">
     <title>Color Game</title>
 </head>
 <body>
@@ -18,6 +18,7 @@
             <button id="start-button">Start Game</button>
         </div>
     </div>
-    <script src="../js/spel3.js"></script>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+    <script src="../script.js"></script>
 </body>
 </html>

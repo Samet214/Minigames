@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page="spel2">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Boll Spel!</title>
-    <link href="../css/spel2.css" rel="stylesheet" type="text/css">
+    <link href="../style.css" rel="stylesheet" type="text/css">
 </head>
 <body>
     <!-- Starting Screen -->
@@ -27,6 +27,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <script src="../js/spel2.js"></script>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+    <script src="../script.js"></script>
 </body>
 </html>

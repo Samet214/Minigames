@@ -1,0 +1,3253 @@
+/*game_display.php*/
+
+html[data-page="game_display"] body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #222;
+    color: #fff;
+    height: 100vh;
+    width: 99.3%;
+}
+
+html[data-page="game_display"] iframe {
+    width: 90%;
+    height: 80%;
+    border: none;
+    background: #000;
+}
+html[data-page="game_display"] header {
+    width: 100%;
+    text-align: center;
+    background: #333;
+    padding: 10px;
+}
+html[data-page="game_display"] header a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+/*index.php*/
+
+html[data-page="index"] html, html[data-page="index"] body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #131A20;
+    color: white;
+    height: 100%;
+}
+
+html[data-page="index"] * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html[data-page="index"] *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
+}
+
+/* Header Section */
+html[data-page="index"] #header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between; /* Space between elements */
+    align-items: center;
+    padding: 0 20px;
+    height: 80px;
+    background-color: #0D1117;
+    z-index: 1000; /* Ensures it's always on top */
+    animation: fadeIn 1s ease-in forwards;
+}
+
+html[data-page="index"] #logo {
+    cursor: pointer;
+    height: 48px; /* Circle height */
+    width: 48px;  /* Circle width */
+    margin-top: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+html[data-page="index"] #logo:hover {
+    transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+html[data-page="index"] nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+
+html[data-page="index"] nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+/* Button Styles */
+html[data-page="index"] .buttons {
+    display: flex;
+    gap: 10px;
+}
+
+html[data-page="index"] .register, .login {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    color: white;
+}
+
+/* Sidebar Toggle Button */
+html[data-page="index"] #sidebar-toggle {
+    position: fixed;
+    top: 100px; /* Adjust this to be just below the header */
+    left: 10px;
+    font-size: 30px;
+    cursor: pointer;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 999; /* Ensure it's above other elements except the header */
+    transition: left 0.5s;
+    animation: fadeIn 1s ease-in forwards;;
+}
+
+/* Sidebar */
+html[data-page="index"] .sidebar {
+    position: fixed;
+    top: 81px; /* Adjust this so the sidebar stays below the header */
+    left: 0;
+    width: 0; /* Initial width is 0 */
+    height: calc(100% - 80px); /* 100% height minus header height */
+    background-color: black;
+    color: white;
+    overflow-x: hidden;
+    transition: width 0.5s;
+    padding-top: 20px;
+    box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 998; /* Below the toggle button */
+    animation: fadeIn 1s ease-in forwards;
+}
+
+/* Profile Section */
+html[data-page="index"] .profile-section {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid white;
+}
+
+html[data-page="index"] .username {
+    display: flex;
+    align-items: flex-start; /* Align items to the start */
+}
+
+html[data-page="index"] .profile-circle {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    margin-right: 10px;
+}
+
+/* Main Content */
+html[data-page="index"] main {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+}
+
+html[data-page="index"] section {
+    border-radius: 10px;
+}
+
+html[data-page="index"] .buttons {
+    display: flex; /* Ensures buttons stay side by side */
+    gap: 20px; /* Space between buttons */
+}
+
+html[data-page="index"] #logo-title {
+    display: flex;
+    align-items: center; /* Aligns logo and title vertically */
+    gap: 10px; /* Space between logo and title */
+    white-space: nowrap;
+}
+
+
+html[data-page="index"] #signin, html[data-page="index"] #login {
+    background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+    color: #FFFFFF; /* White text for strong contrast */
+    padding: 10px 20px;
+    border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+    border-radius: 8px; /* Softer button shape */
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+    width: 120px;
+    height: 40px;
+}
+
+/* Hover Effect */
+html[data-page="index"] #signin:hover, html[data-page="index"] #login:hover {
+    background-color: #293845; /* Slightly lighter on hover */
+    border-color: #FFEB3B; /* Maintain the yellow border */
+    box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+    transform: translateY(-3px); /* Small lift effect */
+}
+
+/* Active Effect */
+html[data-page="index"] #signin:active, html[data-page="index"] #login:active {
+    background-color: #17202B; /* Darker on click */
+    transform: translateY(1px);
+    box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+html[data-page="index"] #circle-container {
+    position: relative;
+    display: inline-block;
+}
+
+html[data-page="index"] #hover-circle {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the circle */
+    height: 60px; /* Circle height */
+    width: 55px;  /* Circle width */
+    border-radius: 50%; /* Makes it a circle */
+    border-color: rgba(0, 255, 255, 0.8);
+    border-width: 5px;
+    border-style: solid; /* Ensure the border appears */
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 
+                0 0 45px rgba(0, 255, 255, 0.5), 
+                0 0 60px rgba(0, 255, 255, 0.4);
+    opacity: 0; /* Start invisible */
+    z-index: -1; /* Ensure it's behind the logo */
+    transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+html[data-page="index"] #circle-container:hover #hover-circle {
+    opacity: 1; /* Make it visible when hovering */
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 
+                0 0 30px rgba(0, 255, 255, 0.7), 
+                0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+    }
+}
+
+html[data-page="index"] #logo-title {
+    display: flex;
+    align-items: center; /* Aligns logo and title vertically */
+    gap: 10px; /* Space between logo and title */
+}
+
+html[data-page="index"] #container1 {
+    display: flex;
+    justify-content: space-between; /* Distributes logo/title and buttons evenly */
+    align-items: center; /* Centers items vertically */
+    padding: 20px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+html[data-page="index"] #middle-content {
+    flex: 1; /* Allow the title to take up space */
+    text-align: center; /* Center the title */
+}
+
+html[data-page="index"] #container1 h1 {
+    font-size: 2.5em;
+    color: #FFD700;
+    text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 0;
+    display: inline-block; /* Keeps the text centered */
+}
+
+html[data-page="index"] #a-tag4 {
+    margin-right: 300px;
+}
+
+/* Main 16:9 Rectangle Container */
+html[data-page="index"] .rectangle-container {
+    position: relative;
+    width: 1530px;
+    left: -20px;
+    top: 50px;
+    height: 640px;
+    margin: 20px auto; /* Center it on the page */
+    display: grid;
+    grid-template-columns: 2fr 1fr 2fr; /* Adjust columns for varied sizing */
+    grid-template-rows: 1fr 2fr 1fr;    /* Adjust rows for varied sizing */
+    gap: 20px;
+    animation: fadeIn 1s ease-in forwards;
+}
+
+/* Individual Rectangles */
+html[data-page="index"] .rectangle-container div {
+    background-color: #1C2026; /* Default background color */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Assign specific sizes and colors to each rectangle */
+html[data-page="index"] .rectangle-1 {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+    margin-left: 10px;
+    background-color: #00B9E8;
+    animation: fadeIn 1s ease-in forwards;
+    border-radius: 20px;
+}
+
+html[data-page="index"] .rectangle-2 {
+    grid-column: 2 / 4;
+    grid-row: 1 / 2;
+    background-color: #0072B5;
+    animation: fadeIn 1s ease-in forwards;
+    margin-right: 5px;
+    border-radius: 20px;
+}
+
+html[data-page="index"] .rectangle-3 {
+    grid-column: 2 / 3;
+    grid-row: 2 / 4;
+    background-color: #003F5C;
+    animation: fadeIn 1s ease-in forwards;
+    border-radius: 20px;
+}
+
+html[data-page="index"] .rectangle-4 {
+    margin-left: 10px;
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+    background-color: #2F4F4F;
+    animation: fadeIn 1s ease-in forwards;
+    border-radius: 20px;
+}
+
+html[data-page="index"] .rectangle-5 {
+    grid-column: 3 / 4;
+    grid-row: 2 / 4;
+    background-color: #17A2B8;
+    animation: fadeIn 1s ease-in forwards;
+    margin-right: 5px;
+    border-radius: 20px;
+}
+
+html[data-page="index"] .rectangle-6 {
+    grid-column: 1 / 4;
+    grid-row: 4 / 5;
+    background-color: #0A9396;
+    animation: fadeIn 1s ease-in forwards;
+    border-radius: 20px;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+html[data-page="index"] .rectangle-1 div {
+    border-radius: 10px;
+    background-color: rgb(255,140,0);
+    width: 97%;
+    margin-left: 1%;
+    height: 9%;
+    font-size: 25px;
+    font-family: Arial, Helvetica, sans-serif;
+    margin-top: 10px;
+}
+
+html[data-page="index"] b {
+    position: absolute;
+    margin-left: 15px;
+    margin-top: 7px;
+}
+
+/* Footer */
+html[data-page="index"] footer {
+    background-color: #0D1117;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    margin-top: 80px;
+}
+
+html[data-page="index"] #category-1 {
+    background-color: rgb(27,40,59);
+    width: 277.5px;
+    height: 115px;
+    box-shadow: none;
+    margin-top: 15px;
+}
+
+html[data-page="index"] #category-2 {
+    background-color: rgb(27,40,59);
+    margin-left: 300px;
+    width: 277.5px;
+    height: 115px;
+    margin-top: -115px;
+    box-shadow: none;
+}
+
+html[data-page="index"] #category-3 {
+    background-color: rgb(27,40,59);
+    width: 277.5px;
+    height: 115px;
+    box-shadow: none;
+    margin-top: 15px;
+}
+
+html[data-page="index"] #category-4 {
+    background-color: rgb(27,40,59);
+    margin-left: 300px;
+    width: 277.5px;
+    height: 115px;
+    margin-top: -115px;
+    box-shadow: none;
+}
+
+html[data-page="index"] #category-5 {
+    background-color: rgb(27,40,59);
+    width: 277.5px;
+    height: 115px;
+    box-shadow: none;
+    margin-top: 15px;
+}
+
+html[data-page="index"] #category-6 {
+    background-color: rgb(27,40,59);
+    margin-left: 300px;
+    width: 277.5px;
+    height: 115px;
+    margin-top: -115px;
+    box-shadow: none;
+}
+
+html[data-page="index"] #category-1:hover, html[data-page="index"] #category-2:hover, html[data-page="index"] #category-3:hover, html[data-page="index"] #category-4:hover, html[data-page="index"] #category-5:hover, html[data-page="index"] #category-6:hover {
+    transform: scale(1.02) translateY(-3px); /* Slightly larger scale and higher lift */
+    box-shadow: 
+        0px 0px 10px rgba(0, 150, 255, 0.6),  /* Bright outer glow */
+        0px 0px 20px rgba(0, 80, 130, 0.5),  /* Secondary outer glow */
+        0px 0px 30px rgba(0, 50, 100, 0.4);  /* Deep outer glow */
+    border: 2px solid rgba(0, 150, 255, 0.8); /* Neon border */
+    background: linear-gradient(145deg, rgba(0, 120, 200, 0.4), rgba(0, 80, 130, 0.4)); /* Subtle color shift */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease; /* Smooth transitions */
+    color: rgba(0, 150, 255, 0.6);
+}
+
+html[data-page="index"] .rectangle-1:hover, html[data-page="index"] .rectangle-2:hover, html[data-page="index"] .rectangle-3:hover, html[data-page="index"] .rectangle-4:hover, html[data-page="index"] .rectangle-5:hover, html[data-page="index"] .rectangle-6:hover {
+    transform: scale(1.02) translateY(-3px) !important;
+    box-shadow: 
+        0px 0px 10px rgba(0, 150, 255, 0.6),  
+        0px 0px 20px rgba(0, 80, 130, 0.5),  
+        0px 0px 30px rgba(0, 50, 100, 0.4); 
+    border: 2px solid rgba(0, 150, 255, 0.8);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    cursor: pointer;
+}
+
+html[data-page="index"] #category-1 img {
+    width: 80px;
+    height: 80px;
+    margin-top: 15px;
+    margin-left: 25px;
+}
+
+html[data-page="index"] #category-1 b {
+    margin-top: 20px;
+    font-size: 30px;
+    margin-left: 50px;
+}
+
+html[data-page="index"] #arrow {
+    width: 35px;
+    height: 35px;
+    background-color: rgb(160, 160, 255);
+    border-top-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    margin-top: -23px;
+    margin-left: 240px;
+    color: black;
+    text-align: center;
+    opacity: 0; /* Initially hidden */
+    position: absolute; /* Position relative to the container */
+    transition: opacity 0.5s ease; /* Smooth fade transition */
+}
+
+/* Hover effect on category-1 */
+html[data-page="index"] #category-1:hover #arrow {
+    opacity: 1; /* Show on hover */
+}
+
+/* Optional: fade effect for the text inside category-1 */
+html[data-page="index"] #category-1 {
+    color: white; /* Initial text color */
+    transition: color 0.5s ease; /* Smooth transition for text color */
+}
+
+/* Change text color on hover */
+html[data-page="index"] #category-1:hover {
+    color: rgb(0, 150, 255); /* New text color on hover */
+}
+
+html[data-page="index"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 100px;
+    position: relative;
+}
+
+html[data-page="index"] #add-currency {
+    background-color: #007bff; /* Blue button */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+html[data-page="index"] #currency-amount {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+html[data-page="index"] #currency-icon {
+    position: absolute;
+    height: 30px;
+    right: 3px;
+}
+
+html[data-page="index"] #currency-icon {
+    position: absolute;
+    height: 30px;
+    right: 3px;
+}
+
+/*login.php*/
+
+/* General Resets */
+html[data-page="login"] body {
+    font-family: 'Arial', sans-serif;
+    background-color: #131A20; /* Match background with hemsida.php */
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-size: cover;
+    padding-top: 100px;
+}
+    
+/* Container for the login and sign-in buttons */
+html[data-page="login"] #container1 {
+display: flex;
+justify-content: space-between; /* Distributes logo/title and buttons evenly */
+align-items: center; /* Centers items vertically */
+padding: 20px;
+box-sizing: border-box;
+width: 100%;
+}
+
+html[data-page="login"] .buttons {
+display: flex; /* Ensures buttons stay side by side */
+gap: 20px; /* Space between buttons */
+}
+
+html[data-page="login"] #logo-title {
+display: flex;
+align-items: center; /* Aligns logo and title vertically */
+gap: 10px; /* Space between logo and title */
+}
+
+html[data-page="login"] #signin, html[data-page="login"] #hemsida {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 0.9em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 120px;
+height: 40px;
+}
+
+/* Hover Effect */
+html[data-page="login"] #signin:hover, html[data-page="login"] #hemsida:hover {
+background-color: #293845; /* Slightly lighter on hover */
+border-color: #FFEB3B; /* Maintain the yellow border */
+box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+transform: translateY(-3px); /* Small lift effect */
+}
+
+/* Active Effect */
+html[data-page="login"] #signin:active, html[data-page="login"] #hemsida:active {
+background-color: #17202B; /* Darker on click */
+transform: translateY(1px);
+box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+
+/* Form Styles */
+html[data-page="login"] form {
+background: rgba(255, 255, 255, 0.1); /* Transparent form with a slight white overlay */
+display: inline-block;
+padding: 40px;
+border-radius: 10px;
+box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+margin: 20px auto;
+width: 300px;
+}
+
+/* Input Fields (matching the game theme) */
+html[data-page="login"] input[type="text"],
+html[data-page="login"] input[type="password"] {
+width: 90%;
+padding: 15px;
+margin: 20px 0;
+border-radius: 5px; /* Adjusted to match hemsida.php button style */
+border: 2px solid #FFEB3B; /* Match input borders with the game theme (yellow) */
+font-size: 1.2em;
+box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+background-color: #1C2026; /* Darker background for input */
+color: white;
+transition: all 0.3s ease;
+}
+
+/* Input Focus Effect */
+html[data-page="login"] input[type="text"]:focus,
+html[data-page="login"] input[type="password"]:focus {
+border-color: #00B9E8; /* Blue border on focus */
+outline: none;
+box-shadow: 0px 4px 12px rgba(0, 185, 232, 0.4);
+}
+
+/* Submit Button Styling */
+html[data-page="login"] input[type="submit"] {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 1.5em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 303px;
+height: 50px;
+margin-top: 10px;
+}
+
+/* Hover and Active Effects for Submit Button */
+html[data-page="login"] input[type="submit"]:hover {
+background-color: #293845; /* Slightly lighter on hover */
+border-color: #FFEB3B; /* Maintain the yellow border */
+box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+transform: translateY(-3px); /* Small lift effect */
+}
+
+html[data-page="login"] input[type="submit"]:active {
+background-color: #17202B; /* Darker on click */
+transform: translateY(1px);
+box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+/* Heading Styling (matching the game theme) */
+html[data-page="login"] h2 {
+font-size: 2em;
+color: #FFEB3B; /* Yellow heading to match the game theme */
+text-shadow: 2px 2px #333;
+margin-top: 20px;
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+/* Header Section */
+html[data-page="login"] #header {
+position: fixed; /* Fixes the header at the top */
+top: 0;
+left: 0;
+right: 0;
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 0 20px;
+height: 80px;
+background-color: #0D1117;
+z-index: 1000; /* Ensures it's always on top */
+}
+
+html[data-page="login"] #logo {
+width: 80px;
+height: 80px;
+margin-top: 10px;
+width: auto;
+}
+
+html[data-page="login"] .register, html[data-page="login"] .login {
+padding: 10px 20px;
+border: none;
+cursor: pointer;
+border-radius: 5px;
+color: white;
+}
+
+html[data-page="login"] .register {
+background-color: green;
+}
+
+html[data-page="login"] .login {
+background-color: red;
+}
+
+html[data-page="login"] #container1 h1 {
+font-size: 2.5em;
+white-space: nowrap;
+color: #FFD700; /* Gold color for a classy look */
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+letter-spacing: 3px;
+text-transform: uppercase;
+margin: 0; /* Removes extra margin */
+}
+
+html[data-page="login"] #sigin {
+right: 20px;
+}
+
+html[data-page="login"] #hemsida {
+left: 20px;
+}
+
+html[data-page="login"] #login-info {
+background-color: #1C2026;
+color: #FFD700; /* Gold text to match the game theme */
+padding: 20px;
+margin-top: 40px;
+margin-bottom: 60px; /* Added margin below */
+border-radius: 10px;
+box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.5);
+width: 80%;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+}
+
+html[data-page="login"] #login-info h3 {
+font-size: 2em;
+margin-bottom: 10px;
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+html[data-page="login"] #login-info p {
+font-size: 1.2em;
+color: white;
+}
+
+/* Fade-in animation for the background */
+@keyframes fade-in {
+from {
+background-color: rgba(0, 0, 0, 0);
+}
+to {
+background-color: rgba(0, 0, 0, 0.5);
+}
+}
+
+html[data-page="login"] #circle-container {
+position: relative;
+display: inline-block;
+}
+
+html[data-page="login"] #hover-circle {
+position: absolute;
+top: 45%;
+left: 50%;
+transform: translate(-50%, -50%); /* Center the circle */
+height: 60px; /* Circle height */
+width: 55px;  /* Circle width */
+border-radius: 50%; /* Makes it a circle */
+border-color: rgba(0, 255, 255, 0.8);
+border-width: 5px;
+border-style: solid; /* Ensure the border appears */
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+0 0 45px rgba(0, 255, 255, 0.5),
+0 0 60px rgba(0, 255, 255, 0.4);
+opacity: 0; /* Start invisible */
+z-index: -1; /* Ensure it's behind the logo */
+transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+html[data-page="login"] #circle-container:hover #hover-circle {
+opacity: 1; /* Make it visible when hovering */
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.8),
+0 0 30px rgba(0, 255, 255, 0.7),
+0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+0%, 100% {
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+}
+50% {
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+}
+}
+
+html[data-page="login"] #logo {
+cursor: pointer;
+height: 48px; /* Circle height */
+width: 48px;  /* Circle width */
+margin-top: 25px;
+transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+html[data-page="login"] #logo:hover {
+transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+/* Parent container for form and error message */
+html[data-page="login"] .form-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+position: relative;
+}
+
+html[data-page="login"] #error-message {
+color: red;
+font-weight: bold;
+text-align: center;
+max-width: 90%;
+padding: 10px; /* Increased padding */
+box-sizing: border-box;
+position: absolute;
+top: 510px;
+left: 50%;
+transform: translate(-50%, 0); /* Center horizontally */
+width: 100%;
+visibility: visible; /* Make it visible by default */
+font-size: 1.5em; /* Increase font size */
+text-shadow:
+0 0 5px rgba(255, 0, 0, 0.8),
+0 0 10px rgba(255, 0, 0, 0.8),
+0 0 15px rgba(255, 0, 0, 0.8),
+0 0 20px rgba(255, 0, 0, 0.8); /* Neon glow effect */
+animation: neon-pulse 1.5s infinite alternate; /* Apply the pulsing animation */
+}
+
+/* Neon pulse animation */
+@keyframes neon-pulse {
+0% {
+text-shadow:
+0 0 5px rgba(255, 0, 0, 0.8),
+0 0 10px rgba(255, 0, 0, 0.8),
+0 0 15px rgba(255, 0, 0, 0.8),
+0 0 20px rgba(255, 0, 0, 0.8);
+transform: translate(-50%, 0) scale(1); /* Normal size */
+}
+100% {
+text-shadow:
+0 0 10px rgba(255, 0, 0, 1),
+0 0 20px rgba(255, 0, 0, 1),
+0 0 30px rgba(255, 0, 0, 1),
+0 0 40px rgba(255, 0, 0, 1);
+transform: translate(-50%, 0) scale(1.05); /* Slightly larger */
+}
+}
+
+html[data-page="login"] #currency-bar {
+display: flex;
+align-items: center;
+background-color: #333; /* Dark background for the bar */
+color: white;
+padding: 5px 10px;
+border-radius: 5px;
+width: 100px;
+position: relative;
+}
+
+html[data-page="login"] #add-currency {
+background-color: #007bff; /* Blue button */
+color: white;
+border: none;
+border-radius: 50%;
+width: 25px;
+height: 25px;
+font-size: 16px;
+cursor: pointer;
+margin-right: 8px;
+}
+
+html[data-page="login"] #currency-amount {
+font-size: 18px;
+margin-right: 8px;
+}
+
+html[data-page="login"] #currency-icon {
+position: absolute;
+height: 30px;
+right: 3px;
+}
+
+html[data-page="login"] #currency-icon {
+position: absolute;
+height: 30px;
+right: 3px;
+}
+
+/*sida.php*/
+
+html[data-page="sida"] ::-webkit-scrollbar {
+    display: none; /* Hide the scrollbar */
+}
+
+html[data-page="sida"] body {
+font-family: 'Arial', sans-serif;
+background-color: #f7f7f7;
+color: #333;
+margin: 0;
+padding: 0;
+text-align: center;
+background-size: cover;
+}
+
+html[data-page="sida"] #sidebar-toggle {
+position: fixed;
+top: 10px;
+left: 10px;
+font-size: 30px;
+cursor: pointer;
+background-color: black;
+color: white;
+padding: 10px;
+border-radius: 5px;
+z-index: 1000;
+transition: left 0.5s;
+}
+
+/* Sidebar */
+html[data-page="sida"] .sidebar {
+height: 100%;
+width: 0;
+position: fixed;
+top: 0;
+left: 0;
+background-color: black;
+color: white;
+overflow-x: hidden;
+transition: width 0.5s;
+padding-top: 20px;
+box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-page="sida"] .sidebar.open {
+width: 250px;
+}
+
+/* Profile Section */
+html[data-page="sida"] .profile-section {
+display: flex;
+align-items: center;
+padding: 20px;
+border-bottom: 1px solid white;
+}
+
+/* Level Section */
+html[data-page="sida"] .level-section {
+padding: 20px;
+}
+
+html[data-page="sida"] .level-section h4 {
+margin: 0;
+color: #ffcc00;
+}
+
+html[data-page="sida"] .exp-bar {
+width: 100%;
+height: 15px;
+background-color: #333;
+border-radius: 10px;
+margin: 10px 0;
+}
+
+html[data-page="sida"] .exp-progress {
+height: 100%;
+background-color: #ffcc00;
+border-radius: 10px;
+}
+
+html[data-page="sida"] .exp-bar2 {
+width: 350%;
+height: 15px;
+background-color: #333;
+border-radius: 10px;
+margin: 10px auto; /* Center the element horizontally */
+transform: translateX(-37%);
+}
+
+
+html[data-page="sida"] .exp-progress2 {
+height: 100%;
+background-color: #ffcc00;
+border-radius: 10px;
+}
+
+/* Level Text */
+html[data-page="sida"] .level-section p {
+margin: 0;
+color: white;
+}
+
+html[data-page="sida"] #a-tag1 {
+color: white;
+text-decoration: none;
+}
+
+/* Position the button to the top right of the screen */
+html[data-page="sida"] .search-profile-btn-container {
+position: fixed;
+top: 20px;
+right: 30px;
+z-index: 1000; /* Ensure it stays on top */
+}
+
+html[data-page="sida"] #searchResults {
+margin-top: 10px;
+}
+
+/* Styling for the button */
+html[data-page="sida"] #searchProfileBtn {
+background-color: #1e90ff; /* Electric blue */
+color: white; /* White text */
+border: none;
+padding: 10px 5px;
+font-size: 16px;
+cursor: pointer;
+border-radius: 10px; /* More rounded corners */
+font-family: 'Arial', sans-serif; /* Clean, modern font */
+text-transform: uppercase; /* Make text uppercase */
+font-weight: bold;
+letter-spacing: 2px; /* Make the text more spaced out */
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 15px #00ffea, 0 0 25px #00ffea; /* Add a glowing effect */
+transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+}
+
+html[data-page="sida"] #searchProfileBtn:hover {
+background-color: #00ccff; /* Brighter blue on hover */
+transform: translateY(-5px); /* Move the button up slightly on hover */
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 20px #00ffea, 0 0 35px #00ffea; /* Enhance glow on hover */
+}
+
+html[data-page="sida"] #searchProfileBtn:active {
+transform: translateY(0); /* Reset position when pressed */
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 15px #00ffea, 0 0 25px #00ffea; /* Reset glow when pressed */
+}
+
+/* White square hidden by default */
+html[data-page="sida"] .profile-square {
+width: 300px;
+height: 270px;
+background-color: white;
+position: fixed;
+top: 60px; /* Below the button */
+right: 9px;
+display: none; /* Initially hidden */
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+border-radius: 10px;
+z-index: 999; /* High z-index to overlay other elements */
+opacity: 0; /* Start as invisible */
+transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth fade and movement */
+}
+
+/* Visible state for the square */
+html[data-page="sida"] .profile-square.active {
+display: block;
+opacity: 1;
+transform: translateY(10px); /* Slight move-in effect */
+}
+
+/* Search container */
+html[data-page="sida"] .search-container {
+position: relative;
+width: 90%;
+left: 15px;
+}
+
+/* Search input box */
+html[data-page="sida"] #searchInput {
+width: 80%;
+padding: 10px 40px 10px 10px; /* Space for the search icon */
+font-size: 14px;
+border: 2px solid #1e90ff; /* Match the button's color */
+border-radius: 5px;
+outline: none;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+transition: border-color 0.3s ease; /* Smooth border color transition */
+margin-top: 20px;
+}
+
+/* Change border color on focus */
+html[data-page="sida"] #searchInput:focus {
+border-color: #00ccff;
+}
+
+html[data-page="sida"] .username {
+display: flex;
+align-items: flex-start; /* Align items to the start */
+}
+
+html[data-page="sida"] .profile-circle {
+width: 68px; /* Adjust size as needed */
+height: 68px; /* Adjust size as needed */
+border-radius: 50%; /* Makes the image circular */
+background-position: center;
+background-size: cover; /* Ensures the image covers the circle */
+background-repeat: no-repeat;
+cursor: pointer;
+margin-top: -27px;
+margin-right: 10px;
+margin-left: -10px;
+}
+
+
+html[data-page="sida"] .username h3 {
+font-size: 1.5em; /* Larger font size for better visibility */
+font-family: Arial, sans-serif; /* Font family for a modern look */
+margin-top: -10px; /* Move the username text up */
+}
+
+html[data-page="sida"] .result-item {
+display: flex;
+align-items: center;
+border-bottom: 1px solid #ddd;
+margin: 4px 0;
+width: 90%;
+margin-left: 5%;
+padding: 4px 0;
+transition: background-color 0.3s ease, font-size 0.3s ease;
+}
+
+html[data-page="sida"] .result-item:hover {
+font-size: 1.05em;
+background-color: #f9f9f9;
+border-radius: 8px;
+cursor: pointer;
+}
+
+html[data-page="sida"] .profile-image {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+object-fit: cover;
+border: 2px solid black;
+margin-right: 8px;
+transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+/* Apply hover effect to profile-image when result-item is hovered */
+html[data-page="sida"] .result-item:hover html[data-page="sida"] .profile-image {
+transform: scale(1.1);
+border-color: #007bff;
+}
+
+html[data-page="sida"] .result-item:hover html[data-page="sida"] .username {
+color: #007bff; /* Light blue on hover */
+}
+
+html[data-page="sida"] .search-results {
+max-height: 180px;
+overflow-y: auto;
+background-color: white;
+padding: 8px;
+border-radius: 8px;
+}
+
+html[data-page="sida"] .close-button {
+background-color: transparent;
+border: none;
+font-size: 20px;
+font-weight: bold;
+cursor: pointer;
+position: absolute;
+top: 10px;
+right: 10px;
+}
+
+html[data-page="sida"] .circle-profile {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+border: 2px solid black;
+margin-left: 40%;
+}
+
+html[data-page="sida"] .selected-profile-container {
+display: flex;
+flex-direction: column;
+align-items: center; /* Center items horizontally */
+text-align: center; /* Center text */
+}
+
+html[data-page="sida"] .selected-profile-circle {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+transition: transform 0.3s ease-in, box-shadow 0.3s ease-in, translate 0.3s ease-in;
+}
+
+html[data-page="sida"] .selected-profile-circle:hover {
+transform: scale(1.05);
+transform: translateY(-3px);
+box-shadow: 0px 0px 10px #ffcc00;
+border-radius: 50%;
+}
+
+html[data-page="sida"] .selected-profile-circle:hover {
+transform: scale(1.05);
+transform: translateY(-3px);
+box-shadow: 0px 0px 10px #ffcc00;
+border-radius: 50%;
+}
+
+html[data-page="sida"] .username2 {
+margin-top: 10px; /* Space between image and text */
+font-size: 20px;
+font-family: Arial, Helvetica, sans-serif;
+font-weight: bold;
+text-transform: capitalize;
+color: black;
+}
+
+html[data-page="sida"] .level-section2 p {
+color: black; /* Or your preferred text color */
+position: absolute; /* Absolute positioning */
+top: 0; /* Position it at the top of the parent container */
+left: 50%; /* Center horizontally */
+transform: translateX(-50%); /* Center horizontally */
+z-index: 10; /* Higher z-index to ensure it's on top */
+margin-top: 190px;
+}
+
+html[data-page="sida"] .level-section2 h4 {
+color: #ffcc00;
+margin-bottom: 0px;
+margin-top: 10px;
+}
+
+html[data-page="sida"] .messagebutton {
+position: absolute;
+width: 120px;
+height: 43px;
+background-color: #007bff; /* Classic blue */
+color: white;
+top: 215px;
+left: 20px;
+border: none; /* Optional: remove border for a cleaner look */
+border-radius: 5px; /* Optional: add slight rounding to corners */
+transition: background-color 0.3s, transform 0.3s; /* Smooth transition */
+}
+
+html[data-page="sida"] .messagebutton:hover {
+background-color: #0056b3; /* Darker tone of blue on hover */
+transform: translateY(-3px) scale(1.03); /* Combined transform for smoother effect */
+}
+
+
+/* Input field for writing messages */
+html[data-page="sida"] .message-input {
+width: calc(100% - 90px); /* Leave space for the button */
+padding: 10px;
+border-radius: 20px;
+border: 1px solid #dcdcdc;
+font-size: 14px;
+outline: none;
+box-sizing: border-box;
+transition: all 0.3s;
+}
+
+/* Input focus state */
+html[data-page="sida"] .message-input:focus {
+border-color: #8ab4f8; /* Light blue on focus */
+box-shadow: 0 0 5px rgba(138, 180, 248, 0.5);
+}
+
+/* Send button */
+html[data-page="sida"] .send-button {
+margin-top: 180px;
+padding: 10px 20px;
+background-color: #4CAF50; /* Green background */
+color: #fff;
+border: none;
+border-radius: 20px;
+cursor: pointer;
+font-size: 14px;
+font-weight: bold;
+margin-left: 10px;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Send button hover and active states */
+html[data-page="sida"] .send-button:hover {
+background-color: #45A049; /* Darker green on hover */
+}
+
+html[data-page="sida"] .send-button:active {
+transform: scale(0.98); /* Slightly shrink on click */
+}
+
+/* Close button styling */
+html[data-page="sida"] .close-button {
+position: absolute;
+top: 10px;
+right: 10px;
+background-color: transparent;
+border: none;
+font-size: 18px;
+color: #888;
+cursor: pointer;
+transition: color 0.2s ease;
+}
+
+html[data-page="sida"] .close-button:hover {
+color: #333;
+}
+
+/*signup.php*/
+
+/* General Resets */
+html[data-page="signup"] body {
+    font-family: 'Arial', sans-serif;
+    background-color: #131A20; /* Match background with hemsida.php */
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-size: cover;
+    padding-top: 100px;
+}
+
+/* Container for the login and sign-in buttons */
+html[data-page="signup"] #container1 {
+display: flex;
+justify-content: space-between; /* Distributes logo/title and buttons evenly */
+align-items: center; /* Centers items vertically */
+padding: 20px;
+box-sizing: border-box;
+width: 100%;
+}
+
+html[data-page="signup"] .buttons {
+display: flex; /* Ensures buttons stay side by side */
+gap: 20px; /* Space between buttons */
+}
+
+html[data-page="signup"] #logo-title {
+display: flex;
+align-items: center; /* Aligns logo and title vertically */
+gap: 10px; /* Space between logo and title */
+white-space: nowrap;
+}
+
+
+html[data-page="signup"] #signin, html[data-page="signup"] #hemsida {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 0.9em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 120px;
+height: 40px;
+}
+
+/* Hover Effect */
+html[data-page="signup"] #signin:hover, html[data-page="signup"] #hemsida:hover {
+background-color: #293845; /* Slightly lighter on hover */
+border-color: #FFEB3B; /* Maintain the yellow border */
+box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+transform: translateY(-3px); /* Small lift effect */
+}
+
+/* Active Effect */
+html[data-page="signup"] #signin:active, html[data-page="signup"] #hemsida:active {
+background-color: #17202B; /* Darker on click */
+transform: translateY(1px);
+box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+
+/* Form Styles */
+html[data-page="signup"] form {
+background: rgba(255, 255, 255, 0.1); /* Transparent form with a slight white overlay */
+display: inline-block;
+padding: 40px;
+border-radius: 10px;
+box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+margin: 20px auto;
+width: 300px;
+}
+
+/* Input Fields (matching the game theme) */
+html[data-page="signup"] input[type="text"],
+html[data-page="signup"] input[type="password"] {
+width: 90%;
+padding: 15px;
+margin: 20px 0;
+border-radius: 5px; /* Adjusted to match hemsida.php button style */
+border: 2px solid #FFEB3B; /* Match input borders with the game theme (yellow) */
+font-size: 1.2em;
+box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+background-color: #1C2026; /* Darker background for input */
+color: white;
+transition: all 0.3s ease;
+}
+
+/* Input Focus Effect */
+html[data-page="signup"] input[type="text"]:focus,
+html[data-page="signup"] input[type="password"]:focus {
+border-color: #00B9E8; /* Blue border on focus */
+outline: none;
+box-shadow: 0px 4px 12px rgba(0, 185, 232, 0.4);
+}
+
+html[data-page="signup"] input[type="submit"] {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 1.5em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 303px;
+height: 50px;
+margin-top: 10px;
+}
+
+/* Hover and Active Effects for Submit Button */
+html[data-page="signup"] input[type="submit"]:hover {
+background-color: #293845; /* Slightly lighter on hover */
+border-color: #FFEB3B; /* Maintain the yellow border */
+box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+transform: translateY(-3px); /* Small lift effect */
+}
+
+html[data-page="signup"] input[type="submit"]:active {
+background-color: #17202B; /* Darker on click */
+transform: translateY(1px);
+box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+/* Heading Styling (matching the game theme) */
+html[data-page="signup"] h2 {
+font-size: 2em;
+color: #FFEB3B; /* Yellow heading to match the game theme */
+text-shadow: 2px 2px #333;
+margin-top: 20px;
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+/* Header Section */
+html[data-page="signup"] #header {
+position: fixed; /* Fixes the header at the top */
+top: 0;
+left: 0;
+right: 0;
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 0 20px;
+height: 80px;
+background-color: #0D1117;
+z-index: 1000; /* Ensures it's always on top */
+}
+
+html[data-page="signup"] #logo {
+width: 80px;
+height: 80px;
+margin-top: 10px;
+width: auto;
+}
+
+html[data-page="signup"] .register, html[data-page="signup"] .login {
+padding: 10px 20px;
+border: none;
+cursor: pointer;
+border-radius: 5px;
+color: white;
+}
+
+html[data-page="signup"] .register {
+background-color: green;
+}
+
+html[data-page="signup"] .login {
+background-color: red;
+}
+
+html[data-page="signup"] #container1 h1 {
+font-size: 2.5em;
+color: #FFD700; /* Gold color for a classy look */
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+letter-spacing: 3px;
+text-transform: uppercase;
+margin: 0; /* Removes extra margin */
+}
+
+html[data-page="signup"] #sigin {
+right: 20px;
+}
+
+html[data-page="signup"] #hemsida {
+left: 20px;
+}
+
+html[data-page="signup"] #signup-info {
+background-color: #1C2026;
+color: #FFD700; /* Gold text to match the game theme */
+padding: 20px;
+margin-top: 40px;
+margin-bottom: 60px; /* Added margin below */
+border-radius: 10px;
+box-shadow: 0px 0px 15px rgba(255, 215, 0, 0.5);
+width: 80%;
+margin-left: auto;
+margin-right: auto;
+text-align: center;
+}
+
+html[data-page="signup"] #signup-info h3 {
+font-size: 2em;
+margin-bottom: 10px;
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+html[data-page="signup"] #signup-info p {
+font-size: 1.2em;
+color: white;
+}
+
+html[data-page="signup"] #circle-container {
+position: relative;
+display: inline-block;
+}
+
+html[data-page="signup"] #hover-circle {
+position: absolute;
+top: 45%;
+left: 50%;
+transform: translate(-50%, -50%); /* Center the circle */
+height: 60px; /* Circle height */
+width: 55px;  /* Circle width */
+border-radius: 50%; /* Makes it a circle */
+border-color: rgba(0, 255, 255, 0.8);
+border-width: 5px;
+border-style: solid; /* Ensure the border appears */
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+0 0 45px rgba(0, 255, 255, 0.5),
+0 0 60px rgba(0, 255, 255, 0.4);
+opacity: 0; /* Start invisible */
+z-index: -1; /* Ensure it's behind the logo */
+transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+html[data-page="signup"] #circle-container:hover #hover-circle {
+opacity: 1; /* Make it visible when hovering */
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.8),
+0 0 30px rgba(0, 255, 255, 0.7),
+0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+0%, 100% {
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+}
+50% {
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+}
+}
+
+html[data-page="signup"] #logo {
+cursor: pointer;
+height: 48px; /* Circle height */
+width: 48px;  /* Circle width */
+margin-top: 25px;
+}
+
+html[data-page="signup"] #logo {
+transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+html[data-page="signup"] #logo:hover {
+transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+/* Parent container for form and error message */
+html[data-page="signup"] .form-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+position: relative;
+}
+
+html[data-page="signup"] #error-message {
+color: red;
+font-weight: bold;
+text-align: center;
+max-width: 90%;
+padding: 10px; /* Increased padding */
+box-sizing: border-box;
+position: absolute;
+top: 510px;
+left: 50%;
+transform: translate(-50%, 0); /* Center horizontally */
+width: 100%;
+visibility: visible; /* Make it visible by default */
+font-size: 1.5em; /* Increase font size */
+text-shadow:
+0 0 5px rgba(255, 0, 0, 0.8),
+0 0 10px rgba(255, 0, 0, 0.8),
+0 0 15px rgba(255, 0, 0, 0.8),
+0 0 20px rgba(255, 0, 0, 0.8); /* Neon glow effect */
+animation: neon-pulse 1.5s infinite alternate; /* Apply the pulsing animation */
+}
+
+html[data-page="signup"] #success-message {
+color: rgb(0,255,0);
+font-weight: bold;
+text-align: center;
+max-width: 90%;
+padding: 10px; /* Increased padding */
+box-sizing: border-box;
+position: absolute;
+top: 510px;
+left: 50%;
+transform: translate(-50%, 0); /* Center horizontally */
+width: 100%;
+visibility: visible; /* Make it visible by default */
+font-size: 1.5em; /* Increase font size */
+text-shadow:
+0 0 5px rgba(0, 255, 0, 0.8),
+0 0 10px rgba(0, 255, 0, 0.8),
+0 0 15px rgba(0, 255, 0, 0.8),
+0 0 20px rgba(0, 255, 0, 0.8); /* Neon glow effect */
+animation: neon2-pulse 1.5s infinite alternate; /* Apply the pulsing animation */
+}
+
+/* Neon pulse animation */
+@keyframes neon-pulse {
+0% {
+text-shadow:
+0 0 5px rgba(255, 0, 0, 0.8),
+0 0 10px rgba(255, 0, 0, 0.8),
+0 0 15px rgba(255, 0, 0, 0.8),
+0 0 20px rgba(255, 0, 0, 0.8);
+transform: translate(-50%, 0) scale(1); /* Normal size */
+}
+100% {
+text-shadow:
+0 0 10px rgba(255, 0, 0, 1),
+0 0 20px rgba(255, 0, 0, 1),
+0 0 30px rgba(255, 0, 0, 1),
+0 0 40px rgba(255, 0, 0, 1);
+transform: translate(-50%, 0) scale(1.05); /* Slightly larger */
+}
+}
+
+@keyframes neon2-pulse {
+0% {
+text-shadow:
+0 0 5px rgba(0, 255, 0, 0.8),
+0 0 10px rgba(0, 255, 0, 0.8),
+0 0 15px rgba(0, 255, 0, 0.8),
+0 0 20px rgba(0, 255, 0, 0.8);
+transform: translate(-50%, 0) scale(1); /* Normal size */
+}
+100% {
+text-shadow:
+0 0 10px rgba(0, 255, 0, 1),
+0 0 20px rgba(0, 255, 0, 1),
+0 0 30px rgba(0, 255, 0, 1),
+0 0 40px rgba(0, 255, 0, 1);
+transform: translate(-50%, 0) scale(1.05); /* Slightly larger */
+}
+}
+
+html[data-page="signup"] #currency-bar {
+display: flex;
+align-items: center;
+background-color: #333; /* Dark background for the bar */
+color: white;
+padding: 5px 10px;
+border-radius: 5px;
+width: 100px;
+position: relative;
+}
+
+html[data-page="signup"] #add-currency {
+background-color: #007bff; /* Blue button */
+color: white;
+border: none;
+border-radius: 50%;
+width: 25px;
+height: 25px;
+font-size: 16px;
+cursor: pointer;
+margin-right: 8px;
+}
+
+html[data-page="signup"] #currency-amount {
+font-size: 18px;
+margin-right: 8px;
+}
+
+html[data-page="signup"] #currency-icon {
+position: absolute;
+height: 30px;
+right: 3px;
+}
+
+html[data-page="signup"] #currency-icon {
+position: absolute;
+height: 30px;
+right: 3px;
+}
+
+/*spel.php*/
+
+html[data-page="spel"] html, html[data-page="spel"] body {
+margin: 0;
+padding: 0;
+font-family: Arial, sans-serif;
+background-color: #131A20;
+color: white;
+height: 100%;
+}
+
+html[data-page="spel"] * {
+scrollbar-width: none; /* Firefox */
+-ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html[data-page="spel"] *::-webkit-scrollbar {
+display: none; /* Chrome, Safari, Edge */
+}
+
+/* Header Section */
+html[data-page="spel"] #header {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+display: flex;
+justify-content: space-between; /* Space between elements */
+align-items: center;
+padding: 0 20px;
+height: 80px;
+background-color: #0D1117;
+z-index: 1000; /* Ensures it's always on top */
+animation: fadeIn 1s ease-in forwards;
+}
+
+html[data-page="spel"] #logo {
+cursor: pointer;
+height: 48px; /* Circle height */
+width: 48px;  /* Circle width */
+margin-top: 25px;
+transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+html[data-page="spel"] #logo:hover {
+transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+/* Sidebar Toggle Button */
+html[data-page="spel"] #sidebar-toggle {
+position: fixed;
+top: 100px; /* Adjust this to be just below the header */
+left: 10px;
+font-size: 30px;
+cursor: pointer;
+background-color: black;
+color: white;
+padding: 10px;
+border-radius: 5px;
+z-index: 999; /* Ensure it's above other elements except the header */
+transition: left 0.5s;
+animation: fadeIn 1s ease-in forwards;;
+}
+
+/* Sidebar */
+html[data-page="spel"] .sidebar {
+position: fixed;
+top: 81px; /* Adjust this so the sidebar stays below the header */
+left: 0;
+width: 0; /* Initial width is 0 */
+height: calc(100% - 80px); /* 100% height minus header height */
+background-color: black;
+color: white;
+overflow-x: hidden;
+transition: width 0.5s;
+padding-top: 20px;
+box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+z-index: 998; /* Below the toggle button */
+animation: fadeIn 1s ease-in forwards;
+}
+
+/* Profile Section */
+html[data-page="spel"] .profile-section {
+display: flex;
+align-items: center;
+padding: 20px;
+border-bottom: 1px solid white;
+}
+
+html[data-page="spel"] .username {
+display: flex;
+align-items: flex-start; /* Align items to the start */
+color: white;
+}
+
+html[data-page="spel"] .profile-circle {
+width: 68px;
+height: 68px;
+border-radius: 50%;
+background-position: center;
+background-size: cover;
+background-repeat: no-repeat;
+margin-right: 10px;
+}
+
+html[data-page="spel"] .buttons {
+display: flex; /* Ensures buttons stay side by side */
+gap: 20px; /* Space between buttons */
+}
+
+html[data-page="spel"] #signin, html[data-page="spel"] #login {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 0.9em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 120px;
+height: 40px;
+}
+
+/* Hover Effect */
+html[data-page="spel"] #signin:hover, html[data-page="spel"] #login:hover {
+background-color: #293845; /* Slightly lighter on hover */
+border-color: #FFEB3B; /* Maintain the yellow border */
+box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+transform: translateY(-3px); /* Small lift effect */
+}
+
+/* Active Effect */
+html[data-page="spel"] #signin:active, html[data-page="spel"] #login:active {
+background-color: #17202B; /* Darker on click */
+transform: translateY(1px);
+box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+html[data-page="spel"] #circle-container {
+position: relative;
+display: inline-block;
+}
+
+html[data-page="spel"] #hover-circle {
+position: absolute;
+top: 45%;
+left: 50%;
+transform: translate(-50%, -50%); /* Center the circle */
+height: 60px; /* Circle height */
+width: 55px;  /* Circle width */
+border-radius: 50%; /* Makes it a circle */
+border-color: rgba(0, 255, 255, 0.8);
+border-width: 5px;
+border-style: solid; /* Ensure the border appears */
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+0 0 45px rgba(0, 255, 255, 0.5),
+0 0 60px rgba(0, 255, 255, 0.4);
+opacity: 0; /* Start invisible */
+z-index: -1; /* Ensure it's behind the logo */
+transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+html[data-page="spel"] #circle-container:hover #hover-circle {
+opacity: 1; /* Make it visible when hovering */
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.8),
+0 0 30px rgba(0, 255, 255, 0.7),
+0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+0%, 100% {
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+}
+50% {
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+}
+}
+
+html[data-page="spel"] #logo-title {
+display: flex;
+align-items: center; /* Aligns logo and title vertically */
+gap: 10px; /* Space between logo and title */
+}
+
+html[data-page="spel"] #container1 {
+display: flex;
+justify-content: space-between; /* Distributes logo/title and buttons evenly */
+align-items: center; /* Centers items vertically */
+padding: 20px;
+box-sizing: border-box;
+width: 100%;
+}
+
+html[data-page="spel"] #container1 h1 {
+font-size: 2.5em;
+color: #FFD700;
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+letter-spacing: 3px;
+text-transform: uppercase;
+margin: 0;
+display: inline-block; /* Keeps the text centered */
+}
+
+/* Game Section */
+html[data-page="spel"] .game-section {
+display: flex;
+justify-content: center;
+gap: 20px;
+flex-wrap: wrap;
+padding-top: 100px;
+padding: 40px 20px;
+}
+
+/* Game Container Styling */
+html[data-page="spel"] .game-container {
+background: linear-gradient(135deg, #0D1117 0%, #1E2A38 100%); /* Darker gradient matching the background */
+color: #FFFFFF;
+border-radius: 15px;
+padding: 20px;
+width: 350px;
+text-align: center;
+box-shadow: 0 10px 20px rgba(0, 255, 255, 0.3); /* Adjusted shadow to cyan to match neon theme */
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+margin-top: 50px;
+}
+
+html[data-page="spel"] .game-container:hover {
+transform: scale(1.05);
+box-shadow: 0 15px 25px rgba(0, 255, 255, 0.4); /* Cyan shadow on hover for a neon effect */
+}
+
+html[data-page="spel"] .game-container img {
+width: 100%;
+height: auto;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+html[data-page="spel"] .game-container h2 {
+font-size: 1.5em;
+margin: 15px 0;
+font-weight: 700;
+color: #FFEB3B; /* Yellow color to match the header text */
+text-shadow: 1px 2px 4px rgba(255, 215, 0, 0.5);
+}
+
+html[data-page="spel"] .game-container p {
+font-size: 1em;
+margin: 10px 0;
+color: #BBB; /* Softer white for a more subdued text appearance */
+line-height: 1.4;
+}
+
+html[data-page="spel"] .game-container button {
+background-color: #00FFFF; /* Cyan button color to fit neon theme */
+color: black;
+border: none;
+padding: 12px 25px;
+border-radius: 8px;
+cursor: pointer;
+font-weight: bold;
+transition: background-color 0.3s, box-shadow 0.3s;
+box-shadow: 0px 6px 15px rgba(0, 255, 255, 0.4); /* Cyan glow effect */
+}
+
+html[data-page="spel"] .game-container html[data-page="spel"] button:hover {
+background-color: #00BFBF; /* Darker cyan on hover */
+box-shadow: 0px 8px 20px rgba(0, 255, 255, 0.6);
+}
+
+html[data-page="spel"] #currency-bar {
+display: flex;
+align-items: center;
+background-color: #333; /* Dark background for the bar */
+color: white;
+padding: 5px 10px;
+border-radius: 5px;
+width: 100px;
+position: relative;
+}
+
+html[data-page="spel"] #add-currency {
+background-color: #007bff; /* Blue button */
+color: white;
+border: none;
+border-radius: 50%;
+width: 25px;
+height: 25px;
+font-size: 16px;
+cursor: pointer;
+margin-right: 8px;
+}
+
+html[data-page="spel"] #currency-amount {
+font-size: 18px;
+margin-right: 8px;
+}
+
+html[data-page="spel"] #currency-icon {
+position: absolute;
+height: 30px;
+right: 3px;
+}
+
+/* Overlay styling */
+html[data-page="spel"] #overlay {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.7);
+z-index: 999;
+}
+
+html[data-page="spel"] #modal {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: white;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+border-radius: 8px;
+z-index: 1000;
+overflow: hidden;
+width: 90vw; /* 90% of the viewport width */
+height: 90vh; /* 90% of the viewport height */
+display: flex;
+flex-direction: column;
+}
+
+/* Example button to open the modal */
+html[data-page="spel"] .open-modal-button {
+display: inline-block;
+padding: 10px 20px;
+background-color: #007BFF;
+color: white;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+}
+
+
+/* Existing fade-in animation for overlay */
+@keyframes fadeIn {
+0% { opacity: 0; }
+100% { opacity: 1; }
+}
+
+/* Fade-out animation for overlay */
+@keyframes fadeOut {
+0% { opacity: 1; }
+100% { opacity: 0; }
+}
+
+/* Resizing animation for modal opening */
+@keyframes modalResizeIn {
+0% { transform: translate(-50%, -50%) scale(0.5); }
+100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Reverse resizing animation for modal closing */
+@keyframes modalResizeOut {
+0% { transform: translate(-50%, -50%) scale(1); }
+100% { transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* Apply initial styles */
+html[data-page="spel"] #overlay {
+display: none; /* Start hidden */
+animation: fadeIn 1.5s ease-out forwards;
+}
+
+html[data-page="spel"] #modal {
+animation: modalResizeIn 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+margin-top: 30px;
+}
+
+html[data-page="spel"] #modal h2 {
+color: black;
+}
+
+html[data-page="spel"] #modal p {
+color: black;
+}
+
+html[data-page="spel"] #full-screen-button {
+position: absolute;
+top: 10px;
+right: 10px;
+padding: 3px 3px;
+font-size: 14px;
+background-color: transparent;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+html[data-page="spel"] #modal-content {
+flex: 1;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+
+html[data-page="spel"] .full-screen-mode {
+display: flex;
+align-items: center;
+justify-content: center;
+height: 100vh;
+width: 100vw;
+margin: 0;
+border-radius: 0;
+}
+
+html[data-page="spel"] #rectbutton {
+fill: white;
+border: 2px solid black;
+}
+
+html[data-page="spel"] #game-iframe {
+flex: 1;
+width: 100%;
+height: 100%;
+border: none;
+display: block;
+}
+
+html[data-page="spel"] .full-screen-mode #game-iframe {
+width: 100vw;
+height: 100vh;
+}
+
+html[data-page="spel"] #spelknapp {
+padding: 15px 30px;
+background-color: #4CAF50; /* Green background */
+color: white; /* White text */
+border: none; /* Remove default border */
+border-radius: 8px; /* Rounded corners */
+cursor: pointer; /* Pointer on hover */
+font-size: 16px; /* Increase font size */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+margin-top: 10px;
+}
+
+html[data-page="spel"] nav ul {
+list-style: none;
+display: flex;
+gap: 15px;
+}
+
+html[data-page="spel"] nav ul li a {
+color: white;
+text-decoration: none;
+font-size: 18px;
+}
+
+html[data-page="spel"] ::-webkit-scrollbar {
+display: none; /* Hide the scrollbar */
+}
+
+html[data-page="spel"] #sidebar-toggle {
+position: fixed;
+top: 90px;
+left: 10px;
+font-size: 30px;
+cursor: pointer;
+background-color: black;
+color: white;
+padding: 10px;
+border-radius: 5px;
+z-index: 1000;
+transition: left 0.5s;
+}
+
+/* Sidebar */
+html[data-page="spel"] .sidebar {
+height: 100%;
+width: 0;
+position: fixed;
+top: 80px;
+left: 0;
+background-color: black;
+color: white;
+overflow-x: hidden;
+transition: width 0.5s;
+padding-top: 20px;
+box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-page="spel"] .sidebar.open {
+width: 250px;
+}
+
+/* Profile Section */
+html[data-page="spel"] .profile-section {
+display: flex;
+align-items: center;
+padding: 20px;
+border-bottom: 1px solid white;
+}
+
+/* Level Section */
+html[data-page="spel"] .level-section {
+padding: 20px;
+text-align: center;
+}
+
+html[data-page="spel"] .level-section h4 {
+margin: 0;
+color: #ffcc00;
+}
+
+html[data-page="spel"] .exp-bar {
+width: 100%;
+height: 15px;
+background-color: #333;
+border-radius: 10px;
+margin: 10px 0;
+}
+
+html[data-page="spel"] .exp-progress {
+height: 100%;
+background-color: #ffcc00;
+border-radius: 10px;
+}
+
+html[data-page="spel"] .exp-bar2 {
+width: 350%;
+height: 15px;
+background-color: #333;
+border-radius: 10px;
+margin: 10px auto; /* Center the element horizontally */
+transform: translateX(-37%);
+}
+
+
+html[data-page="spel"] .exp-progress2 {
+height: 100%;
+background-color: #ffcc00;
+border-radius: 10px;
+}
+
+/* Level Text */
+html[data-page="spel"] .level-section p {
+margin: 0;
+color: white;
+}
+
+html[data-page="spel"] #a-tag1 {
+color: white;
+text-decoration: none;
+margin-left: 90px;
+}
+
+/* Position the button to the top right of the screen */
+html[data-page="spel"] .search-profile-btn-container {
+position: fixed;
+top: 20px;
+right: 150px;
+z-index: 1000; /* Ensure it stays on top */
+}
+
+html[data-page="spel"] #searchResults {
+margin-top: 10px;
+}
+
+/* Styling for the button */
+html[data-page="spel"] #searchProfileBtn {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 0.7em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 120px;
+height: 40px;
+}
+
+html[data-page="spel"] #searchProfileBtn:hover {
+background-color: #00ccff; /* Brighter blue on hover */
+transform: translateY(-5px); /* Move the button up slightly on hover */
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 20px #00ffea, 0 0 35px #00ffea; /* Enhance glow on hover */
+}
+
+html[data-page="spel"] #searchProfileBtn:active {
+transform: translateY(0); /* Reset position when pressed */
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 15px #00ffea, 0 0 25px #00ffea; /* Reset glow when pressed */
+}
+
+/* White square hidden by default */
+html[data-page="spel"] .profile-square {
+width: 300px;
+height: 270px;
+background-color: white;
+position: fixed;
+top: 70px; /* Below the button */
+right: 9px;
+display: none; /* Initially hidden */
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+border-radius: 10px;
+z-index: 999; /* High z-index to overlay other elements */
+opacity: 0; /* Start as invisible */
+transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth fade and movement */
+}
+
+/* Visible state for the square */
+html[data-page="spel"] .profile-square.active {
+display: block;
+opacity: 1;
+transform: translateY(10px); /* Slight move-in effect */
+}
+
+/* Search container */
+html[data-page="spel"] .search-container {
+position: relative;
+width: 90%;
+left: 15px;
+}
+
+/* Search input box */
+html[data-page="spel"] #searchInput {
+width: 80%;
+padding: 10px 40px 10px 10px; /* Space for the search icon */
+font-size: 14px;
+border: 2px solid #1e90ff; /* Match the button's color */
+border-radius: 5px;
+outline: none;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+transition: border-color 0.3s ease; /* Smooth border color transition */
+margin-top: 20px;
+}
+
+/* Change border color on focus */
+html[data-page="spel"] #searchInput:focus {
+border-color: #00ccff;
+}
+
+html[data-page="spel"] .username {
+display: flex;
+align-items: flex-start; /* Align items to the start */
+}
+
+html[data-page="spel"] .profile-circle {
+width: 68px; /* Adjust size as needed */
+height: 68px; /* Adjust size as needed */
+border-radius: 50%; /* Makes the image circular */
+background-position: center;
+background-size: cover; /* Ensures the image covers the circle */
+background-repeat: no-repeat;
+cursor: pointer;
+margin-top: -27px;
+margin-right: 10px;
+margin-left: -10px;
+}
+
+
+html[data-page="spel"] .username h3 {
+font-size: 1.5em; /* Larger font size for better visibility */
+font-family: Arial, sans-serif; /* Font family for a modern look */
+margin-top: -10px; /* Move the username text up */
+}
+
+html[data-page="spel"] .result-item {
+display: flex;
+align-items: center;
+border-bottom: 1px solid #ddd;
+margin: 4px 0;
+width: 90%;
+margin-left: 5%;
+padding: 4px 0;
+transition: background-color 0.3s ease, font-size 0.3s ease;
+}
+
+html[data-page="spel"] .result-item:hover {
+font-size: 1.05em;
+background-color: #f9f9f9;
+border-radius: 8px;
+cursor: pointer;
+}
+
+html[data-page="spel"] .profile-image {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+object-fit: cover;
+border: 2px solid black;
+margin-right: 8px;
+transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+/* Apply hover effect to profile-image when result-item is hovered */
+html[data-page="spel"] .result-item:hover html[data-page="spel"] .profile-image {
+transform: scale(1.1);
+border-color: #007bff;
+}
+
+html[data-page="spel"] .result-item:hover html[data-page="spel"] .username {
+color: #007bff; /* Light blue on hover */
+}
+
+html[data-page="spel"] .search-results {
+max-height: 180px;
+overflow-y: auto;
+background-color: white;
+padding: 8px;
+border-radius: 8px;
+}
+
+html[data-page="spel"] .close-button {
+background-color: transparent;
+border: none;
+font-size: 20px;
+font-weight: bold;
+cursor: pointer;
+position: absolute;
+top: 10px;
+right: 10px;
+}
+
+html[data-page="spel"] .circle-profile {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+border: 2px solid black;
+margin-left: 40%;
+}
+
+html[data-page="spel"] .selected-profile-container {
+display: flex;
+flex-direction: column;
+align-items: center; /* Center items horizontally */
+text-align: center; /* Center text */
+}
+
+html[data-page="spel"] .selected-profile-circle {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+transition: transform 0.3s ease-in, box-shadow 0.3s ease-in, translate 0.3s ease-in;
+}
+
+html[data-page="spel"] .selected-profile-circle:hover {
+transform: scale(1.05);
+transform: translateY(-3px);
+box-shadow: 0px 0px 10px #ffcc00;
+border-radius: 50%;
+}
+
+html[data-page="spel"] .selected-profile-circle:hover {
+transform: scale(1.05);
+transform: translateY(-3px);
+box-shadow: 0px 0px 10px #ffcc00;
+border-radius: 50%;
+}
+
+html[data-page="spel"] .username2 {
+margin-top: 10px; /* Space between image and text */
+font-size: 20px;
+font-family: Arial, Helvetica, sans-serif;
+font-weight: bold;
+text-transform: capitalize;
+color: black;
+}
+
+html[data-page="spel"] .level-section2 p {
+color: black; /* Or your preferred text color */
+position: absolute; /* Absolute positioning */
+top: 0; /* Position it at the top of the parent container */
+left: 50%; /* Center horizontally */
+transform: translateX(-50%); /* Center horizontally */
+z-index: 10; /* Higher z-index to ensure it's on top */
+margin-top: 190px;
+}
+
+html[data-page="spel"] .level-section2 h4 {
+color: #ffcc00;
+margin-bottom: 0px;
+margin-top: 10px;
+}
+
+html[data-page="spel"] .messagebutton {
+position: absolute;
+width: 120px;
+height: 43px;
+background-color: #007bff; /* Classic blue */
+color: white;
+top: 215px;
+left: 20px;
+border: none; /* Optional: remove border for a cleaner look */
+border-radius: 5px; /* Optional: add slight rounding to corners */
+transition: background-color 0.3s, transform 0.3s; /* Smooth transition */
+}
+
+html[data-page="spel"] .messagebutton:hover {
+background-color: #0056b3; /* Darker tone of blue on hover */
+transform: translateY(-3px) scale(1.03); /* Combined transform for smoother effect */
+}
+
+
+/* Input field for writing messages */
+html[data-page="spel"] .message-input {
+width: calc(100% - 90px); /* Leave space for the button */
+padding: 10px;
+border-radius: 20px;
+border: 1px solid #dcdcdc;
+font-size: 14px;
+outline: none;
+box-sizing: border-box;
+transition: all 0.3s;
+}
+
+/* Input focus state */
+html[data-page="spel"] .message-input:focus {
+border-color: #8ab4f8; /* Light blue on focus */
+box-shadow: 0 0 5px rgba(138, 180, 248, 0.5);
+}
+
+/* Send button */
+html[data-page="spel"] .send-button {
+margin-top: 180px;
+padding: 10px 20px;
+background-color: #4CAF50; /* Green background */
+color: #fff;
+border: none;
+border-radius: 20px;
+cursor: pointer;
+font-size: 14px;
+font-weight: bold;
+margin-left: 10px;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Send button hover and active states */
+html[data-page="spel"] .send-button:hover {
+background-color: #45A049; /* Darker green on hover */
+}
+
+html[data-page="spel"] .send-button:active {
+transform: scale(0.98); /* Slightly shrink on click */
+}
+
+/* Close button styling */
+html[data-page="spel"] .close-button {
+position: absolute;
+top: 10px;
+right: 10px;
+background-color: transparent;
+border: none;
+font-size: 18px;
+color: #888;
+cursor: pointer;
+transition: color 0.2s ease;
+}
+
+html[data-page="spel"] .close-button:hover {
+color: #333;
+}
+
+/*spel1.php*/
+
+html[data-page="spel1"] html, html[data-page="spel1"] body {
+min-width: 500px;
+min-height: 500px;
+overflow: hidden;
+}
+
+html[data-page="spel1"] #container {
+width: 80vw;
+height: 80vh;
+max-width: 500px;
+max-height: 500px;
+min-width: 500px;
+min-height: 500px;
+margin-left: auto;
+margin-right: auto;
+margin-top: 8vh;
+display: flex;
+flex-wrap: wrap;
+justify-content: space-around;
+align-items: center;
+background-color: transparent;
+border: none;
+}
+
+html[data-page="spel1"] #box1, html[data-page="spel1"] #box2, html[data-page="spel1"] #box3, html[data-page="spel1"] #box4, html[data-page="spel1"] #box5, html[data-page="spel1"] #box6, html[data-page="spel1"] #box7, html[data-page="spel1"] #box8, html[data-page="spel1"] #box9 {
+width: 30%;
+height: 30%;
+background-color: #007bff;
+border-radius: 20%;
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+html[data-page="spel1"] #box1:hover, html[data-page="spel1"] #box2:hover, html[data-page="spel1"] #box3:hover,html[data-page="spel1"]  #box4:hover, html[data-page="spel1"] #box5:hover, html[data-page="spel1"] #box6:hover, html[data-page="spel1"] #box7:hover, html[data-page="spel1"] #box8:hover, html[data-page="spel1"] #box9:hover {
+transform: scale(1.1);
+box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+html[data-page="spel1"] #spelknapp {
+margin-left: 45%;
+padding: 15px 30px;
+background-color: #4CAF50; /* Green background */
+color: white; /* White text */
+border: none; /* Remove default border */
+border-radius: 8px; /* Rounded corners */
+cursor: pointer; /* Pointer on hover */
+font-size: 16px; /* Increase font size */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+margin-top: 10px;
+}
+
+html[data-page="spel1"] #spelknapp:hover {
+background-color: #45a049; /* Slightly darker green on hover */
+box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Increase shadow */
+transform: scale(1.05); /* Slightly enlarge button */
+}
+
+html[data-page="spel1"] #level-display {
+display: none; /* Initially hidden */
+font-size: 2em;
+font-weight: bold;
+position: absolute;
+top: 2%;
+left: 50%;
+transform: translateX(-50%);
+color: #000;
+}
+
+html[data-page="spel1"] #spelknapp:hover {
+background-color: #45a049; /* Slightly darker green on hover */
+box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Increase shadow */
+transform: scale(1.05); /* Slightly enlarge button */
+}
+
+html[data-page="spel1"] .highlight {
+background-color: lightblue !important; /* Keep lightblue color when highlighted */
+}
+
+html[data-page="spel1"] .grow {
+transform: scale(1.2); /* Makes the box bigger when highlighted */
+}
+
+html[data-page="spel1"] h1 {
+text-align: center;
+margin-bottom: 20px;
+position: absolute;
+top: 10px;
+left: 50%;
+transform: translateX(-50%);
+}
+
+html[data-page="spel1"] .no-hover html[data-page="spel1"] .box {
+pointer-events: none; /* Disables interaction, including hover */
+}
+
+/* Changes the box to orange when clicked */
+html[data-page="spel1"] .clicked {
+background-color: greenyellow !important; /* Turns orange on click */
+box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3); /* Add an orange shadow for emphasis */
+}
+
+html[data-page="spel1"] #timer-display {
+display: none;
+text-align: center;
+font-size: 1.5em;
+margin-top: 10px;
+color: #333;
+}
+
+html[data-page="spel1"] #tries-display {
+display: none;
+text-align: center;
+font-size: 1.5em;
+margin-top: 5px;
+color: #333;
+}
+
+/* Highlight the box red when the user clicks incorrectly */
+html[data-page="spel1"] .wrong {
+background-color: red !important; /* Turns red on incorrect tap */
+box-shadow: 0 8px 20px rgba(255, 0, 0, 0.3); /* Add red shadow for emphasis */
+}
+
+html[data-page="spel1"] .popup {
+display: none; /* Hidden by default */
+position: fixed;
+z-index: 1000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5); /* Dark background with transparency */
+animation: fade-in 0.5s ease-in-out;
+}
+
+html[data-page="spel1"] .popup-content {
+background-color: white;
+margin: 0 auto;
+padding: 20px;
+border-radius: 8px;
+width: 300px;
+text-align: center;
+position: absolute;
+top: -100%; /* Initially off the screen */
+left: 50%;
+transform: translateX(-50%);
+transition: top 0.6s ease-in-out; /* Smooth transition for sliding down */
+}
+
+html[data-page="spel1"] .popup-content.active {
+top: 30%; /* Final position: center of the screen */
+}
+
+html[data-page="spel1"] .close-btn {
+color: #aaa;
+font-size: 28px;
+font-weight: bold;
+float: right;
+cursor: pointer;
+}
+
+html[data-page="spel1"] .close-btn:hover, html[data-page="spel1"] .close-btn:focus {
+color: black;
+}
+
+/* Fade-in animation for the background */
+@keyframes fade-in {
+from {
+background-color: rgba(0, 0, 0, 0);
+}
+to {
+background-color: rgba(0, 0, 0, 0.5);
+}
+}
+
+html[data-page="spel1"] #circle-container {
+position: relative;
+display: inline-block;
+}
+
+html[data-page="spel1"] #hover-circle {
+position: absolute;
+top: 45%;
+left: 50%;
+transform: translate(-50%, -50%); /* Center the circle */
+height: 60px; /* Circle height */
+width: 55px;  /* Circle width */
+border-radius: 50%; /* Makes it a circle */
+border-color: rgba(0, 255, 255, 0.8);
+border-width: 5px;
+border-style: solid; /* Ensure the border appears */
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+0 0 45px rgba(0, 255, 255, 0.5),
+0 0 60px rgba(0, 255, 255, 0.4);
+opacity: 0; /* Start invisible */
+z-index: -1; /* Ensure it's behind the logo */
+transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+html[data-page="spel1"] #circle-container:hover html[data-page="spel1"] #hover-circle {
+opacity: 1; /* Make it visible when hovering */
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.8),
+0 0 30px rgba(0, 255, 255, 0.7),
+0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+0%, 100% {
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+}
+50% {
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+}
+}
+
+html[data-page="spel1"] #logo {
+cursor: pointer;
+height: 48px; /* Circle height */
+width: 48px;  /* Circle width */
+margin-top: 25px;
+transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+html[data-page="spel1"] #logo:hover {
+transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+/*spel2.php*/
+
+html[data-page="spel2"] body {
+display: flex;
+flex-direction: column;
+align-items: center;
+font-family: Arial, sans-serif;
+background-color: #f0f0f0;
+margin: 0;
+padding: 0;
+}
+
+html[data-page="spel2"] canvas {
+border: 1px solid black;
+background-color: #fff;
+}
+
+html[data-page="spel2"] #hamburger {
+position: fixed;
+top: 10px; /* Fixed distance from the top */
+left: 10px; /* Fixed distance from the left */
+background: linear-gradient(135deg, rgb(78, 162, 247), rgb(35, 116, 230));
+color: white;
+font-size: 24px;
+border: none;
+border-radius: 5px;
+padding: 10px;
+cursor: pointer;
+z-index: 1000;
+width: 60px;
+height: 60px;
+transition: transform 0.3s, box-shadow 0.3s; /* Transition for hover effects */
+}
+
+/* Hover effect for #hamburger */
+html[data-page="spel2"] #hamburger:hover {
+transform: scale(1.1); /* Slightly enlarge the button */
+box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Add a shadow for depth */
+background: linear-gradient(135deg, rgb(35, 116, 230), rgb(78, 162, 247)); /* Invert gradient for effect */
+}
+
+
+html[data-page="spel2"] #buttonContainer {
+position: fixed; /* Fixed positioning ensures it stays relative to the viewport */
+bottom: 20px; /* Fixed distance from the bottom */
+left: 50%; /* Centered horizontally in the viewport */
+transform: translateX(-50%); /* Center the container based on its own width */
+display: flex;
+gap: 15px;
+align-items: center;
+justify-content: center;
+background: linear-gradient(135deg, rgb(78, 162, 247), rgb(35, 116, 230));
+height: 80px;
+width: auto;
+border-radius: 20px;
+padding: 0 20px;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+transition: transform 0.3s, box-shadow 0.3s;
+overflow: hidden;
+z-index: 1000;
+}
+
+
+/* Responsive styles for buttons inside the container */
+html[data-page="spel2"] #buttonContainer button {
+background: white;
+color: rgb(35, 116, 230);
+border: none;
+border-radius: 10px;
+padding: 10px;
+font-size: 20px;
+font-weight: bold;
+box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+transition: background 0.3s, transform 0.3s;
+height: 60px;
+width: 60px;
+}
+
+/* Hover effect for buttons */
+html[data-page="spel2"] #buttonContainer button:hover {
+background: rgb(35, 116, 230);
+color: white;
+transform: scale(1.05);
+}
+
+html[data-page="spel2"] #startingScreen {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: linear-gradient(135deg, #1e90ff, #00bcd4);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+color: white;
+z-index: 1000; /* Ensure it covers everything */
+}
+
+html[data-page="spel2"] #startingScreen h1 {
+text-align: center;
+font-size: 3rem;
+margin-bottom: 2rem;
+text-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+html[data-page="spel2"] #storyModeButton {
+background: white;
+color: #1e90ff;
+font-size: 1.5rem;
+padding: 1rem 2rem;
+border: none;
+border-radius: 5px;
+margin: 0.5rem;
+cursor: pointer;
+transition: transform 0.2s, box-shadow 0.2s;
+
+}
+
+html[data-page="spel2"] #storyModeButton:hover {
+transform: translateY(-5px);
+box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Style for Multiplayer Mode button */
+html[data-page="spel2"] #multiplayerModeButton {
+background: white;
+color: #1e90ff;
+font-size: 1.5rem;
+padding: 1rem 2rem;
+border: none;
+border-radius: 5px;
+margin: 0.5rem;
+cursor: pointer;
+transition: transform 0.2s, box-shadow 0.2s;
+top: 200px;
+}
+
+html[data-page="spel2"] #multiplayerModeButton:hover {
+transform: translateY(-5px);
+box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+html[data-page="spel2"] #menuButton {
+position: fixed;
+top: 10px; /* Align with the hamburger button */
+left: 80px; /* Position next to the hamburger button, accounting for its width + margin */
+background: linear-gradient(135deg, #34d399, #059669); /* Complementary gradient for contrast */
+color: white;
+font-size: 20px;
+border: none;
+border-radius: 5px;
+padding: 10px;
+cursor: pointer;
+z-index: 1000;
+width: 120px;
+height: 60px;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+transition: transform 0.3s, box-shadow 0.3s;
+}
+
+/* Hover effect for the side button */
+html[data-page="spel2"] #menuButton:hover {
+transform: scale(1.1);
+box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+background: linear-gradient(135deg, #059669, #065f);
+}
+
+/*spel3.php*/
+
+html[data-page="spel3"] body {
+font-family: Arial, sans-serif;
+margin: 0;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+}
+
+html[data-page="spel3"] #game-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 20px;
+}
+
+html[data-page="spel3"] #grid-container {
+display: grid;
+grid-template-columns: repeat(4, 100px);
+grid-template-rows: repeat(4, 100px);
+gap: 10px;
+border: 5px solid blue;
+padding: 15px;
+background-color: #fff;
+}
+
+html[data-page="spel3"] .grid-box {
+width: 100px;
+height: 100px;
+border: 1px solid #ccc;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+
+html[data-page="spel3"] #info-container {
+text-align: center;
+}
+
+html[data-page="spel3"] #color-instruction {
+font-size: 20px;
+margin-bottom: 10px;
+}
+
+html[data-page="spel3"] #play-button {
+font-size: 18px;
+padding: 10px 20px;
+background-color: #007BFF;
+color: white;
+border: none;
+cursor: pointer;
+border-radius: 5px;
+transition: background-color 0.3s ease;
+}
+
+html[data-page="spel3"] #play-button:hover {
+background-color: #0056b3;
+}
+
+html[data-page="spel3"] .grid-box {
+width: 100px;
+height: 100px;
+border: 1px solid #ccc;
+cursor: pointer;
+transition: transform 0.2s ease;
+}
+
+html[data-page="spel3"] .grid-box:hover {
+transform: scale(1.1);
+}
+
+html[data-page="spel3"] #level-info {
+font-size: 24px;
+font-weight: bold;
+margin-bottom: 10px; /* Adjust margin as needed */
+text-align: center;
+}
+
+html[data-page="spel3"] #timer, html[data-page="spel3"] #attempts {
+margin: 5px 0;
+}
+
+html[data-page="spel3"] #start-button {
+font-size: 18px;
+padding: 10px 20px;
+background-color: #007BFF;
+color: white;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+
+html[data-page="spel3"] #start-button:hover {
+background-color: #0056b3;
+}
+
+html[data-page="spel3"] h1 {
+font-size: 24px;
+font-weight: bold;
+margin-bottom: 20px;
+}
+
+/*spel4.php*/
+
+html[data-page="spel4"] #maze_container {
+position: relative;
+margin: 1em auto;
+width: fit-content;
+}
+html[data-page="spel4"] #maze {
+position: relative;
+background-color: #a7c53f;
+background-image: radial-gradient(circle at 0% 0%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at center, rgba(0,0,0,0.1) 50%, transparent 50%), radial-gradient(circle at 100% 100%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at 0% 100%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at 100% 0%, transparent 50%, rgba(0,0,0,0.1) 50%);
+background-size: 8em 8em;
+}
+html[data-page="spel4"] #maze div {
+display: flex;
+}
+html[data-page="spel4"] #maze div div {
+position: relative;
+width: 1em;
+height: 1em;
+}
+html[data-page="spel4"] #maze div div::after {
+position: absolute;
+left: -3px;
+top: -4px;
+text-align: center;
+text-shadow: 0 0 1px black;
+font-size: 1.2em;
+z-index: 10;
+}
+html[data-page="spel4"] #maze div div.door.exit::after {
+content: "\1F6AA";
+}
+html[data-page="spel4"] #maze div div.nubbin::after {
+content: "\1F33C";
+}
+html[data-page="spel4"] #maze div.nubbin:nth-of-type(3n)::after {
+content: "\1F344";
+}
+html[data-page="spel4"] #maze div.nubbin:nth-of-type(5n)::after {
+content: "\1F33B";
+}
+html[data-page="spel4"] #maze div.nubbin:nth-of-type(7n)::after {
+content: "\1F48E";
+}
+html[data-page="spel4"] #maze div.nubbin:nth-of-type(13n)::after {
+content: "\1F381";
+}
+html[data-page="spel4"] #maze div.hero::after {
+content: "\1F6B6" !important;
+}
+html[data-page="spel4"] #maze.face-right div.hero::after {
+transform: scale(-1, 1);
+}
+html[data-page="spel4"] #maze div div.wall, #maze div div.nubbin.wall, #maze div div.door.exit {
+background-color: #454545;
+background-image: linear-gradient(45deg, rgba(0,0,0,0.2) 45%, transparent 55%), linear-gradient(to bottom, rgba(0,0,0,0.2) 45%, transparent 55%);
+background-size: 0.5em 0.5em;
+}
+html[data-page="spel4"] #maze div div.nubbin.wall::after {
+content: "";
+}
+html[data-page="spel4"] #maze div div.sentinel.wall {
+background: transparent;
+}
+html[data-page="spel4"] #maze div div.sentinel.wall::after {
+content: "\1F40A";
+}
+html[data-page="spel4"] #maze div.sentinel.wall:nth-of-type(3n)::after {
+content: "\1F40D";
+}
+html[data-page="spel4"] #maze div div.key::after {
+content: "\1F511";
+}
+
+html[data-page="spel4"] #maze div div:nth-child(odd) {
+width: 1em;
+}
+html[data-page="spel4"] #maze div:nth-child(odd) div {
+height: 1em;
+}
+
+html[data-page="spel4"] #maze.finished::after {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: space-around;
+align-items: center;
+content: "Game Over";
+background: rgba(0,0,0,0.4);
+text-align: center;
+text-transform: uppercase;
+font-family: monospace;
+font-size: 5em;
+text-shadow: 2px 2px 2px rgba(0,0,0,0.8);
+color: #fff;
+z-index: 10;
+}
+
+html[data-page="spel4"] #maze_output {
+display: flex;
+margin: 0.5em auto;
+}
+html[data-page="spel4"] #maze_score, #maze_message {
+font-family: fantasy;
+font-weight: bold;
+font-size: 1em;
+}
+html[data-page="spel4"] #maze_score {
+flex: 1;
+white-space: nowrap;
+text-align: left;
+}
+html[data-page="spel4"] #maze_score::before {
+content: "Score: ";
+}
+html[data-page="spel4"] #maze_score.has-key::after {
+content: "\00a0\1F511";
+}
+html[data-page="spel4"] #maze_message {
+flex: 3;
+text-align: right;
+}
+

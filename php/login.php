@@ -13,11 +13,11 @@ include 'db.php';
 ?>
 
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="sv" data-page="login">
 <head>
     <title>Login - Play Point</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="../css/login.css">
+    <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 <body>
     <header id="header">
@@ -106,5 +106,6 @@ include 'db.php';
     }
     ?>
 </body>
-<script src="../js/login.js"></script>
+<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+<script src="../script.js"></script>
 </html>

@@ -1,24 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html data-page="spel4">
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" href="../css/spel4.css" type="text/css">
+        <link rel="stylesheet" href="../style.css" type="text/css">
     </head>
     <body>
 
     <div id="maze_container"><!-- --></div>
 
-    <script src="../js/spel4.js"></script>
-    <script>
-
-    let Maze = new MazeBuilder(Math.floor(Math.random() * 20) + 4, Math.floor(Math.random() * 20) + 4);
-    Maze.placeKey();
-    Maze.display("maze_container");
-
-    // Initialize the player
-    let player = new Player(Maze);
-    player.init();
-
-    </script>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+    <script src="../script.js"></script>
     </body>
 </html>

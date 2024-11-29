@@ -3,11 +3,11 @@ session_start();
 ?>
 
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="sv" data-page="index">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../css/index.css" type="text/css" rel="stylesheet">
+    <link href="../style.css" type="text/css" rel="stylesheet">
     <title>Arcade Point</title>
 </head>
 <body>
@@ -72,5 +72,6 @@ session_start();
         <p>Senast uppdaterad: 2024-10-08</p>
     </footer>
 </body>
-<script src="../js/index.js"></script>
+<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+<script src="../script.js"></script>
 </html>

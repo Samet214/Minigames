@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-page="spel1">
     <head>
         <meta charset="utf-8">
         <title>Box Highlight Game</title>
-        <link href="../css/spel1.css" rel="stylesheet" type="text/css">
+        <link href="../style.css" rel="stylesheet" type="text/css">
     </head>
     <body>
         <h1 id="level-display"></h1>
@@ -38,5 +38,6 @@
     </div>
 
     </body>
-    <script src="../js/spel1.js"></script>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+    <script src="../script.js"></script>
 </html>

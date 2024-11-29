@@ -1,0 +1,2148 @@
+// Get the PHP file name from the data attribute
+const phpFileInfoElement = document.getElementById('php-file-info');
+const currentPhpFile = phpFileInfoElement.getAttribute('data-php-file');
+
+if (currentPhpFile === "game_display.php") {
+    alert('hey');
+} else if (currentPhpFile === "index.php") {
+    function redirect(url) {
+        window.location.href = url;
+    }
+    
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        var toggleButton = document.getElementById("sidebar-toggle");
+    
+        // Toggle the 'open' class
+        sidebar.classList.toggle("open");
+    
+        // Adjust the width of the sidebar when open
+        if (sidebar.classList.contains("open")) {
+            sidebar.style.width = "250px"; // Set width when sidebar is open
+            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+        } else {
+            sidebar.style.width = "0"; // Set width to 0 when sidebar is closed
+            toggleButton.style.left = "10px"; // Reset to original position
+        }
+    }
+    
+    document.getElementById("logo").addEventListener("click", function() {
+        redirect('index.php');
+    });
+    
+    const logo = document.getElementById('logo');
+    const hoverCircle = document.getElementById('hover-circle');
+    
+    // Smooth transition when hovering over the logo
+    logo.addEventListener('mouseover', () => {
+        hoverCircle.style.opacity = '1'; // Fade in
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)'; // Intense glow
+    });
+    
+    logo.addEventListener('mouseout', () => {
+        hoverCircle.style.opacity = '0'; // Fade out
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
+    });
+    
+    let currency = 0;
+    
+    function gainCurrency(amount) {
+        currency += amount;
+        document.getElementById('currency-amount').textContent = currency;
+    }
+
+} else if (currentPhpFile === "login.php") {
+    function redirect(url) {
+        window.location.href = url;
+    }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        const infoSection = document.getElementById('login-info');
+        infoSection.style.opacity = 0;
+    
+        setTimeout(function () {
+            infoSection.style.transition = 'opacity 1.5s ease-in-out';
+            infoSection.style.opacity = 1;
+        }, 200);
+    });
+    
+    document.getElementById("logo").addEventListener("click", function() {
+        redirect('index.php');
+    });
+    
+    const logo = document.getElementById('logo');
+    const hoverCircle = document.getElementById('hover-circle');
+    
+    // Smooth transition when hovering over the logo
+    logo.addEventListener('mouseover', () => {
+        hoverCircle.style.opacity = '1'; // Fade in
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)'; // Intense glow
+    });
+    
+    logo.addEventListener('mouseout', () => {
+        hoverCircle.style.opacity = '0'; // Fade out
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
+    });
+    
+    let currency = 0;
+    
+    function gainCurrency(amount) {
+        currency += amount;
+        document.getElementById('currency-amount').textContent = currency;
+    }
+} else if (currentPhpFile === "sida.php") {
+    function redirect(url) {
+        window.location.href = url;
+    }
+    
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        var toggleButton = document.getElementById("sidebar-toggle");
+    
+        sidebar.classList.toggle("open");
+    
+        // Check if sidebar is open and move the button accordingly
+        if (sidebar.classList.contains("open")) {
+            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+        } else {
+            toggleButton.style.left = "10px"; // Reset to original position
+        }
+    }
+    
+    // Define gainExp with an additional callback parameter
+    function gainExp(expAmount, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "sida.php", true);
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var response = JSON.parse(xhr.responseText);
+                var currentExp = response.current_exp;
+                var nextLevelExp = response.next_level_exp;
+                var level = response.level;
+    
+                console.log("Current EXP:", currentExp);
+                console.log("Next Level EXP:", nextLevelExp);
+                console.log("Level:", level);
+    
+                // Format numbers with appropriate units (K, M, G)
+                function formatNumber(number) {
+                    if (number >= 1000000000) {
+                        return (number / 1000000000).toFixed(1) + 'G';
+                    } else if (number >= 1000000) {
+                        return (number / 1000000).toFixed(1) + 'M';
+                    } else if (number >= 1000) {
+                        return (number / 1000).toFixed(1) + 'K';
+                    } else {
+                        return number;
+                    }
+                }
+    
+                var formattedCurrentExp = formatNumber(currentExp);
+                var formattedNextLevelExp = formatNumber(nextLevelExp);
+    
+                // Update the EXP bar and text
+                var progressBar = document.getElementById('expProgress');
+                var expText = document.getElementById('expText');
+                progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
+                expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
+    
+                // Update the user's level
+                document.getElementById('level').textContent = level;
+    
+                // If callback is provided, execute it with EXP data
+                if (callback) {
+                    callback(currentExp, nextLevelExp, level);
+                }
+            }
+        };
+    
+        // Send the request to the server with the EXP amount
+        xhr.send("add_exp=true&exp_amount=" + expAmount);
+    }
+    
+    
+    function toggleProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchBox = document.getElementById('searchInput');
+    
+        document.addEventListener('click', handleOutsideClick);
+    
+        // Ensure profileSquare remains visible without re-toggling
+        if (profileSquare.classList.contains('active')) {
+            closeProfile();
+        } else {
+            profileSquare.classList.add('active');
+            profileSquare.style.display = 'block';
+            profileSquare.style.opacity = '1';
+            profileSquare.style.transform = 'translateY(10px)';
+        }
+    }
+    
+    // Function to close the profile square
+    function closeProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+    
+        profileSquare.style.opacity = '0';
+        profileSquare.style.transform = 'translateY(0px)';
+    
+        // Timeout to wait for the animation to finish before hiding
+        setTimeout(() => {
+            profileSquare.classList.remove('active');
+            profileSquare.style.display = 'none';
+        }, 300); // Match the CSS transition duration
+    
+        // Remove the event listener
+        document.removeEventListener('click', handleOutsideClick);
+    }
+    
+    // Handle clicks outside of the square
+    function handleOutsideClick(event) {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchProfileBtn = document.getElementById('searchProfileBtn');
+        
+        // Check if the click is outside profileSquare and not on result-item or close-button
+        if (
+            !profileSquare.contains(event.target) &&
+            event.target !== searchProfileBtn &&
+            !event.target.classList.contains('result-item') &&
+            !event.target.classList.contains('close-button') &&
+            !event.target.classList.contains('profile-image') &&
+            event.target.id !== 'sidebar-toggle' &&
+            !event.target.classList.contains('messagebutton')
+        ) {
+            closeProfile();
+        }
+    }
+    
+    // Assuming searchProfiles is where you create and display search results
+    function searchProfiles() {
+        const searchInput = document.getElementById('searchInput').value.trim();
+    
+        if (searchInput === '') {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+    
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
+    
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const results = JSON.parse(xhr.responseText);
+                const searchResultsContainer = document.getElementById('searchResults');
+                searchResultsContainer.innerHTML = '';
+    
+                if (results.message) {
+                    const noUserFound = document.createElement('div');
+                    noUserFound.classList.add('result-item');
+                    noUserFound.textContent = results.message;
+                    searchResultsContainer.appendChild(noUserFound);
+                } else {
+                    results.forEach(function(user) {
+                        const profileImage = user.Profil_bild || 'default.png';
+                        const resultItem = document.createElement('div');
+                        resultItem.classList.add('result-item');
+    
+                        // Set data attributes for level, exp, and exp threshold
+                        resultItem.dataset.profileImage = profileImage;
+                        resultItem.dataset.level = user.Levels;
+                        resultItem.dataset.exp = user.EXP;
+                        resultItem.dataset.expThreshold = user.EXP_GRÄNS;
+    
+                        const img = document.createElement('img');
+                        img.classList.add('profile-image');
+                        img.src = '../pfp/' + profileImage;
+    
+                        const username = document.createElement('span');
+                        username.classList.add('username');
+                        username.textContent = user.Namn;
+    
+                        resultItem.appendChild(img);
+                        resultItem.appendChild(username);
+                        searchResultsContainer.appendChild(resultItem);
+                    });
+                }
+            }
+        };
+    
+        xhr.send();
+    }
+    
+    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
+        const searchResultsContainer = document.getElementById('searchResults');
+    
+        // Clear previous results
+        searchResultsContainer.innerHTML = '';
+    
+        // Create a new container for the selected profile
+        const selectedProfileContainer = document.createElement('div');
+        selectedProfileContainer.style.display = 'flex';
+        selectedProfileContainer.style.alignItems = 'center';
+        selectedProfileContainer.style.flexDirection = 'column';
+        selectedProfileContainer.style.textAlign = 'center';
+    
+        // Add profile picture and username
+        const profileCircle = document.createElement('img');
+        profileCircle.src = '../pfp/' + profileImageSrc;
+        profileCircle.classList.add('selected-profile-circle');
+    
+        const username = document.createElement('span');
+        username.classList.add('username2');
+        username.textContent = userName;
+    
+        // Create the level section with EXP details as plain text
+        const levelSection = document.createElement('div');
+        levelSection.classList.add('level-section2');
+        levelSection.innerHTML = `
+            <h4>Level <span>${userLevel}</span></h4>
+            <div class="exp-bar2">
+                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
+            </div>
+            <p>${userExp} / ${expThreshold} EXP</p>
+        `;
+    
+        // Append elements to the new profile container
+        selectedProfileContainer.appendChild(profileCircle);
+        selectedProfileContainer.appendChild(username);
+        selectedProfileContainer.appendChild(levelSection);
+    
+        const messagebutton = document.createElement('button');
+        messagebutton.classList.add('messagebutton');
+    
+        messagebutton.textContent = 'Meddelande'
+    
+        searchResultsContainer.appendChild(messagebutton);
+    
+        // Append to the search results container
+        searchResultsContainer.appendChild(selectedProfileContainer);
+    
+        // Add the close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            searchResultsContainer.innerHTML = '';
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
+            searchProfiles(); // Reload the search results
+        });
+        selectedProfileContainer.appendChild(closeButton);
+    }
+    
+    function openMessageContainer() {
+        const searchResultsContainer = document.getElementById('searchResults');
+        searchResultsContainer.innerHTML = ''; // Clear any previous content
+    
+        // Create and configure the "Close" button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            // Return to the search input and reload search results
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box
+            searchResultsContainer.innerHTML = ''; // Clear the message container
+            searchProfiles(); // Reload the search results
+        });
+    
+        // Message display area
+        const messageDisplay = document.createElement('div');
+        messageDisplay.classList.add('message-display');
+    
+        // Input field for composing new messages
+        const messageInput = document.createElement('input');
+        messageInput.type = 'text';
+        messageInput.classList.add('message-input');
+        messageInput.placeholder = 'Write a message...';
+    
+        // "Send" button for sending messages
+        const sendButton = document.createElement('button');
+        sendButton.textContent = 'Send';
+        sendButton.classList.add('send-button');
+    
+        // Append elements to display the message UI
+        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
+        searchResultsContainer.appendChild(closeButton);
+        searchResultsContainer.appendChild(messageDisplay);
+        searchResultsContainer.appendChild(messageInput);
+        searchResultsContainer.appendChild(sendButton);
+    }
+    
+    
+    // Event listener for handling profile and message interactions
+    document.addEventListener('click', function(event) {
+        const searchResultsContainer = document.getElementById('searchResults');
+        const searchBox = document.getElementById('searchInput');
+    
+        // Check if a profile item or profile image is clicked
+        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
+            const clickedItem = event.target.closest('.result-item');
+            const profileImageSrc = clickedItem.dataset.profileImage;
+            const userName = clickedItem.querySelector('.username').textContent;
+            const userLevel = clickedItem.dataset.level;
+            const userExp = clickedItem.dataset.exp;
+            const expThreshold = clickedItem.dataset.expThreshold;
+    
+            // Hide the search box
+            searchBox.style.display = 'none';
+    
+            // Display the selected profile with its details
+            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+        }
+    
+        // Check if the "Meddelande" (Message) button is clicked
+        if (event.target.classList.contains('messagebutton')) {
+            openMessageContainer();
+        }
+    });    
+} else if (currentPhpFile === "signup.php") {
+    function redirect(url) {
+        window.location.href = url;
+    }
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        const infoSection = document.getElementById('signup-info');
+        infoSection.style.opacity = 0;
+    
+        setTimeout(function () {
+            infoSection.style.transition = 'opacity 1.5s ease-in-out';
+            infoSection.style.opacity = 1;
+        }, 200);
+    });
+    
+    document.getElementById("logo").addEventListener("click", function() {
+        redirect('index.php');
+    });
+    
+    const logo = document.getElementById('logo');
+    const hoverCircle = document.getElementById('hover-circle');
+    
+    // Smooth transition when hovering over the logo
+    logo.addEventListener('mouseover', () => {
+        hoverCircle.style.opacity = '1'; // Fade in
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)'; // Intense glow
+    });
+    
+    logo.addEventListener('mouseout', () => {
+        hoverCircle.style.opacity = '0'; // Fade out
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
+    });
+    
+    let currency = 0;
+    
+    function gainCurrency(amount) {
+        currency += amount;
+        document.getElementById('currency-amount').textContent = currency;
+    }
+} else if (currentPhpFile === "spel.php") {
+    function redirect(url) {
+        window.location.href = url;
+    }
+    
+    function openModal(gameId) {
+        const gameUrls = {
+            game1: "game_display.php?gameId=game1",
+            game2: "game_display.php?gameId=game2",
+            game3: "game_display.php?gameId=game3",
+            game4: "game_display.php?gameId=game4",
+            game5: "game_display.php?gameId=game5"
+        };
+    
+        if (gameUrls[gameId]) {
+            window.location.href = gameUrls[gameId];
+        } else {
+            alert("Game not found!");
+        }
+    }
+    
+    function closeModal() {
+        const overlay = document.getElementById("overlay");
+        const modal = document.getElementById("modal");
+        overlay.style.animation = "fadeOut 0.5s ease-out forwards";
+        modal.style.animation = "modalResizeOut 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards";
+    
+        setTimeout(() => {
+            overlay.style.display = "none";
+        }, 500);
+    }
+    
+    let currency = 0;
+    
+    function gainCurrency(amount) {
+        currency += amount;
+        document.getElementById('currency-amount').textContent = currency;
+    }
+    
+    // Toggle Full-Screen Mode
+    function toggleFullScreen(event) {
+        event.stopPropagation();
+        const modal = document.getElementById("modal");
+        const enterIcon = document.getElementById("enter-fullscreen-icon");
+        const exitIcon = document.getElementById("exit-fullscreen-icon");
+        const gameIframe = document.getElementById("game-iframe");
+    
+        if (!document.fullscreenElement) {
+            modal.requestFullscreen().then(() => {
+                modal.classList.add("full-screen-mode");
+                enterIcon.style.display = "none";
+                exitIcon.style.display = "inline";
+            });
+        } else {
+            document.exitFullscreen().then(() => {
+                modal.classList.remove("full-screen-mode");
+                enterIcon.style.display = "inline";
+                exitIcon.style.display = "none";
+            });
+        }
+    }
+    
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        var toggleButton = document.getElementById("sidebar-toggle");
+    
+        sidebar.classList.toggle("open");
+    
+        // Check if sidebar is open and move the button accordingly
+        if (sidebar.classList.contains("open")) {
+            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+        } else {
+            toggleButton.style.left = "10px"; // Reset to original position
+        }
+    }
+    
+    // Define gainExp with an additional callback parameter
+    function gainExp(expAmount, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "sida.php", true);
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var response = JSON.parse(xhr.responseText);
+                var currentExp = response.current_exp;
+                var nextLevelExp = response.next_level_exp;
+                var level = response.level;
+    
+                console.log("Current EXP:", currentExp);
+                console.log("Next Level EXP:", nextLevelExp);
+                console.log("Level:", level);
+    
+                // Format numbers with appropriate units (K, M, G)
+                function formatNumber(number) {
+                    if (number >= 1000000000) {
+                        return (number / 1000000000).toFixed(1) + 'G';
+                    } else if (number >= 1000000) {
+                        return (number / 1000000).toFixed(1) + 'M';
+                    } else if (number >= 1000) {
+                        return (number / 1000).toFixed(1) + 'K';
+                    } else {
+                        return number;
+                    }
+                }
+    
+                var formattedCurrentExp = formatNumber(currentExp);
+                var formattedNextLevelExp = formatNumber(nextLevelExp);
+    
+                // Update the EXP bar and text
+                var progressBar = document.getElementById('expProgress');
+                var expText = document.getElementById('expText');
+                progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
+                expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
+    
+                // Update the user's level
+                document.getElementById('level').textContent = level;
+    
+                // If callback is provided, execute it with EXP data
+                if (callback) {
+                    callback(currentExp, nextLevelExp, level);
+                }
+            }
+        };
+    
+        // Send the request to the server with the EXP amount
+        xhr.send("add_exp=true&exp_amount=" + expAmount);
+    }
+    
+    
+    function toggleProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchBox = document.getElementById('searchInput');
+    
+        document.addEventListener('click', handleOutsideClick);
+    
+        // Ensure profileSquare remains visible without re-toggling
+        if (profileSquare.classList.contains('active')) {
+            closeProfile();
+        } else {
+            profileSquare.classList.add('active');
+            profileSquare.style.display = 'block';
+            profileSquare.style.opacity = '1';
+            profileSquare.style.transform = 'translateY(10px)';
+        }
+    }
+    
+    // Function to close the profile square
+    function closeProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+    
+        profileSquare.style.opacity = '0';
+        profileSquare.style.transform = 'translateY(0px)';
+    
+        // Timeout to wait for the animation to finish before hiding
+        setTimeout(() => {
+            profileSquare.classList.remove('active');
+            profileSquare.style.display = 'none';
+        }, 300); // Match the CSS transition duration
+    
+        // Remove the event listener
+        document.removeEventListener('click', handleOutsideClick);
+    }
+    
+    // Handle clicks outside of the square
+    function handleOutsideClick(event) {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchProfileBtn = document.getElementById('searchProfileBtn');
+        
+        // Check if the click is outside profileSquare and not on result-item or close-button
+        if (
+            !profileSquare.contains(event.target) &&
+            event.target !== searchProfileBtn &&
+            !event.target.classList.contains('result-item') &&
+            !event.target.classList.contains('close-button') &&
+            !event.target.classList.contains('profile-image') &&
+            event.target.id !== 'sidebar-toggle' &&
+            !event.target.classList.contains('messagebutton')
+        ) {
+            closeProfile();
+        }
+    }
+    
+    // Assuming searchProfiles is where you create and display search results
+    function searchProfiles() {
+        const searchInput = document.getElementById('searchInput').value.trim();
+    
+        if (searchInput === '') {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+    
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
+    
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const results = JSON.parse(xhr.responseText);
+                const searchResultsContainer = document.getElementById('searchResults');
+                searchResultsContainer.innerHTML = '';
+    
+                if (results.message) {
+                    const noUserFound = document.createElement('div');
+                    noUserFound.classList.add('result-item');
+                    noUserFound.textContent = results.message;
+                    searchResultsContainer.appendChild(noUserFound);
+                } else {
+                    results.forEach(function(user) {
+                        const profileImage = user.Profil_bild || 'default.png';
+                        const resultItem = document.createElement('div');
+                        resultItem.classList.add('result-item');
+    
+                        // Set data attributes for level, exp, and exp threshold
+                        resultItem.dataset.profileImage = profileImage;
+                        resultItem.dataset.level = user.Levels;
+                        resultItem.dataset.exp = user.EXP;
+                        resultItem.dataset.expThreshold = user.EXP_GRÄNS;
+    
+                        const img = document.createElement('img');
+                        img.classList.add('profile-image');
+                        img.src = '../pfp/' + profileImage;
+    
+                        const username = document.createElement('span');
+                        username.classList.add('username');
+                        username.textContent = user.Namn;
+    
+                        resultItem.appendChild(img);
+                        resultItem.appendChild(username);
+                        searchResultsContainer.appendChild(resultItem);
+                    });
+                }
+            }
+        };
+    
+        xhr.send();
+    }
+    
+    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
+        const searchResultsContainer = document.getElementById('searchResults');
+    
+        // Clear previous results
+        searchResultsContainer.innerHTML = '';
+    
+        // Create a new container for the selected profile
+        const selectedProfileContainer = document.createElement('div');
+        selectedProfileContainer.style.display = 'flex';
+        selectedProfileContainer.style.alignItems = 'center';
+        selectedProfileContainer.style.flexDirection = 'column';
+        selectedProfileContainer.style.textAlign = 'center';
+    
+        // Add profile picture and username
+        const profileCircle = document.createElement('img');
+        profileCircle.src = '../pfp/' + profileImageSrc;
+        profileCircle.classList.add('selected-profile-circle');
+    
+        const username = document.createElement('span');
+        username.classList.add('username2');
+        username.textContent = userName;
+    
+        // Create the level section with EXP details as plain text
+        const levelSection = document.createElement('div');
+        levelSection.classList.add('level-section2');
+        levelSection.innerHTML = `
+            <h4>Level <span>${userLevel}</span></h4>
+            <div class="exp-bar2">
+                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
+            </div>
+            <p>${userExp} / ${expThreshold} EXP</p>
+        `;
+    
+        // Append elements to the new profile container
+        selectedProfileContainer.appendChild(profileCircle);
+        selectedProfileContainer.appendChild(username);
+        selectedProfileContainer.appendChild(levelSection);
+    
+        const messagebutton = document.createElement('button');
+        messagebutton.classList.add('messagebutton');
+    
+        messagebutton.textContent = 'Meddelande'
+    
+        searchResultsContainer.appendChild(messagebutton);
+    
+        // Append to the search results container
+        searchResultsContainer.appendChild(selectedProfileContainer);
+    
+        // Add the close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            searchResultsContainer.innerHTML = '';
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
+            searchProfiles(); // Reload the search results
+        });
+        selectedProfileContainer.appendChild(closeButton);
+    }
+    
+    function openMessageContainer() {
+        const searchResultsContainer = document.getElementById('searchResults');
+        searchResultsContainer.innerHTML = ''; // Clear any previous content
+    
+        // Create and configure the "Close" button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            // Return to the search input and reload search results
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box
+            searchResultsContainer.innerHTML = ''; // Clear the message container
+            searchProfiles(); // Reload the search results
+        });
+    
+        // Message display area
+        const messageDisplay = document.createElement('div');
+        messageDisplay.classList.add('message-display');
+    
+        // Input field for composing new messages
+        const messageInput = document.createElement('input');
+        messageInput.type = 'text';
+        messageInput.classList.add('message-input');
+        messageInput.placeholder = 'Write a message...';
+    
+        // "Send" button for sending messages
+        const sendButton = document.createElement('button');
+        sendButton.textContent = 'Send';
+        sendButton.classList.add('send-button');
+    
+        // Append elements to display the message UI
+        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
+        searchResultsContainer.appendChild(closeButton);
+        searchResultsContainer.appendChild(messageDisplay);
+        searchResultsContainer.appendChild(messageInput);
+        searchResultsContainer.appendChild(sendButton);
+    }
+    
+    
+    // Event listener for handling profile and message interactions
+    document.addEventListener('click', function(event) {
+        const searchResultsContainer = document.getElementById('searchResults');
+        const searchBox = document.getElementById('searchInput');
+    
+        // Check if a profile item or profile image is clicked
+        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
+            const clickedItem = event.target.closest('.result-item');
+            const profileImageSrc = clickedItem.dataset.profileImage;
+            const userName = clickedItem.querySelector('.username').textContent;
+            const userLevel = clickedItem.dataset.level;
+            const userExp = clickedItem.dataset.exp;
+            const expThreshold = clickedItem.dataset.expThreshold;
+    
+            // Hide the search box
+            searchBox.style.display = 'none';
+    
+            // Display the selected profile with its details
+            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+        }
+    
+        // Check if the "Meddelande" (Message) button is clicked
+        if (event.target.classList.contains('messagebutton')) {
+            openMessageContainer();
+        }
+    });    
+} else if (currentPhpFile === "spel1.php") {
+    function redirect(url) {
+        window.location.href = url;
+    }
+    
+    
+    let currentLevel = 1; // Default level
+    let isAnimating = false; // To prevent multiple animations at the same time
+    let cancelAnimation = false; // To stop long-running animations when new clicks happen
+    
+    let remainingTime = 0;
+    let timerInterval;
+    let remainingTries = 3; // Default value of 3 tries
+    let highlightedSequence = [];
+    let currentTapIndex = 0; // To track the current index of user tap
+    
+    // Function to update the displayed level
+    function setLevel(level) {
+        currentLevel = level;
+        document.getElementById('level-display').textContent = `Level: ${level}`;
+    }
+    
+    // Function to update the tries display
+    function updateTriesDisplay() {
+        const triesDisplay = document.getElementById('tries-display');
+        triesDisplay.textContent = `Antal försök: ${remainingTries}`;
+    }
+    
+    // Function to calculate the time for the current level
+    function calculateTimeForLevel(level) {
+        if (level <= 3) {
+            return 10; // 10 seconds for levels 1 to 3
+        } else {
+            return 10 + (level - 3) * 5; // Add 5 seconds for each level after level 3
+        }
+    }
+    
+    // Function to start the timer
+    function startTimer(duration) {
+        remainingTime = duration;
+        const timerDisplay = document.getElementById('timer-display');
+        timerDisplay.textContent = `Tid kvar: ${remainingTime}s`;
+    
+        timerInterval = setInterval(() => {
+            remainingTime--;
+            timerDisplay.textContent = `Tid kvar: ${remainingTime}s`;
+    
+            if (remainingTime <= 0) {
+                clearInterval(timerInterval); // Stop the timer when it reaches 0
+                loseAllAttempts(); // Player loses all attempts if time runs out
+            }
+        }, 1000); // Update every second
+    }
+    
+    // Function to highlight a box and store the sequence
+    function highlightBox(box) {
+        return new Promise(resolve => {
+            highlightedSequence.push(box); // Store this box in the sequence
+            box.classList.add('highlight');
+            box.classList.add('grow');
+            
+            setTimeout(() => {
+                box.classList.remove('grow'); // Shrinking animation begins
+                
+                setTimeout(() => {
+                    box.classList.remove('highlight'); // Remove highlight after box returns to normal
+                    resolve();
+                }, 300); // 0.4 second delay for shrinking
+            }, 300); // 0.4 second for growing
+        });
+    }
+    
+    // Function to start a new level
+    async function startLevel() {
+        const container = document.getElementById('container');
+        container.classList.add('no-hover');
+        isAnimating = true;
+        cancelAnimation = false;
+    
+        const boxes = document.querySelectorAll('.box');
+        highlightedSequence = []; // Reset the sequence for the new level
+    
+        // Highlight the sequence based on the current level
+        for (let i = 0; i < currentLevel; i++) {
+            if (cancelAnimation) break;
+            const randomIndex = Math.floor(Math.random() * boxes.length);
+            await highlightBox(boxes[randomIndex]);
+        }
+    
+        container.classList.remove('no-hover');
+        isAnimating = false;
+        currentTapIndex = 0; // Reset tap index for this level
+    
+        // Start the timer for the new level
+        const timeForLevel = calculateTimeForLevel(currentLevel);
+        startTimer(timeForLevel);
+    }
+    
+    // Function to handle when the user taps a box
+    function handleBoxClick(box) {
+        if (remainingTries <= 0) return; // No attempts left, ignore taps
+        if (currentTapIndex >= highlightedSequence.length) return; // If sequence is complete, do nothing
+    
+        const expectedBox = highlightedSequence[currentTapIndex];
+        if (box === expectedBox) {
+            // Correct box clicked
+            box.classList.add('clicked'); // Temporarily highlight the box orange
+            setTimeout(() => {
+                box.classList.remove('clicked'); // Remove the clicked highlight
+            }, 300);
+            currentTapIndex++; // Move to the next box in the sequence
+    
+            if (currentTapIndex === highlightedSequence.length) {
+                // Player has correctly tapped all the boxes, proceed to the next level
+                clearInterval(timerInterval); // Stop the timer
+                setTimeout(() => {
+                    nextLevel(); // Proceed to the next level after a short delay
+                }, 500); // Small delay before starting the next level
+            }
+        } else {
+            // Incorrect box clicked
+            box.classList.add('wrong'); // Temporarily highlight the box red
+            setTimeout(() => {
+                box.classList.remove('wrong');
+            }, 300);
+            remainingTries--; // Decrease attempts
+            updateTriesDisplay();
+    
+            if (remainingTries <= 0) {
+                clearInterval(timerInterval); // Stop the timer if no attempts are left
+                loseAllAttempts(); // Game over logic
+            }
+        }
+    }
+    
+    // Function to proceed to the next level
+    function nextLevel() {
+        currentLevel++; // Increase the level
+        setLevel(currentLevel); // Update the level display
+        startLevel(); // Start the next level
+    }
+    
+    // Lose all attempts when the timer runs out or attempts are 0
+    function loseAllAttempts() {
+        remainingTries = 0;
+        updateTriesDisplay();
+        document.querySelectorAll('.box').forEach(box => {
+            box.classList.add('wrong'); // Highlight all boxes red as a game-over indicator
+            setTimeout(() => {
+                box.classList.remove('wrong');
+            }, 500); // Remove the red highlight after 500ms
+        });
+    }
+    
+    // Add the click event listener to each box
+    document.querySelectorAll('.box').forEach(box => {
+        box.addEventListener('click', function() {
+            handleBoxClick(box);
+        });
+    });
+    
+    // Start the game when the "Start Game" button is clicked
+    document.getElementById('spelknapp').addEventListener('click', function() {
+        this.style.display = 'none'; // Hide start button
+        document.getElementById('level-display').style.display = 'block'; // Show level display
+        document.getElementById('timer-display').style.display = 'block'; // Show level display
+        document.getElementById('tries-display').style.display = 'block'; // Show level display
+        updateTriesDisplay(); // Show the tries display
+        startLevel(); // Start the first level
+    });
+    
+    // Set the initial level
+    setLevel(1);
+    
+    let bestLevel = 1; // Store the best level
+    
+    // Function to show the game over popup with sliding animation
+    function showGameOverPopup() {
+        const popup = document.getElementById('game-over-popup');
+        const popupContent = document.querySelector('.popup-content');
+    
+        // Update popup content with level, exp, and best level
+        document.getElementById('popup-level').textContent = currentLevel;
+        document.getElementById('popup-exp').textContent = currentLevel * 10; // Example EXP calculation
+        document.getElementById('popup-best-level').textContent = bestLevel;
+    
+        if (currentLevel > bestLevel) {
+            bestLevel = currentLevel; // Update best level if current level is higher
+        }
+    
+        // Display the popup
+        popup.style.display = 'block';
+    
+        // Slide the popup content from top to center
+        setTimeout(() => {
+            popupContent.classList.add('active'); // Apply the 'active' class to trigger the transition
+        }, 100); // Slight delay for smoother animation
+    }
+    
+    // Close the popup if the user clicks outside of the content
+    window.addEventListener('click', function(event) {
+        const popup = document.getElementById('game-over-popup');
+        const popupContent = document.querySelector('.popup-content');
+        if (event.target === popup) {
+            closeGameOverPopup();
+        }
+    });
+    
+    // Modify the closeGameOverPopup function to ensure the popup hides properly
+    function closeGameOverPopup() {
+        const popup = document.getElementById('game-over-popup');
+        const popupContent = document.querySelector('.popup-content');
+    
+        // Remove 'active' class to slide the popup back up
+        popupContent.classList.remove('active');
+    
+        // Hide popup after the transition ends (0.6s for sliding)
+        setTimeout(() => {
+            popup.style.display = 'none';
+    
+            // Refresh the game after the popup is hidden
+            setTimeout(() => {
+                window.location.reload();
+            }, 0);
+        }, 200); // Match the transition duration of the sliding animation
+    }
+    
+    
+    // Modify the loseAllAttempts function to show the popup
+    function loseAllAttempts() {
+        remainingTries = 0;
+        updateTriesDisplay();
+        document.querySelectorAll('.box').forEach(box => {
+            box.classList.add('wrong'); // Highlight all boxes red as a game-over indicator
+            setTimeout(() => {
+                box.classList.remove('wrong');
+            }, 500); // Remove the red highlight after 500ms
+        });
+    
+        // Show the game over popup slightly after the red highlight
+        setTimeout(() => {
+            showGameOverPopup();
+        }, 200);
+    }    
+} else if (currentPhpFile === "spel2.php") {
+    const { Engine, Render, Runner, World, Bodies, Body, Events } = Matter;
+
+// Canvas and Engine Setup
+const canvas = document.getElementById('drawingCanvas');
+const width = innerWidth;
+const height = innerHeight;
+
+const engine = Engine.create();
+const world = engine.world;
+engine.gravity.y = 4; // Adjust gravity strength
+
+let allLines = [];
+let undoneLines = [];
+let isOnSurface = false; // Tracks if the ball is on a surface
+let jumpAllowed = true; // Allows jump only if the ball is on a surface
+const initialJumpHeight = -5; // Initial jump height
+let currentJumpHeight = initialJumpHeight;
+let jumpHoldTime = 0; // How long the spacebar has been held down
+const hamburger = document.getElementById('hamburger');
+const buttonContainer = document.getElementById('buttonContainer');
+
+// By default, the button container is hidden
+buttonContainer.style.display = 'none';
+
+// Toggle visibility when the hamburger button is clicked
+hamburger.addEventListener('click', () => {
+    if (buttonContainer.style.display === 'none') {
+        buttonContainer.style.display = 'flex'; // Show the container
+    } else {
+        buttonContainer.style.display = 'none'; // Hide the container
+    }
+});
+
+document.getElementById('menuButton').addEventListener('click', () => {
+    // Switch to Starting Page
+    document.getElementById('gameCanvasContainer').style.display = 'none';
+    document.getElementById('startingScreen').style.display = 'flex';
+
+    // Reset canvas and other game state if needed
+    const canvas = document.getElementById('drawingCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    saveCurrentMode('startingPage');
+});
+
+document.getElementById('storyModeButton').addEventListener('click', () => {
+    // Reset game screen layout
+    document.getElementById('startingScreen').style.display = 'none';
+    document.getElementById('gameCanvasContainer').style.display = 'block';
+
+    // Ensure canvas is updated for the current mode
+    updateCanvasSize();
+    localStorage.setItem('currentMode', 'storyMode');
+});
+
+// Prevent the spacebar from toggling the button
+hamburger.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+        event.preventDefault(); // Stop the default space key action
+    }
+});
+
+
+const render = Render.create({
+    canvas: canvas,
+    engine: engine,
+    options: {
+        width: width,
+        height: height,
+        wireframes: false,
+        background: 'white',
+    },
+});
+Render.run(render);
+const runner = Runner.create();
+Runner.run(runner, engine);
+
+// Create Ball
+const ballRadius = 50;
+const ball = Bodies.circle(800, 200, ballRadius, {
+    restitution: 0.3, // No bounce
+    frictionAir: 0, // No air resistance
+    render: {
+        fillStyle: 'red',
+    },
+});
+World.add(world, ball);
+
+// Create Static Ground
+// Ground
+const ground = Bodies.rectangle(width / 2, height + 10, width, 20, { // Position shifted outside
+    isStatic: true,
+    restitution: 0.3, // No bounce
+    render: {
+        fillStyle: 'black',
+    },
+});
+World.add(world, ground);
+
+// Create Static Boundaries
+const ceiling = Bodies.rectangle(width / 2, -10, width, 20, { // Position shifted outside
+    isStatic: true,
+    render: { fillStyle: 'black' },
+});
+const leftWall = Bodies.rectangle(-10, height / 2, 20, height, { // Position shifted outside
+    isStatic: true,
+    render: { fillStyle: 'black' },
+});
+const rightWall = Bodies.rectangle(width + 10, height / 2, 20, height, { // Position shifted outside
+    isStatic: true,
+    render: { fillStyle: 'black' },
+});
+World.add(world, [ceiling, leftWall, rightWall]);
+
+
+// User-Drawn Lines
+let lines = [];
+let isDrawing = false;
+let points = [];
+let inactivityTimeout; // Timeout to monitor inactivity
+const inactivityDuration = 100; // Duration to detect inactivity
+
+canvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    points = [{ x: e.offsetX, y: e.offsetY }];
+    clearTimeout(inactivityTimeout); // Clear inactivity timeout when drawing starts
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (isDrawing) {
+        clearTimeout(inactivityTimeout); // Reset inactivity timeout on movement
+
+        const lastPoint = points[points.length - 1];
+        const currentPoint = { x: e.offsetX, y: e.offsetY };
+
+        const dx = currentPoint.x - lastPoint.x;
+        const dy = currentPoint.y - lastPoint.y;
+        const distance = Math.sqrt(dx ** 2 + dy ** 2);
+
+        if (distance > 10) {
+            const angle = Math.atan2(dy, dx);
+            const segment = Bodies.rectangle(
+                (lastPoint.x + currentPoint.x) / 2,
+                (lastPoint.y + currentPoint.y) / 2,
+                distance,
+                5,
+                {
+                    isStatic: true,
+                    angle: angle,
+                    render: {
+                        fillStyle: 'rgba(0, 0, 255, 0.5)', // Blue with opacity
+                    },
+                }
+            );
+
+            // Highlight and reset the last two segments
+            const highlightDuration = 100; // Highlight duration
+            if (lines.length > 0) {
+                const recentSegments = lines.slice(-2);
+                recentSegments.forEach(segment => {
+                    segment.render.fillStyle = 'rgba(0, 0, 255, 0.5)';
+                    setTimeout(() => {
+                        segment.render.fillStyle = 'black'; // Reset to black
+                    }, highlightDuration);
+                });
+            }
+
+            // Reset all other segments to black immediately
+            lines.forEach(segment => {
+                if (!lines.slice(-2).includes(segment)) {
+                    segment.render.fillStyle = 'black';
+                }
+            });
+
+            World.add(world, segment);
+            lines.push(segment);
+            points.push(currentPoint);
+        }
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        points.forEach((point) => ctx.lineTo(point.x, point.y));
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Restart inactivity detection timeout
+        inactivityTimeout = setTimeout(() => {
+            lines.forEach(segment => {
+                segment.render.fillStyle = 'black'; // Reset all segments to black
+            });
+        }, inactivityDuration);
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    if (isDrawing) {
+        isDrawing = false;
+
+        if (points.length > 1) {
+            const lineSegments = [];
+            for (let i = 0; i < points.length - 1; i++) {
+                const startPoint = points[i];
+                const endPoint = points[i + 1];
+                const length = Math.sqrt((endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2);
+                const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+
+                const segment = Bodies.rectangle(
+                    (startPoint.x + endPoint.x) / 2,
+                    (startPoint.y + endPoint.y) / 2,
+                    length,
+                    5,
+                    {
+                        isStatic: true,
+                        angle: angle,
+                        render: { fillStyle: 'black' },
+                    }
+                );
+
+                World.add(world, segment);
+                lineSegments.push(segment);
+            }
+
+            if (lineSegments.length > 0) {
+                allLines.push(lineSegments);
+                lines.push(...lineSegments);
+                saveLines(); // Save after adding new lines
+            }
+        }
+
+        points = [];
+        undoneLines = [];
+        saveLines(); // Save the completed drawing
+        clearTimeout(inactivityTimeout); // Clear inactivity timeout on mouse release
+    }
+});
+
+// Save/Undo/Redo/Reset Functions
+document.getElementById('undoButton').addEventListener('click', () => {
+    if (allLines.length > 0) {
+            const lastLine = allLines.pop();
+            undoneLines.push(lastLine);
+
+            // Clear the Matter.js world and re-add all remaining elements
+            World.clear(world);
+            World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
+            allLines.forEach((lineGroup) => {
+                lineGroup.forEach((segment) => {
+                    World.add(world, segment);
+                });
+            });
+
+            saveLines(); // Save updated state
+        }
+});
+
+
+
+
+
+document.getElementById('redoButton').addEventListener('click', () => {
+    if (undoneLines.length > 0) {
+        // Retrieve the last undone line group
+        const restoredLine = undoneLines.pop();
+        allLines.push(restoredLine);
+
+        // Add each segment back to the world
+        restoredLine.forEach((segment) => World.add(world, segment));
+
+        // Update the lines array
+        lines.push(...restoredLine);
+
+        // Clear and redraw the canvas
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+
+        // Force a full redraw of the Matter.js world
+        Render.world(render);
+
+        saveLines(); // Save the updated state
+    }
+});
+
+
+
+document.getElementById('resetButton').addEventListener('click', () => {
+    World.clear(world);
+    World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
+    lines = [];
+    allLines = [];
+    undoneLines = [];
+    localStorage.removeItem('savedLines');
+});
+
+
+// Ball Movement
+let isMovingLeft = false;
+let isMovingRight = false;
+
+let spacebarPressTime = null; // Store the time when spacebar is pressed
+const maxHoldTime = 0.3;  // Maximum time (in seconds) for jump hold
+const minJumpHeight = -10;  // Minimum jump height
+const maxJumpHeight = -35; // Maximum jump height
+let auraStrength = 0; // Aura intensity
+
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') isMovingLeft = true;
+    if (e.key === 'ArrowRight') isMovingRight = true;
+
+    if (e.key === ' ' && jumpAllowed && isOnSurface) {
+        if (!spacebarPressTime) {
+            spacebarPressTime = Date.now(); // Record when the spacebar was pressed
+        }
+    }
+    
+    if (e.ctrlKey && e.key === 'x') {
+        // Ctrl + X to clear the canvas
+        e.preventDefault(); // Prevent default browser behavior
+        World.clear(world);
+        World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
+        lines = [];
+        allLines = [];
+        undoneLines = [];
+        localStorage.removeItem('savedLines');
+    } else if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+        // Ctrl + Z to undo
+        e.preventDefault(); // Prevent default browser behavior
+        if (allLines.length > 0) {
+            const lastLine = allLines.pop();
+            undoneLines.push(lastLine);
+
+            // Clear the Matter.js world and re-add all remaining elements
+            World.clear(world);
+            World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
+            allLines.forEach((lineGroup) => {
+                lineGroup.forEach((segment) => {
+                    World.add(world, segment);
+                });
+            });
+
+            saveLines(); // Save updated state
+        }
+    } else if (e.ctrlKey && (e.key === 'Z' || (e.key === 'z' && e.shiftKey))) {
+        // Ctrl + Shift + Z to redo
+        e.preventDefault(); // Prevent default browser behavior
+        if (undoneLines.length > 0) {
+            const restoredLine = undoneLines.pop();
+            allLines.push(restoredLine);
+
+            // Add restored segments back to the Matter.js world
+            restoredLine.forEach((segment) => World.add(world, segment));
+
+            saveLines(); // Save updated state
+        }
+    }
+});
+
+
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft') isMovingLeft = false;
+    if (e.key === 'ArrowRight') isMovingRight = false;
+
+    if (e.key === ' ') {
+        if (spacebarPressTime && isOnSurface) {
+            const holdDuration = (Date.now() - spacebarPressTime) / 1000; // ms to seconds
+            const clampedDuration = Math.min(holdDuration, maxHoldTime); // Cap duration
+            const jumpHeight =
+                minJumpHeight +
+                (clampedDuration / maxHoldTime) * (maxJumpHeight - minJumpHeight);
+
+            Body.setVelocity(ball, { x: ball.velocity.x, y: jumpHeight });
+            jumpAllowed = false; // Prevent consecutive jumps
+            spacebarPressTime = null; // Reset for next jump
+            auraStrength = 0; // Reset aura strength
+        }
+    }
+});
+
+
+Events.on(engine, 'beforeUpdate', () => {
+    const force = 0.02;
+    if (isMovingLeft) Body.applyForce(ball, ball.position, { x: -force, y: 0 });
+    if (isMovingRight) Body.applyForce(ball, ball.position, { x: force, y: 0 });
+    if (spacebarPressTime) {
+        const holdDuration = (Date.now() - spacebarPressTime) / 1000; // Get hold duration
+        const clampedDuration = Math.min(holdDuration, maxHoldTime); // Cap at max hold time
+        auraStrength = clampedDuration / maxHoldTime; // Normalize aura strength (0 to 1)
+    } else if (auraStrength > 0) {
+        auraStrength = Math.max(auraStrength - 0.05, 0); // Gradually reduce aura strength
+    }
+
+    // Multi-layer fiery aura effect
+    const ctx = canvas.getContext('2d');
+
+    // Define vibrant aura colors
+    const colors = [
+        `rgba(255, 255, 0, ${auraStrength * 0.8})`, // Bright yellow
+        `rgba(255, 165, 0, ${auraStrength * 0.6})`, // Orange
+        `rgba(255, 69, 0, ${auraStrength * 0.4})`,  // Fiery red
+        `rgba(255, 0, 0, ${auraStrength * 0.2})`    // Dim red
+    ];
+
+    const auraRadius = 50 + 40 * auraStrength; // Aura size scales with strength
+
+    // Draw the aura as a radial gradient around the ball
+    const gradient = ctx.createRadialGradient(
+        ball.position.x, ball.position.y, 0,
+        ball.position.x, ball.position.y, auraRadius
+    );
+
+    gradient.addColorStop(0, colors[0]); // Inner yellow
+    gradient.addColorStop(0.4, colors[1]); // Mid orange
+    gradient.addColorStop(0.7, colors[2]); // Outer fiery red
+    gradient.addColorStop(1, colors[3]); // Faint outer edge
+
+    ctx.save(); // Save the current state of the canvas
+    ctx.globalCompositeOperation = 'lighter'; // Additive blending for glow effect
+
+    ctx.beginPath();
+    ctx.arc(ball.position.x, ball.position.y, auraRadius, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.restore(); // Restore the canvas state
+});
+
+// Keep Ball in Bounds
+Events.on(engine, 'afterUpdate', () => {
+    if (ball.position.y > height + 100) {
+        Body.setPosition(ball, { x: 100, y: 100 });
+        Body.setVelocity(ball, { x: 0, y: 0 });
+    }
+});
+
+function saveLines() {
+    const savedLines = allLines.map(lineGroup =>
+        lineGroup.map(line => ({
+            start: { x: line.vertices[0].x, y: line.vertices[0].y },
+            end: { x: line.vertices[1].x, y: line.vertices[1].y },
+        }))
+    );
+    localStorage.setItem('savedLines', JSON.stringify(savedLines));
+}
+
+function saveCurrentMode(mode) {
+    localStorage.setItem('currentMode', mode);
+}
+
+function loadCurrentMode() {
+    return localStorage.getItem('currentMode') || 'startingPage';
+}
+
+function updateCanvasSize() {
+    const newWidth = window.innerWidth;
+    const newHeight = window.innerHeight - 3.2;
+
+    // Update canvas dimensions
+    canvas.width = newWidth - 2;
+    canvas.height = newHeight - 2;
+
+    // Update Matter.js world boundaries
+    Body.setPosition(ground, { x: newWidth / 2, y: newHeight + 10 });
+    Body.setVertices(ground, [
+        { x: 0, y: newHeight },
+        { x: newWidth, y: newHeight },
+        { x: newWidth, y: newHeight + 20 },
+        { x: 0, y: newHeight + 20 },
+    ]);
+
+    Body.setPosition(ceiling, { x: newWidth / 2, y: -10 });
+    Body.setVertices(ceiling, [
+        { x: 0, y: 0 },
+        { x: newWidth, y: 0 },
+        { x: newWidth, y: -20 },
+        { x: 0, y: -20 },
+    ]);
+
+    Body.setPosition(leftWall, { x: -10, y: newHeight / 2 });
+    Body.setVertices(leftWall, [
+        { x: 0, y: 0 },
+        { x: -20, y: 0 },
+        { x: -20, y: newHeight },
+        { x: 0, y: newHeight },
+    ]);
+
+    Body.setPosition(rightWall, { x: newWidth + 10, y: newHeight / 2 });
+    Body.setVertices(rightWall, [
+        { x: newWidth, y: 0 },
+        { x: newWidth + 20, y: 0 },
+        { x: newWidth + 20, y: newHeight },
+        { x: newWidth, y: newHeight },
+    ]);
+
+    // Update render dimensions
+    render.options.width = newWidth;
+    render.options.height = newHeight;
+}
+
+// Initialize canvas size on load
+updateCanvasSize();
+
+// Add resize event listener
+window.addEventListener('resize', updateCanvasSize);
+
+window.addEventListener('load', () => {
+    const savedLines = JSON.parse(localStorage.getItem('savedLines') || '[]');
+    savedLines.forEach(lineGroup => {
+        const restoredLineGroup = lineGroup.map(lineData => {
+            const start = lineData.start;
+            const end = lineData.end;
+            const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
+            const angle = Math.atan2(end.y - start.y, end.x - start.x);
+
+            const segment = Bodies.rectangle(
+                (start.x + end.x) / 2,
+                (start.y + end.y) / 2,
+                length,
+                5, // Thickness
+                {
+                    isStatic: true,
+                    angle: angle,
+                    render: {
+                        fillStyle: 'black',
+                    },
+                }
+            );
+            World.add(world, segment);
+            return segment;
+        });
+        allLines.push(restoredLineGroup);
+        lines.push(...restoredLineGroup); // Update single-segment list
+    });
+
+    const savedMode = loadCurrentMode();
+
+    if (savedMode === 'storyMode') {
+        // Show the game canvas and hide the starting screen
+        document.getElementById('startingScreen').style.display = 'none';
+        document.getElementById('gameCanvasContainer').style.display = 'block';
+    } else {
+        // Show the starting screen and hide the game canvas
+        document.getElementById('startingScreen').style.display = 'block';
+        document.getElementById('gameCanvasContainer').style.display = 'none';
+    }
+});
+
+
+// Add event listeners for buttons
+document.getElementById('storyModeButton').addEventListener('click', () => {
+    // Hide the starting screen and show the game canvas
+    document.getElementById('startingScreen').style.display = 'none';
+    document.getElementById('gameCanvasContainer').style.display = 'block';
+    saveCurrentMode('storyMode');
+});
+
+const surfacesInContact = new Set();
+
+// Detect collisions to check if the ball is on a surface
+Events.on(engine, 'collisionStart', (event) => {
+    event.pairs.forEach((pair) => {
+        const { bodyA, bodyB } = pair;
+        
+        if (bodyA === ball || bodyB === ball) {
+            const otherBody = bodyA === ball ? bodyB : bodyA;
+
+            // Check if the other body is a valid surface
+            if (otherBody === ground || allLines.some(lineGroup => lineGroup.includes(otherBody))) {
+                surfacesInContact.add(otherBody); // Add to the set of surfaces
+                isOnSurface = true; // Ball is on a surface
+                jumpAllowed = true; // Enable jumping
+            }
+        }
+    });
+});
+
+Events.on(engine, 'collisionEnd', (event) => {
+    event.pairs.forEach((pair) => {
+        const { bodyA, bodyB } = pair;
+
+        if (bodyA === ball || bodyB === ball) {
+            const otherBody = bodyA === ball ? bodyB : bodyA;
+
+            // Check if the other body is a surface
+            if (surfacesInContact.has(otherBody)) {
+                surfacesInContact.delete(otherBody); // Remove from the set of surfaces
+
+                // Update isOnSurface only if no more surfaces are in contact
+                if (surfacesInContact.size === 0) {
+                    isOnSurface = false;
+                }
+            }
+        }
+    });
+});
+} else if (currentPhpFile === "spel3.php") {
+    const gridContainer = document.getElementById('grid-container');
+const levelInfo = document.getElementById('level-info');
+const timerDisplay = document.getElementById('timer');
+const attemptsDisplay = document.getElementById('attempts');
+const startButton = document.getElementById('start-button');
+
+let level = 1;
+let attempts = 3;
+let timer = 10;
+let timerInterval;
+let targetBoxIndex = null;
+let colorDifference = 50; // Starting difference in RGB values
+let originalColors = []; // Store original colors of boxes
+
+function generateRandomColor() {
+    return {
+        r: Math.floor(Math.random() * 256),
+        g: Math.floor(Math.random() * 256),
+        b: Math.floor(Math.random() * 256),
+    };
+}
+
+function adjustColor(color, adjustment) {
+    return {
+        r: Math.max(0, Math.min(255, color.r + adjustment)),
+        g: Math.max(0, Math.min(255, color.g + adjustment)),
+        b: Math.max(0, Math.min(255, color.b + adjustment)),
+    };
+}
+
+function rgbToCss(rgb) {
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+}
+
+function createGrid() {
+    gridContainer.innerHTML = '';
+    originalColors = []; // Clear colors each time grid is created
+
+    for (let i = 0; i < 16; i++) {
+        const box = document.createElement('div');
+        box.className = 'grid-box';
+        box.addEventListener('click', () => handleBoxClick(box, i));
+        gridContainer.appendChild(box);
+    }
+}
+
+function startGame() {
+    levelInfo.style.display = 'block';
+    document.getElementById('info-container').style.display = 'block';
+    startButton.style.display = 'none';
+
+    levelInfo.textContent = `Level: ${level}`;
+    attempts = 3;
+    attemptsDisplay.textContent = `Attempts: ${attempts}`;
+    timer = 10 + level;
+    timerDisplay.textContent = `Time Left: ${timer}s`;
+
+    const baseColor = generateRandomColor();
+    const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
+    const targetColor = adjustColor(baseColor, adjustment);
+
+    targetBoxIndex = Math.floor(Math.random() * 16);
+
+    const boxes = document.querySelectorAll('.grid-box');
+    boxes.forEach((box, index) => {
+        const color = index === targetBoxIndex ? targetColor : baseColor;
+        box.style.backgroundColor = rgbToCss(color);
+        originalColors[index] = rgbToCss(color); // Store each box's color
+    });
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer--;
+        timerDisplay.textContent = `Time Left: ${timer}s`;
+        if (timer <= 0) {
+            resetGame(); // Directly refresh without alert
+        }
+    }, 1000);
+}
+
+
+function handleBoxClick(box, index) {
+    if (index === targetBoxIndex) {
+        box.style.backgroundColor = 'green';
+        box.style.transform = 'scale(1.2)';
+        clearInterval(timerInterval);
+        setTimeout(() => {
+            level++;
+            colorDifference = Math.max(5, colorDifference - 5);
+            createGrid();
+            startGame();
+        }, 1000);
+    } else {
+        box.style.backgroundColor = 'red';
+        box.style.transform = 'scale(1.2)';
+        attempts--;
+        attemptsDisplay.textContent = `Attempts: ${attempts}`;
+
+        setTimeout(() => {
+            box.style.transform = 'scale(1)';
+            box.style.backgroundColor = originalColors[index]; // Revert to original color
+        }, 500);
+
+        if (attempts <= 0) {
+            alert('You have lost! Restarting...');
+            resetGame();
+        }
+    }
+}
+
+function resetGame() {
+    location.reload(); // Refresh the page to restart the game
+}
+
+// Initialize grid and attach event listener to the button
+createGrid();
+startButton.addEventListener('click', startGame);
+
+} else if (currentPhpFile === "spel4.php") {
+    class MazeBuilder {
+
+        // Original JavaScript code by Chirp Internet: www.chirpinternet.eu
+        // Please acknowledge use of this code by including this header.
+      
+        constructor(width, height) {
+      
+          this.width = width;
+          this.height = height;
+      
+          this.cols = 2 * this.width + 1;
+          this.rows = 2 * this.height + 1;
+      
+          this.maze = this.initArray([]);
+      
+          /* place initial walls */
+      
+          this.maze.forEach((row, r) => {
+            row.forEach((cell, c) => {
+              switch(r)
+              {
+                case 0:
+                case this.rows - 1:
+                  this.maze[r][c] = ["wall"];
+                  break;
+      
+                default:
+                  if((r % 2) == 1) {
+                    if((c == 0) || (c == this.cols - 1)) {
+                      this.maze[r][c] = ["wall"];
+                    }
+                  } else if(c % 2 == 0) {
+                    this.maze[r][c] = ["wall"];
+                  }
+      
+              }
+            });
+      
+            if(r == 0) {
+              /* place exit in top row */
+              let doorPos = this.posToSpace(this.rand(1, this.width));
+              this.maze[r][doorPos] = ["door", "exit"];
+            }
+      
+            if(r == this.rows - 1) {
+              /* place entrance in bottom row */
+              let doorPos = this.posToSpace(this.rand(1, this.width));
+              this.maze[r][doorPos] = ["door", "entrance"];
+            }
+      
+          });
+      
+          /* start partitioning */
+      
+          this.partition(1, this.height - 1, 1, this.width - 1);
+      
+        }
+      
+        initArray(value) {
+          return new Array(this.rows).fill().map(() => new Array(this.cols).fill(value));
+        }
+      
+        rand(min, max) {
+          return min + Math.floor(Math.random() * (1 + max - min));
+        }
+      
+        posToSpace(x) {
+          return 2 * (x-1) + 1;
+        }
+      
+        posToWall(x) {
+          return 2 * x;
+        }
+      
+        inBounds(r, c) {
+          if((typeof this.maze[r] == "undefined") || (typeof this.maze[r][c] == "undefined")) {
+            return false; /* out of bounds */
+          }
+          return true;
+        }
+      
+        shuffle(array) {
+          /* sauce: https://stackoverflow.com/a/12646864 */
+          for(let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+          }
+          return array;
+        }
+      
+        partition(r1, r2, c1, c2) {
+          /* create partition walls
+             ref: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_division_method */
+      
+          let horiz, vert, x, y, start, end;
+      
+          if((r2 < r1) || (c2 < c1)) {
+            return false;
+          }
+      
+          if(r1 == r2) {
+            horiz = r1;
+          } else {
+            x = r1+1;
+            y = r2-1;
+            start = Math.round(x + (y-x) / 4);
+            end = Math.round(x + 3*(y-x) / 4);
+            horiz = this.rand(start, end);
+          }
+      
+          if(c1 == c2) {
+            vert = c1;
+          } else {
+            x = c1 + 1;
+            y = c2 - 1;
+            start = Math.round(x + (y - x) / 3);
+            end = Math.round(x + 2 * (y - x) / 3);
+            vert = this.rand(start, end);
+          }
+      
+          for(let i = this.posToWall(r1)-1; i <= this.posToWall(r2)+1; i++) {
+            for(let j = this.posToWall(c1)-1; j <= this.posToWall(c2)+1; j++) {
+              if((i == this.posToWall(horiz)) || (j == this.posToWall(vert))) {
+                this.maze[i][j] = ["wall"];
+              }
+            }
+          }
+      
+          let gaps = this.shuffle([true, true, true, false]);
+      
+          /* create gaps in partition walls */
+      
+          if(gaps[0]) {
+            let gapPosition = this.rand(c1, vert);
+            this.maze[this.posToWall(horiz)][this.posToSpace(gapPosition)] = [];
+          }
+      
+          if(gaps[1]) {
+            let gapPosition = this.rand(vert+1, c2+1);
+            this.maze[this.posToWall(horiz)][this.posToSpace(gapPosition)] = [];
+          }
+      
+          if(gaps[2]) {
+            let gapPosition = this.rand(r1, horiz);
+            this.maze[this.posToSpace(gapPosition)][this.posToWall(vert)] = [];
+          }
+      
+          if(gaps[3]) {
+            let gapPosition = this.rand(horiz+1, r2+1);
+            this.maze[this.posToSpace(gapPosition)][this.posToWall(vert)] = [];
+          }
+      
+          /* recursively partition newly created chambers */
+      
+          this.partition(r1, horiz-1, c1, vert-1);
+          this.partition(horiz+1, r2, c1, vert-1);
+          this.partition(r1, horiz-1, vert+1, c2);
+          this.partition(horiz+1, r2, vert+1, c2);
+      
+        }
+      
+        isGap(...cells) {
+          return cells.every((array) => {
+            let row, col;
+            [row, col] = array;
+            if(this.maze[row][col].length > 0) {
+              if(!this.maze[row][col].includes("door")) {
+                return false;
+              }
+            }
+            return true;
+          });
+        }
+      
+        countSteps(array, r, c, val, stop) {
+      
+          if(!this.inBounds(r, c)) {
+            return false; /* out of bounds */
+          }
+      
+          if(array[r][c] <= val) {
+            return false; /* shorter route already mapped */
+          }
+      
+          if(!this.isGap([r, c])) {
+            return false; /* not traversable */
+          }
+      
+          array[r][c] = val;
+      
+          if(this.maze[r][c].includes(stop)) {
+            return true; /* reached destination */
+          }
+      
+          this.countSteps(array, r-1, c, val+1, stop);
+          this.countSteps(array, r, c+1, val+1, stop);
+          this.countSteps(array, r+1, c, val+1, stop);
+          this.countSteps(array, r, c-1, val+1, stop);
+      
+        }
+      
+        getKeyLocation() {
+      
+          let fromEntrance = this.initArray();
+          let fromExit = this.initArray();
+      
+          this.totalSteps = -1;
+      
+          for(let j = 1; j < this.cols-1; j++) {
+            if(this.maze[this.rows-1][j].includes("entrance")) {
+              this.countSteps(fromEntrance, this.rows-1, j, 0, "exit");
+            }
+            if(this.maze[0][j].includes("exit")) {
+              this.countSteps(fromExit, 0, j, 0, "entrance");
+            }
+          }
+      
+          let fc = -1, fr = -1;
+      
+          this.maze.forEach((row, r) => {
+            row.forEach((cell, c) => {
+              if(typeof fromEntrance[r][c] == "undefined") {
+                return;
+              }
+              let stepCount = fromEntrance[r][c] + fromExit[r][c];
+              if(stepCount > this.totalSteps) {
+                fr = r;
+                fc = c;
+                this.totalSteps = stepCount;
+              }
+            });
+          });
+      
+          return [fr, fc];
+        }
+      
+        placeKey() {
+      
+          let fr, fc;
+          [fr, fc] = this.getKeyLocation();
+      
+          this.maze[fr][fc] = ["key"];
+      
+        }
+      
+        display(id) {
+      
+          this.parentDiv = document.getElementById(id);
+      
+          if(!this.parentDiv) {
+            alert("Cannot initialise maze - no element found with id \"" + id + "\"");
+            return false;
+          }
+      
+          while(this.parentDiv.firstChild) {
+            this.parentDiv.removeChild(this.parentDiv.firstChild);
+          }
+      
+          const container = document.createElement("div");
+          container.id = "maze";
+          container.dataset.steps = this.totalSteps;
+      
+          this.maze.forEach((row) => {
+            let rowDiv = document.createElement("div");
+            row.forEach((cell) => {
+              let cellDiv = document.createElement("div");
+              if(cell) {
+                cellDiv.className = cell.join(" ");
+              }
+              rowDiv.appendChild(cellDiv);
+            });
+            container.appendChild(rowDiv);
+          });
+      
+          this.parentDiv.appendChild(container);
+      
+          return true;
+        }
+      
+      }
+    
+      class Player {
+        constructor(maze) {
+            this.maze = maze;
+            this.position = { row: maze.rows - 2, col: maze.cols - 2 }; // Start near the entrance
+            this.hasKey = false;
+        }
+    
+        init() {
+            document.addEventListener("keydown", (e) => this.move(e));
+            this.updatePlayerPosition();
+        }
+    
+        move(event) {
+            let { row, col } = this.position;
+    
+            switch (event.key) {
+                case "ArrowUp":
+                    row -= 1;
+                    break;
+                case "ArrowDown":
+                    row += 1;
+                    break;
+                case "ArrowLeft":
+                    col -= 1;
+                    break;
+                case "ArrowRight":
+                    col += 1;
+                    break;
+                default:
+                    return;
+            }
+    
+            if (this.canMoveTo(row, col)) {
+                this.position = { row, col };
+                this.checkInteraction();
+                this.updatePlayerPosition();
+            }
+        }
+    
+        canMoveTo(row, col) {
+            return (
+                row >= 0 &&
+                row < this.maze.rows &&
+                col >= 0 &&
+                col < this.maze.cols &&
+                !this.maze.maze[row][col].includes("wall")
+            );
+        }
+    
+        generateNewMaze() {
+            let width = Math.floor(Math.random() * 20) + 4; // Random width (min: 4)
+            let height = Math.floor(Math.random() * 20) + 4; // Random height (min: 4)
+            const newMaze = new MazeBuilder(width, height); // Create a new maze
+            newMaze.placeKey(); // Place the key in the new maze
+            newMaze.display("maze_container"); // Display the new maze
+        
+            this.maze = newMaze; // Update the player's maze reference
+            this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 }; // Reset player position
+            this.hasKey = false; // Reset the key
+            this.updatePlayerPosition(); // Update the player position in the UI
+        }
+    
+        checkInteraction() {
+            const cell = this.maze.maze[this.position.row][this.position.col];
+            if (cell.includes("key")) {
+                this.pickUpKey();
+            } else if (cell.includes("exit") && this.hasKey) {
+                this.generateNewMaze(); // Call a method to create a new maze
+            }
+        }
+        
+    
+        pickUpKey() {
+            this.hasKey = true;
+    
+            // Remove key from maze data
+            this.maze.maze[this.position.row][this.position.col] = [];
+    
+            // Update the DOM
+            const currentCell = document
+                .getElementById("maze")
+                .children[this.position.row]
+                .children[this.position.col];
+            currentCell.classList.remove("key");
+    
+            // Update UI for key possession
+            document.getElementById("maze_score").classList.add("has-key");
+            alert("You picked up the key!");
+        }
+    
+        updatePlayerPosition() {
+            document.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+            const currentCell = document
+                .getElementById("maze")
+                .children[this.position.row]
+                .children[this.position.col];
+            currentCell.classList.add("hero");
+        }
+    }
+    let Maze = new MazeBuilder(Math.floor(Math.random() * 20) + 4, Math.floor(Math.random() * 20) + 4);
+    Maze.placeKey();
+    Maze.display("maze_container");
+
+    // Initialize the player
+    let player = new Player(Maze);
+    player.init();
+}
