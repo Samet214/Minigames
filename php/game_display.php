@@ -3,10 +3,10 @@ $gameId = isset($_GET['gameId']) ? $_GET['gameId'] : null;
 
 $gameUrls = [
     "game1" => "../php/spel1.php",
-    "game2" => "../php/spel2.php",
+    "game2" => "../squigglegolf",
     "game3" => "../php/spel3.php",
     "game4" => "../php/spel4.php",
-    "game5" => "../biljard/dist"
+    "game5" => "../biljard/dist",
 ];
 
 $gameUrl = isset($gameUrls[$gameId]) ? $gameUrls[$gameId] : null;

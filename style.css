@@ -14,16 +14,20 @@ html[data-page="game_display"] body {
 }
 
 html[data-page="game_display"] iframe {
-    width: 90%;
-    height: 80%;
+    width: 100.5%;
+    height: 94%;
     border: none;
-    background: #000;
+    background: transparent;
+    border: 2px solid black;
+    margin-left: 10px;
+    transform: translateY(0px);
 }
 html[data-page="game_display"] header {
     width: 100%;
     text-align: center;
     background: #333;
     padding: 10px;
+    margin-top: 0px;
 }
 html[data-page="game_display"] header a {
     color: #fff;

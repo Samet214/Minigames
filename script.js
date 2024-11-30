@@ -438,6 +438,10 @@ if (currentPhpFile === "game_display.php") {
     function redirect(url) {
         window.location.href = url;
     }
+
+    document.getElementById("logo").addEventListener("click", function() {
+        redirect('index.php');
+    });
     
     function openModal(gameId) {
         const gameUrls = {
@@ -445,7 +449,8 @@ if (currentPhpFile === "game_display.php") {
             game2: "game_display.php?gameId=game2",
             game3: "game_display.php?gameId=game3",
             game4: "game_display.php?gameId=game4",
-            game5: "game_display.php?gameId=game5"
+            game5: "game_display.php?gameId=game5",
+            game6: "game_display.php?gameId=game6"
         };
     
         if (gameUrls[gameId]) {
