@@ -67,7 +67,7 @@ session_start();
     </main>
     <footer>
         <p>Kontakta oss</p>
-        <p>Email: kontakt@playpoint.com</p>
+        <p>Email: kontakt@arcadepoint.com</p>
         <p>Tel: +46 123456789</p>
         <p>Senast uppdaterad: 2024-10-08</p>
     </footer>
