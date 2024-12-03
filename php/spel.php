@@ -248,31 +248,31 @@ $conn->close();
     <main class="game-section">
         <div class="game-container">
             <img src="../bilder/game1.jpg" alt="">
-            <h2>Memory spel!</h2>
+            <h2>Memory</h2>
             <p>Testa hur mycket du kan komma ihåg och tävla mot andra</p>
             <button class="open-modal-button" onclick="openModal('game1')">Spela Nu</button>
         </div>
         <div class="game-container">
             <img src="../bilder/game2.jpg" alt="">
-            <h2>Boll spel!</h2>
-            <p>Ha roligt med boll fysik, specialla drag och hopp funktion med enga rita linjer</p>
+            <h2>Squigglegolf</h2>
+            <p>Ha roligt med att köra golf och kontrollera bollen genom musen. Ha roligt med boll fysik och fina grafiska element på skrämet!</p>
             <button class="open-modal-button" onclick="openModal('game2')">Spela Nu</button>
         </div>
         <div class="game-container">
             <img src="../bilder/game3.jpg" alt="">
-            <h2>Färg spel!</h2>
+            <h2>Colourvision</h2>
             <p>Testa om du kan se nyanser av färger eller om du är färg blind!</p>
             <button class="open-modal-button" onclick="openModal('game3')">Spela Nu</button>
         </div>
         <div class="game-container">
             <img src="../bilder/game4.jpg" alt="">
-            <h2>Maze runner!</h2>
+            <h2>Maze runner</h2>
             <p>Klura dig igenom svåra labyrint och hitta den väg rätt!</p>
             <button class="open-modal-button" onclick="openModal('game4')">Spela Nu</button>
         </div>
         <div class="game-container">
             <img src="../bilder/game5.jpg" alt="">
-            <h2>Biljard!</h2>
+            <h2>Biljard</h2>
             <p>Ha roligt med att spela biljard!</p>
             <button class="open-modal-button" onclick="openModal('game5')">Spela Nu</button>
         </div>

@@ -1,13 +1,76 @@
+//Alla filer
+
 // Get the PHP file name from the data attribute
 const phpFileInfoElement = document.getElementById('php-file-info');
 const currentPhpFile = phpFileInfoElement.getAttribute('data-php-file');
 
+function redirect(url) {
+    window.location.href = url;
+}
+
+function gainExp(expAmount, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "sida.php", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            var response = JSON.parse(xhr.responseText);
+            var currentExp = response.current_exp;
+            var nextLevelExp = response.next_level_exp;
+            var level = response.level;
+
+            console.log("Current EXP:", currentExp);
+            console.log("Next Level EXP:", nextLevelExp);
+            console.log("Level:", level);
+
+            // Format numbers with appropriate units (K, M, G)
+            function formatNumber(number) {
+                if (number >= 1000000000) {
+                    return (number / 1000000000).toFixed(1) + 'G';
+                } else if (number >= 1000000) {
+                    return (number / 1000000).toFixed(1) + 'M';
+                } else if (number >= 1000) {
+                    return (number / 1000).toFixed(1) + 'K';
+                } else {
+                    return number;
+                }
+            }
+
+            var formattedCurrentExp = formatNumber(currentExp);
+            var formattedNextLevelExp = formatNumber(nextLevelExp);
+
+            // Update the EXP bar and text
+            var progressBar = document.getElementById('expProgress');
+            var expText = document.getElementById('expText');
+            progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
+            expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
+
+            // Update the user's level
+            document.getElementById('level').textContent = level;
+
+            // If callback is provided, execute it with EXP data
+            if (callback) {
+                callback(currentExp, nextLevelExp, level);
+            }
+        }
+    };
+
+    // Send the request to the server with the EXP amount
+    xhr.send("add_exp=true&exp_amount=" + expAmount);
+}
+
+let currency = 0;
+
+function gainCurrency(amount) {
+    currency += amount;
+    document.getElementById('currency-amount').textContent = currency;
+}
+
+//Specifika filer
 if (currentPhpFile === "game_display.php") {
     alert('hey');
 } else if (currentPhpFile === "index.php") {
-    function redirect(url) {
-        window.location.href = url;
-    }
     
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
@@ -43,18 +106,8 @@ if (currentPhpFile === "game_display.php") {
         hoverCircle.style.opacity = '0'; // Fade out
         hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
     });
-    
-    let currency = 0;
-    
-    function gainCurrency(amount) {
-        currency += amount;
-        document.getElementById('currency-amount').textContent = currency;
-    }
 
 } else if (currentPhpFile === "login.php") {
-    function redirect(url) {
-        window.location.href = url;
-    }
     
     document.addEventListener("DOMContentLoaded", function () {
         const infoSection = document.getElementById('login-info');
@@ -84,17 +137,8 @@ if (currentPhpFile === "game_display.php") {
         hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
     });
     
-    let currency = 0;
-    
-    function gainCurrency(amount) {
-        currency += amount;
-        document.getElementById('currency-amount').textContent = currency;
-    }
 } else if (currentPhpFile === "sida.php") {
-    function redirect(url) {
-        window.location.href = url;
-    }
-    
+
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
         var toggleButton = document.getElementById("sidebar-toggle");
@@ -108,60 +152,6 @@ if (currentPhpFile === "game_display.php") {
             toggleButton.style.left = "10px"; // Reset to original position
         }
     }
-    
-    // Define gainExp with an additional callback parameter
-    function gainExp(expAmount, callback) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "sida.php", true);
-        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                var response = JSON.parse(xhr.responseText);
-                var currentExp = response.current_exp;
-                var nextLevelExp = response.next_level_exp;
-                var level = response.level;
-    
-                console.log("Current EXP:", currentExp);
-                console.log("Next Level EXP:", nextLevelExp);
-                console.log("Level:", level);
-    
-                // Format numbers with appropriate units (K, M, G)
-                function formatNumber(number) {
-                    if (number >= 1000000000) {
-                        return (number / 1000000000).toFixed(1) + 'G';
-                    } else if (number >= 1000000) {
-                        return (number / 1000000).toFixed(1) + 'M';
-                    } else if (number >= 1000) {
-                        return (number / 1000).toFixed(1) + 'K';
-                    } else {
-                        return number;
-                    }
-                }
-    
-                var formattedCurrentExp = formatNumber(currentExp);
-                var formattedNextLevelExp = formatNumber(nextLevelExp);
-    
-                // Update the EXP bar and text
-                var progressBar = document.getElementById('expProgress');
-                var expText = document.getElementById('expText');
-                progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
-                expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
-    
-                // Update the user's level
-                document.getElementById('level').textContent = level;
-    
-                // If callback is provided, execute it with EXP data
-                if (callback) {
-                    callback(currentExp, nextLevelExp, level);
-                }
-            }
-        };
-    
-        // Send the request to the server with the EXP amount
-        xhr.send("add_exp=true&exp_amount=" + expAmount);
-    }
-    
     
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
@@ -396,9 +386,6 @@ if (currentPhpFile === "game_display.php") {
         }
     });    
 } else if (currentPhpFile === "signup.php") {
-    function redirect(url) {
-        window.location.href = url;
-    }
     
     document.addEventListener("DOMContentLoaded", function () {
         const infoSection = document.getElementById('signup-info');
@@ -428,16 +415,7 @@ if (currentPhpFile === "game_display.php") {
         hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
     });
     
-    let currency = 0;
-    
-    function gainCurrency(amount) {
-        currency += amount;
-        document.getElementById('currency-amount').textContent = currency;
-    }
 } else if (currentPhpFile === "spel.php") {
-    function redirect(url) {
-        window.location.href = url;
-    }
 
     document.getElementById("logo").addEventListener("click", function() {
         redirect('index.php');
@@ -469,13 +447,6 @@ if (currentPhpFile === "game_display.php") {
         setTimeout(() => {
             overlay.style.display = "none";
         }, 500);
-    }
-    
-    let currency = 0;
-    
-    function gainCurrency(amount) {
-        currency += amount;
-        document.getElementById('currency-amount').textContent = currency;
     }
     
     // Toggle Full-Screen Mode
@@ -514,60 +485,6 @@ if (currentPhpFile === "game_display.php") {
             toggleButton.style.left = "10px"; // Reset to original position
         }
     }
-    
-    // Define gainExp with an additional callback parameter
-    function gainExp(expAmount, callback) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "sida.php", true);
-        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                var response = JSON.parse(xhr.responseText);
-                var currentExp = response.current_exp;
-                var nextLevelExp = response.next_level_exp;
-                var level = response.level;
-    
-                console.log("Current EXP:", currentExp);
-                console.log("Next Level EXP:", nextLevelExp);
-                console.log("Level:", level);
-    
-                // Format numbers with appropriate units (K, M, G)
-                function formatNumber(number) {
-                    if (number >= 1000000000) {
-                        return (number / 1000000000).toFixed(1) + 'G';
-                    } else if (number >= 1000000) {
-                        return (number / 1000000).toFixed(1) + 'M';
-                    } else if (number >= 1000) {
-                        return (number / 1000).toFixed(1) + 'K';
-                    } else {
-                        return number;
-                    }
-                }
-    
-                var formattedCurrentExp = formatNumber(currentExp);
-                var formattedNextLevelExp = formatNumber(nextLevelExp);
-    
-                // Update the EXP bar and text
-                var progressBar = document.getElementById('expProgress');
-                var expText = document.getElementById('expText');
-                progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
-                expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
-    
-                // Update the user's level
-                document.getElementById('level').textContent = level;
-    
-                // If callback is provided, execute it with EXP data
-                if (callback) {
-                    callback(currentExp, nextLevelExp, level);
-                }
-            }
-        };
-    
-        // Send the request to the server with the EXP amount
-        xhr.send("add_exp=true&exp_amount=" + expAmount);
-    }
-    
     
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
@@ -802,11 +719,7 @@ if (currentPhpFile === "game_display.php") {
         }
     });    
 } else if (currentPhpFile === "spel1.php") {
-    function redirect(url) {
-        window.location.href = url;
-    }
-    
-    
+
     let currentLevel = 1; // Default level
     let isAnimating = false; // To prevent multiple animations at the same time
     let cancelAnimation = false; // To stop long-running animations when new clicks happen
@@ -2094,7 +2007,7 @@ startButton.addEventListener('click', startGame);
         }
     
         generateNewMaze() {
-            let width = Math.floor(Math.random() * 20) + 4; // Random width (min: 4)
+            let width = Math.floor(Math.random() * 30) + 4; // Random width (min: 4)
             let height = Math.floor(Math.random() * 20) + 4; // Random height (min: 4)
             const newMaze = new MazeBuilder(width, height); // Create a new maze
             newMaze.placeKey(); // Place the key in the new maze
@@ -2150,4 +2063,46 @@ startButton.addEventListener('click', startGame);
     // Initialize the player
     let player = new Player(Maze);
     player.init();
+
+    document.addEventListener("DOMContentLoaded", () => {
+    const startButton = document.getElementById("start_button");
+    const menuButton = document.getElementById("menu_button");
+    const startPage = document.getElementById("start_page");
+    const mazeContainer = document.getElementById("maze_container");
+
+    // Restore state from localStorage
+    const currentState = localStorage.getItem("currentState");
+
+    if (currentState === "maze") {
+        startPage.style.display = "none";
+        mazeContainer.style.display = "block";
+    } else {
+        startPage.style.display = "block";
+        mazeContainer.style.display = "none";
+        startPage.style.display = "flex";
+        startPage.style.justifyContent = "center";
+        startPage.style.alignItems = "center";
+        startPage.style.height = "100vh"; // Ensure full viewport height
+    }
+
+    // Start button event
+    startButton.addEventListener("click", () => {
+        startPage.style.display = "none";
+        mazeContainer.style.display = "block";
+        localStorage.setItem("currentState", "maze"); // Save the current state
+    });
+
+    // Menu button event
+    menuButton.addEventListener("click", () => {
+        startPage.style.display = "block";
+        mazeContainer.style.display = "none";
+        startPage.style.display = "flex";
+        startPage.style.justifyContent = "center";
+        startPage.style.alignItems = "center";
+        startPage.style.height = "100vh"; // Ensure full viewport height
+        localStorage.setItem("currentState", "start"); // Save the current state
+    });
+});
+
+        
 }
