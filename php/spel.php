@@ -7,11 +7,6 @@ include 'db.php';
 
 $conn = Användarinformation();
 
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
-
 $username = $_SESSION['username'];
 
 // Handle file upload
@@ -93,9 +88,7 @@ if ($result->num_rows === 1) {
     $current_exp = 0;
     $next_level_exp = 50;
     $avi = 0;
-    $insert = $conn->prepare("INSERT INTO poängssystem (Namn, Levels, EXP, EXP_GRÄNS, AVI) VALUES (?, ?, ?, ?, ?)");
-    $insert->bind_param("siiii", $username, $level, $current_exp, $next_level_exp, $avi);
-    $insert->execute();
+    $username = 'Guest';
     $_SESSION['Namn'] = $username;
     $_SESSION['Levels'] = 1;
     $_SESSION['EXP'] = 0;
@@ -197,7 +190,7 @@ if ($result->num_rows > 0) {
         $exp_req = $row['EXP_GRÄNS'];
     }
 } else {
-    echo "No data found";
+    
 }
 
 $stmt->close();
@@ -222,19 +215,34 @@ $conn->close();
             <div id="logo-title">
                 <h1>Arcade Point</h1>
             </div>
-            <nav>
-                <ul>
-                    <li><a href="spel.php">Spel</a></li>
-                    <li><a href="ledartavlor.php">Ledartavla</a></li>
-                    <li><a href="info.php">Info</a></li>
-                    <li><a href="profile.php" id="a-tag4">Profil</a></li>
-                </ul>
-            </nav>
             <div class="buttons">
-                <?php if (!isset($_SESSION['username'])): ?>
+            <?php if (!isset($_SESSION['username'])): ?>
+                <nav style="margin-right: 500px;">
+                    <ul>
+                        <li><a href="spel.php">Spel</a></li>
+                        <li><a href="ledartavlor.php">Ledartavla</a></li>
+                        <li><a href="info.php">Info</a></li>
+                        <li><a href="profile.php" id="a-tag4">Profil</a></li>
+                    </ul>
+                </nav>
+                <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
                     <button id="signin" onclick="redirect('signup.php')">Registrera</button>
                     <button id="login" onclick="redirect('login.php')">Logga in</button>
-                <?php endif; ?>
+                    <button id="searchProfileBtn" onclick="toggleProfile()">Sök profiler</button>
+                </div>
+            <?php else: ?>
+                <nav style="margin-right: 400px;">
+                    <ul>
+                        <li><a href="spel.php">Spel</a></li>
+                        <li><a href="ledartavlor.php">Ledartavla</a></li>
+                        <li><a href="info.php">Info</a></li>
+                        <li><a href="logout.php" id="logoutLink">Logga ut</a></li>
+                    </ul>
+                </nav>
+                <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
+                    <button id="searchProfileBtn" onclick="toggleProfile()">Sök profiler</button>
+                </div>
+            <?php endif; ?>
             </div>
         </div>
         <div id="currency-bar">
@@ -247,31 +255,26 @@ $conn->close();
     <!-- Game containers section -->
     <main class="game-section">
         <div class="game-container">
-            <img src="../bilder/game1.jpg" alt="">
             <h2>Memory</h2>
             <p>Testa hur mycket du kan komma ihåg och tävla mot andra</p>
             <button class="open-modal-button" onclick="openModal('game1')">Spela Nu</button>
         </div>
         <div class="game-container">
-            <img src="../bilder/game2.jpg" alt="">
             <h2>Squigglegolf</h2>
             <p>Ha roligt med att köra golf och kontrollera bollen genom musen. Ha roligt med boll fysik och fina grafiska element på skrämet!</p>
             <button class="open-modal-button" onclick="openModal('game2')">Spela Nu</button>
         </div>
         <div class="game-container">
-            <img src="../bilder/game3.jpg" alt="">
             <h2>Colourvision</h2>
             <p>Testa om du kan se nyanser av färger eller om du är färg blind!</p>
             <button class="open-modal-button" onclick="openModal('game3')">Spela Nu</button>
         </div>
         <div class="game-container">
-            <img src="../bilder/game4.jpg" alt="">
             <h2>Maze runner</h2>
             <p>Klura dig igenom svåra labyrint och hitta den väg rätt!</p>
             <button class="open-modal-button" onclick="openModal('game4')">Spela Nu</button>
         </div>
         <div class="game-container">
-            <img src="../bilder/game5.jpg" alt="">
             <h2>Biljard</h2>
             <p>Ha roligt med att spela biljard!</p>
             <button class="open-modal-button" onclick="openModal('game5')">Spela Nu</button>
@@ -292,10 +295,6 @@ $conn->close();
                 <iframe src="spel1.php" id="game-iframe" width="100%" height="500px" style="border: none;"></iframe>
             </div>
         </div>
-    </div>
-
-    <div class="search-profile-btn-container">
-        <button id="searchProfileBtn" onclick="toggleProfile()">Sök profiler</button>
     </div>
 
     <div id="profileSquare" class="profile-square">
@@ -346,9 +345,13 @@ $conn->close();
                 ?>
             </p>
         </div>
-        <hr>
-        <a id="a-tag1" href="logout.php">Logga ut</a>
-        <hr>
+        <?php if (!isset($_SESSION['username'])): ?>
+
+        <?php else: ?>
+            <hr>
+            <a id="a-tag1" href="logout.php">Logga ut</a>
+            <hr>
+        <?php endif; ?>
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
     <script src="../script.js"></script>
 </body>

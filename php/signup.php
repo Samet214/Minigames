@@ -1,3 +1,11 @@
+<?php
+$username = 'Guest';
+$profile_picture = 'default.png'; // Replace with actual profile picture logic
+$level = 1;
+$current_exp = 0;
+$next_level_exp = 100;
+?>
+
 <!DOCTYPE html>
 <html lang="sv" data-page="signup">
 <head>
@@ -7,6 +15,7 @@
 </head>
 <body>
     <header id="header">
+        <?php include 'sidebar.php'; ?>
         <div id="circle-container" style="position: relative; display: inline-block;">
             <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;"> <!-- Replace with your logo image -->
             <div id="hover-circle"></div> <!-- This will be the neon circle -->
@@ -15,6 +24,14 @@
             <div id="logo-title">
                 <h1>Arcade Point</h1>
             </div>
+            <nav>
+                <ul>
+                    <li><a href="spel.php">Spel</a></li>
+                    <li><a href="ledartavlor.php">Ledartavla</a></li>
+                    <li><a href="info.php">Info</a></li>
+                    <li><a href="profile.php" id="a-tag4">Profil</a></li>
+                </ul>
+            </nav>
             <div class="buttons">
                 <button id="signin" onclick="redirect('login.php')">Logga in</button>
                 <button id="hemsida" onclick="redirect('index.php')">Hemsida</button>
@@ -52,6 +69,7 @@
     ini_set('display_errors', 0);
 
     include 'db.php';
+
 
     if (isset($_SESSION['username'])) {
         header("Location: sida.php");

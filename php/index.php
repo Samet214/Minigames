@@ -1,5 +1,20 @@
+<?php if (!isset($_SESSION['username'])) {
+    $username = 'Guest';
+    $profile_picture = 'default.png'; // Replace with actual profile picture logic
+    $level = 1;
+    $current_exp = 0;
+    $next_level_exp = 100;
+} else {
+    $username = $_SESSIN['username'];
+    $profile_picture = 'default.png'; // Replace with actual profile picture logic
+    $level = 1;
+    $current_exp = 0;
+    $next_level_exp = 100;
+} ?>
+
 <?php
-session_start();
+include 'db.php';
+include 'sidebar.php';
 ?>
 
 <!DOCTYPE html>
@@ -48,8 +63,8 @@ session_start();
             <div class="rectangle-1">
                 <div><b>POPULÄRA KATEGORIER</b></div>
                 <div id="category-1">
-                    <img src="https://www.coolmathgames.com/themes/custom/coolmath/assets/svg/categories/Timing.svg">
-                    <b>Tid<br>Spel</b>
+                    <img src="https://www.coolmathgames.com/themes/custom/coolmath/assets/svg/categories/Timing.svg" style="margin-right: 200px;">
+                    <b style="margin-top: -75px; margin-left: 0px;">Tid<br>Spel</b>
                     <div id="arrow">→</div>
                 </div>
                 <div id="category-2"></div>

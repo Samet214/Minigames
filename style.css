@@ -390,7 +390,7 @@ html[data-page="index"] .rectangle-1 div {
 
 html[data-page="index"] b {
     position: absolute;
-    margin-left: 15px;
+    margin-left: -250px;
     margin-top: 7px;
 }
 
@@ -411,6 +411,7 @@ html[data-page="index"] #category-1 {
     box-shadow: none;
     margin-top: 15px;
 }
+
 
 html[data-page="index"] #category-2 {
     background-color: rgb(27,40,59);
@@ -595,6 +596,18 @@ html[data-page="login"] #logo-title {
 display: flex;
 align-items: center; /* Aligns logo and title vertically */
 gap: 10px; /* Space between logo and title */
+}
+
+html[data-page="login"] nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+
+html[data-page="login"] nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
 }
 
 html[data-page="login"] #signin, html[data-page="login"] #hemsida {
@@ -1364,6 +1377,18 @@ html[data-page="signup"] body {
     text-align: center;
     background-size: cover;
     padding-top: 100px;
+}
+
+html[data-page="signup"] nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+
+html[data-page="signup"] nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
 }
 
 /* Container for the login and sign-in buttons */
