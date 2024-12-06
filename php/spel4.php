@@ -14,6 +14,7 @@
     <div id="start_page">
         <button id="start_button">Start!</button> 
     </div>
+    
 
     <div id="maze_container" style="display: none;"><!-- --></div>
 

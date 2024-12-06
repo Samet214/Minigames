@@ -2718,7 +2718,7 @@ position: absolute;
 top: 2%;
 left: 50%;
 transform: translateX(-50%);
-color: #000;
+color: white;
 }
 
 html[data-page="spel1"] #spelknapp:hover {
@@ -2759,7 +2759,7 @@ display: none;
 text-align: center;
 font-size: 1.5em;
 margin-top: 10px;
-color: #333;
+color: white;
 }
 
 html[data-page="spel1"] #tries-display {
@@ -2767,7 +2767,7 @@ display: none;
 text-align: center;
 font-size: 1.5em;
 margin-top: 5px;
-color: #333;
+color: white;
 }
 
 /* Highlight the box red when the user clicks incorrectly */
@@ -2879,6 +2879,77 @@ transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
 html[data-page="spel1"] #logo:hover {
 transform: scale(1.1) translateY(-3px); /* Scale up and move up */
 }
+
+/* Switch container */
+html[data-page="spel1"] #switch-container {
+    display: flex;
+    align-items: center;
+    margin-top: -35px;
+    margin-left: 500px;
+}
+
+html[data-page="spel1"] #switch-text {
+    color: white;
+    font-size: 30px;
+}
+
+/* Switch styling */
+html[data-page="spel1"] .switch {
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+html[data-page="spel1"] .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+html[data-page="spel1"] .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 20px;
+}
+
+html[data-page="spel1"] .slider:before {
+    position: absolute;
+    content: "";
+    height: 35px;
+    width: 35px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+html[data-page="spel1"] input:checked + .slider {
+    background-color: #2196F3;
+}
+
+html[data-page="spel1"] input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* When the switch is toggled on */
+html[data-page="spel1"] input:checked + .slider {
+    background-color: #4CAF50; /* Green background when on */
+}
+
+/* Move the toggle circle to the other side */
+html[data-page="spel1"] input:checked + .slider:before {
+    transform: translateX(38px); /* Moves the toggle circle */
+}
+
 
 /*spel2.php*/
 
@@ -3227,6 +3298,22 @@ position: relative;
 margin: 1em auto;
 width: fit-content;
 }
+
+html[data-page="spel4"] .monster {
+    background-color: red;
+    border-radius: 50%;
+    animation: blink 0.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
 html[data-page="spel4"] #maze {
 position: relative;
 background-color: #a7c53f;

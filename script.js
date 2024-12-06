@@ -1558,551 +1558,648 @@ Events.on(engine, 'collisionEnd', (event) => {
 });
 } else if (currentPhpFile === "spel3.php") {
     const gridContainer = document.getElementById('grid-container');
-const levelInfo = document.getElementById('level-info');
-const timerDisplay = document.getElementById('timer');
-const attemptsDisplay = document.getElementById('attempts');
-const startButton = document.getElementById('start-button');
+    const levelInfo = document.getElementById('level-info');
+    const timerDisplay = document.getElementById('timer');
+    const attemptsDisplay = document.getElementById('attempts');
+    const startButton = document.getElementById('start-button');
 
-let level = 1;
-let attempts = 3;
-let timer = 10;
-let timerInterval;
-let targetBoxIndex = null;
-let colorDifference = 50; // Starting difference in RGB values
-let originalColors = []; // Store original colors of boxes
+    let level = 1;
+    let attempts = 3;
+    let timer = 10;
+    let timerInterval;
+    let targetBoxIndex = null;
+    let colorDifference = 50; // Starting difference in RGB values
+    let originalColors = []; // Store original colors of boxes
 
-function generateRandomColor() {
-    return {
-        r: Math.floor(Math.random() * 256),
-        g: Math.floor(Math.random() * 256),
-        b: Math.floor(Math.random() * 256),
-    };
-}
-
-function adjustColor(color, adjustment) {
-    return {
-        r: Math.max(0, Math.min(255, color.r + adjustment)),
-        g: Math.max(0, Math.min(255, color.g + adjustment)),
-        b: Math.max(0, Math.min(255, color.b + adjustment)),
-    };
-}
-
-function rgbToCss(rgb) {
-    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-}
-
-function createGrid() {
-    gridContainer.innerHTML = '';
-    originalColors = []; // Clear colors each time grid is created
-
-    for (let i = 0; i < 16; i++) {
-        const box = document.createElement('div');
-        box.className = 'grid-box';
-        box.addEventListener('click', () => handleBoxClick(box, i));
-        gridContainer.appendChild(box);
+    function generateRandomColor() {
+        return {
+            r: Math.floor(Math.random() * 256),
+            g: Math.floor(Math.random() * 256),
+            b: Math.floor(Math.random() * 256),
+        };
     }
-}
 
-function startGame() {
-    levelInfo.style.display = 'block';
-    document.getElementById('info-container').style.display = 'block';
-    startButton.style.display = 'none';
+    function adjustColor(color, adjustment) {
+        return {
+            r: Math.max(0, Math.min(255, color.r + adjustment)),
+            g: Math.max(0, Math.min(255, color.g + adjustment)),
+            b: Math.max(0, Math.min(255, color.b + adjustment)),
+        };
+    }
 
-    levelInfo.textContent = `Level: ${level}`;
-    attempts = 3;
-    attemptsDisplay.textContent = `Attempts: ${attempts}`;
-    timer = 10 + level;
-    timerDisplay.textContent = `Time Left: ${timer}s`;
+    function rgbToCss(rgb) {
+        return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+    }
 
-    const baseColor = generateRandomColor();
-    const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
-    const targetColor = adjustColor(baseColor, adjustment);
+    function createGrid() {
+        gridContainer.innerHTML = '';
+        originalColors = []; // Clear colors each time grid is created
 
-    targetBoxIndex = Math.floor(Math.random() * 16);
-
-    const boxes = document.querySelectorAll('.grid-box');
-    boxes.forEach((box, index) => {
-        const color = index === targetBoxIndex ? targetColor : baseColor;
-        box.style.backgroundColor = rgbToCss(color);
-        originalColors[index] = rgbToCss(color); // Store each box's color
-    });
-
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        timer--;
-        timerDisplay.textContent = `Time Left: ${timer}s`;
-        if (timer <= 0) {
-            resetGame(); // Directly refresh without alert
+        for (let i = 0; i < 16; i++) {
+            const box = document.createElement('div');
+            box.className = 'grid-box';
+            box.addEventListener('click', () => handleBoxClick(box, i));
+            gridContainer.appendChild(box);
         }
-    }, 1000);
-}
+    }
 
+    function startGame() {
+        levelInfo.style.display = 'block';
+        document.getElementById('info-container').style.display = 'block';
+        startButton.style.display = 'none';
 
-function handleBoxClick(box, index) {
-    if (index === targetBoxIndex) {
-        box.style.backgroundColor = 'green';
-        box.style.transform = 'scale(1.2)';
-        clearInterval(timerInterval);
-        setTimeout(() => {
-            level++;
-            colorDifference = Math.max(5, colorDifference - 5);
-            createGrid();
-            startGame();
-        }, 1000);
-    } else {
-        box.style.backgroundColor = 'red';
-        box.style.transform = 'scale(1.2)';
-        attempts--;
+        levelInfo.textContent = `Level: ${level}`;
+        attempts = 3;
         attemptsDisplay.textContent = `Attempts: ${attempts}`;
+        timer = 10 + level;
+        timerDisplay.textContent = `Time Left: ${timer}s`;
 
-        setTimeout(() => {
-            box.style.transform = 'scale(1)';
-            box.style.backgroundColor = originalColors[index]; // Revert to original color
-        }, 500);
+        const baseColor = generateRandomColor();
+        const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
+        const targetColor = adjustColor(baseColor, adjustment);
 
-        if (attempts <= 0) {
-            alert('You have lost! Restarting...');
-            resetGame();
+        targetBoxIndex = Math.floor(Math.random() * 16);
+
+        const boxes = document.querySelectorAll('.grid-box');
+        boxes.forEach((box, index) => {
+            const color = index === targetBoxIndex ? targetColor : baseColor;
+            box.style.backgroundColor = rgbToCss(color);
+            originalColors[index] = rgbToCss(color); // Store each box's color
+        });
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timer--;
+            timerDisplay.textContent = `Time Left: ${timer}s`;
+            if (timer <= 0) {
+                resetGame(); // Directly refresh without alert
+            }
+        }, 1000);
+    }
+
+
+    function handleBoxClick(box, index) {
+        if (index === targetBoxIndex) {
+            box.style.backgroundColor = 'green';
+            box.style.transform = 'scale(1.2)';
+            clearInterval(timerInterval);
+            setTimeout(() => {
+                level++;
+                colorDifference = Math.max(5, colorDifference - 5);
+                createGrid();
+                startGame();
+            }, 1000);
+        } else {
+            box.style.backgroundColor = 'red';
+            box.style.transform = 'scale(1.2)';
+            attempts--;
+            attemptsDisplay.textContent = `Attempts: ${attempts}`;
+
+            setTimeout(() => {
+                box.style.transform = 'scale(1)';
+                box.style.backgroundColor = originalColors[index]; // Revert to original color
+            }, 500);
+
+            if (attempts <= 0) {
+                alert('You have lost! Restarting...');
+                resetGame();
+            }
         }
     }
-}
 
-function resetGame() {
-    location.reload(); // Refresh the page to restart the game
-}
+    function resetGame() {
+        location.reload(); // Refresh the page to restart the game
+    }
 
-// Initialize grid and attach event listener to the button
-createGrid();
-startButton.addEventListener('click', startGame);
+    // Initialize grid and attach event listener to the button
+    createGrid();
+    startButton.addEventListener('click', startGame);
 
-} else if (currentPhpFile === "spel4.php") {
-    class MazeBuilder {
+    } else if (currentPhpFile === "spel4.php") {
+        class MazeBuilder {
 
-        // Original JavaScript code by Chirp Internet: www.chirpinternet.eu
-        // Please acknowledge use of this code by including this header.
-      
-        constructor(width, height) {
-      
-          this.width = width;
-          this.height = height;
-      
-          this.cols = 2 * this.width + 1;
-          this.rows = 2 * this.height + 1;
-      
-          this.maze = this.initArray([]);
-      
-          /* place initial walls */
-      
-          this.maze.forEach((row, r) => {
-            row.forEach((cell, c) => {
-              switch(r)
-              {
-                case 0:
-                case this.rows - 1:
-                  this.maze[r][c] = ["wall"];
-                  break;
-      
-                default:
-                  if((r % 2) == 1) {
-                    if((c == 0) || (c == this.cols - 1)) {
-                      this.maze[r][c] = ["wall"];
-                    }
-                  } else if(c % 2 == 0) {
+            // Original JavaScript code by Chirp Internet: www.chirpinternet.eu
+            // Please acknowledge use of this code by including this header.
+        
+            constructor(width, height) {
+        
+            this.width = width;
+            this.height = height;
+        
+            this.cols = 2 * this.width + 1;
+            this.rows = 2 * this.height + 1;
+        
+            this.maze = this.initArray([]);
+        
+            /* place initial walls */
+        
+            this.maze.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                switch(r)
+                {
+                    case 0:
+                    case this.rows - 1:
                     this.maze[r][c] = ["wall"];
-                  }
-      
-              }
+                    break;
+        
+                    default:
+                    if((r % 2) == 1) {
+                        if((c == 0) || (c == this.cols - 1)) {
+                        this.maze[r][c] = ["wall"];
+                        }
+                    } else if(c % 2 == 0) {
+                        this.maze[r][c] = ["wall"];
+                    }
+        
+                }
+                });
+        
+                if(r == 0) {
+                /* place exit in top row */
+                let doorPos = this.posToSpace(this.rand(1, this.width));
+                this.maze[r][doorPos] = ["door", "exit"];
+                }
+        
+                if(r == this.rows - 1) {
+                /* place entrance in bottom row */
+                let doorPos = this.posToSpace(this.rand(1, this.width));
+                this.maze[r][doorPos] = ["door", "entrance"];
+                }
+        
             });
-      
-            if(r == 0) {
-              /* place exit in top row */
-              let doorPos = this.posToSpace(this.rand(1, this.width));
-              this.maze[r][doorPos] = ["door", "exit"];
+        
+            /* start partitioning */
+        
+            this.partition(1, this.height - 1, 1, this.width - 1);
+        
             }
-      
-            if(r == this.rows - 1) {
-              /* place entrance in bottom row */
-              let doorPos = this.posToSpace(this.rand(1, this.width));
-              this.maze[r][doorPos] = ["door", "entrance"];
+        
+            initArray(value) {
+            return new Array(this.rows).fill().map(() => new Array(this.cols).fill(value));
             }
-      
-          });
-      
-          /* start partitioning */
-      
-          this.partition(1, this.height - 1, 1, this.width - 1);
-      
-        }
-      
-        initArray(value) {
-          return new Array(this.rows).fill().map(() => new Array(this.cols).fill(value));
-        }
-      
-        rand(min, max) {
-          return min + Math.floor(Math.random() * (1 + max - min));
-        }
-      
-        posToSpace(x) {
-          return 2 * (x-1) + 1;
-        }
-      
-        posToWall(x) {
-          return 2 * x;
-        }
-      
-        inBounds(r, c) {
-          if((typeof this.maze[r] == "undefined") || (typeof this.maze[r][c] == "undefined")) {
-            return false; /* out of bounds */
-          }
-          return true;
-        }
-      
-        shuffle(array) {
-          /* sauce: https://stackoverflow.com/a/12646864 */
-          for(let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-          }
-          return array;
-        }
-      
-        partition(r1, r2, c1, c2) {
-          /* create partition walls
-             ref: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_division_method */
-      
-          let horiz, vert, x, y, start, end;
-      
-          if((r2 < r1) || (c2 < c1)) {
-            return false;
-          }
-      
-          if(r1 == r2) {
-            horiz = r1;
-          } else {
-            x = r1+1;
-            y = r2-1;
-            start = Math.round(x + (y-x) / 4);
-            end = Math.round(x + 3*(y-x) / 4);
-            horiz = this.rand(start, end);
-          }
-      
-          if(c1 == c2) {
-            vert = c1;
-          } else {
-            x = c1 + 1;
-            y = c2 - 1;
-            start = Math.round(x + (y - x) / 3);
-            end = Math.round(x + 2 * (y - x) / 3);
-            vert = this.rand(start, end);
-          }
-      
-          for(let i = this.posToWall(r1)-1; i <= this.posToWall(r2)+1; i++) {
-            for(let j = this.posToWall(c1)-1; j <= this.posToWall(c2)+1; j++) {
-              if((i == this.posToWall(horiz)) || (j == this.posToWall(vert))) {
-                this.maze[i][j] = ["wall"];
-              }
+        
+            rand(min, max) {
+            return min + Math.floor(Math.random() * (1 + max - min));
             }
-          }
-      
-          let gaps = this.shuffle([true, true, true, false]);
-      
-          /* create gaps in partition walls */
-      
-          if(gaps[0]) {
-            let gapPosition = this.rand(c1, vert);
-            this.maze[this.posToWall(horiz)][this.posToSpace(gapPosition)] = [];
-          }
-      
-          if(gaps[1]) {
-            let gapPosition = this.rand(vert+1, c2+1);
-            this.maze[this.posToWall(horiz)][this.posToSpace(gapPosition)] = [];
-          }
-      
-          if(gaps[2]) {
-            let gapPosition = this.rand(r1, horiz);
-            this.maze[this.posToSpace(gapPosition)][this.posToWall(vert)] = [];
-          }
-      
-          if(gaps[3]) {
-            let gapPosition = this.rand(horiz+1, r2+1);
-            this.maze[this.posToSpace(gapPosition)][this.posToWall(vert)] = [];
-          }
-      
-          /* recursively partition newly created chambers */
-      
-          this.partition(r1, horiz-1, c1, vert-1);
-          this.partition(horiz+1, r2, c1, vert-1);
-          this.partition(r1, horiz-1, vert+1, c2);
-          this.partition(horiz+1, r2, vert+1, c2);
-      
-        }
-      
-        isGap(...cells) {
-          return cells.every((array) => {
-            let row, col;
-            [row, col] = array;
-            if(this.maze[row][col].length > 0) {
-              if(!this.maze[row][col].includes("door")) {
-                return false;
-              }
+        
+            posToSpace(x) {
+            return 2 * (x-1) + 1;
+            }
+        
+            posToWall(x) {
+            return 2 * x;
+            }
+        
+            inBounds(r, c) {
+            if((typeof this.maze[r] == "undefined") || (typeof this.maze[r][c] == "undefined")) {
+                return false; /* out of bounds */
             }
             return true;
-          });
-        }
-      
-        countSteps(array, r, c, val, stop) {
-      
-          if(!this.inBounds(r, c)) {
-            return false; /* out of bounds */
-          }
-      
-          if(array[r][c] <= val) {
-            return false; /* shorter route already mapped */
-          }
-      
-          if(!this.isGap([r, c])) {
-            return false; /* not traversable */
-          }
-      
-          array[r][c] = val;
-      
-          if(this.maze[r][c].includes(stop)) {
-            return true; /* reached destination */
-          }
-      
-          this.countSteps(array, r-1, c, val+1, stop);
-          this.countSteps(array, r, c+1, val+1, stop);
-          this.countSteps(array, r+1, c, val+1, stop);
-          this.countSteps(array, r, c-1, val+1, stop);
-      
-        }
-      
-        getKeyLocation() {
-      
-          let fromEntrance = this.initArray();
-          let fromExit = this.initArray();
-      
-          this.totalSteps = -1;
-      
-          for(let j = 1; j < this.cols-1; j++) {
-            if(this.maze[this.rows-1][j].includes("entrance")) {
-              this.countSteps(fromEntrance, this.rows-1, j, 0, "exit");
             }
-            if(this.maze[0][j].includes("exit")) {
-              this.countSteps(fromExit, 0, j, 0, "entrance");
+        
+            shuffle(array) {
+            /* sauce: https://stackoverflow.com/a/12646864 */
+            for(let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
             }
-          }
-      
-          let fc = -1, fr = -1;
-      
-          this.maze.forEach((row, r) => {
-            row.forEach((cell, c) => {
-              if(typeof fromEntrance[r][c] == "undefined") {
-                return;
-              }
-              let stepCount = fromEntrance[r][c] + fromExit[r][c];
-              if(stepCount > this.totalSteps) {
-                fr = r;
-                fc = c;
-                this.totalSteps = stepCount;
-              }
+            return array;
+            }
+        
+            partition(r1, r2, c1, c2) {
+                /* create partition walls
+                   ref: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_division_method */
+            
+                let horiz, vert, x, y, start, end;
+            
+                if ((r2 < r1) || (c2 < c1)) {
+                    return false;
+                }
+            
+                if (r1 == r2) {
+                    horiz = r1;
+                } else {
+                    x = r1 + 1;
+                    y = r2 - 1;
+                    start = Math.round(x + (y - x) / 4);
+                    end = Math.round(x + 3 * (y - x) / 4);
+                    horiz = this.rand(start, end);
+                }
+            
+                if (c1 == c2) {
+                    vert = c1;
+                } else {
+                    x = c1 + 1;
+                    y = c2 - 1;
+                    start = Math.round(x + (y - x) / 3);
+                    end = Math.round(x + 2 * (y - x) / 3);
+                    vert = this.rand(start, end);
+                }
+            
+                for (let i = this.posToWall(r1) - 1; i <= this.posToWall(r2) + 1; i++) {
+                    for (let j = this.posToWall(c1) - 1; j <= this.posToWall(c2) + 1; j++) {
+                        if ((i == this.posToWall(horiz)) || (j == this.posToWall(vert))) {
+                            this.maze[i][j] = ["wall"];
+                        }
+                    }
+                }
+            
+                // Create gaps in the partition walls to allow multiple paths
+                let primaryGaps = this.shuffle([true, true, true, false]); // Ensure one primary gap per partition
+                let extraGaps = this.shuffle([true, false, false, false]); // Additional gaps to create more paths
+            
+                const createGap = (row, col) => {
+                    if (this.inBounds(row, col) && this.maze[row][col].includes("wall")) {
+                        this.maze[row][col] = []; // Remove the wall to create a path
+                    }
+                };
+            
+                if (primaryGaps[0]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(c1, vert)));
+                if (primaryGaps[1]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(vert + 1, c2 + 1)));
+                if (primaryGaps[2]) createGap(this.posToSpace(this.rand(r1, horiz)), this.posToWall(vert));
+                if (primaryGaps[3]) createGap(this.posToSpace(this.rand(horiz + 1, r2 + 1)), this.posToWall(vert));
+            
+                if (extraGaps[0]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(c1, vert)));
+                if (extraGaps[1]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(vert + 1, c2 + 1)));
+                if (extraGaps[2]) createGap(this.posToSpace(this.rand(r1, horiz)), this.posToWall(vert));
+                if (extraGaps[3]) createGap(this.posToSpace(this.rand(horiz + 1, r2 + 1)), this.posToWall(vert));
+            
+                // Recursively partition newly created chambers
+                this.partition(r1, horiz - 1, c1, vert - 1);
+                this.partition(horiz + 1, r2, c1, vert - 1);
+                this.partition(r1, horiz - 1, vert + 1, c2);
+                this.partition(horiz + 1, r2, vert + 1, c2);
+            }
+        
+            isGap(...cells) {
+            return cells.every((array) => {
+                let row, col;
+                [row, col] = array;
+                if(this.maze[row][col].length > 0) {
+                if(!this.maze[row][col].includes("door")) {
+                    return false;
+                }
+                }
+                return true;
             });
-          });
-      
-          return [fr, fc];
-        }
-      
-        placeKey() {
-      
-          let fr, fc;
-          [fr, fc] = this.getKeyLocation();
-      
-          this.maze[fr][fc] = ["key"];
-      
-        }
-      
-        display(id) {
-      
-          this.parentDiv = document.getElementById(id);
-      
-          if(!this.parentDiv) {
-            alert("Cannot initialise maze - no element found with id \"" + id + "\"");
-            return false;
-          }
-      
-          while(this.parentDiv.firstChild) {
-            this.parentDiv.removeChild(this.parentDiv.firstChild);
-          }
-      
-          const container = document.createElement("div");
-          container.id = "maze";
-          container.dataset.steps = this.totalSteps;
-      
-          this.maze.forEach((row) => {
-            let rowDiv = document.createElement("div");
-            row.forEach((cell) => {
-              let cellDiv = document.createElement("div");
-              if(cell) {
-                cellDiv.className = cell.join(" ");
-              }
-              rowDiv.appendChild(cellDiv);
-            });
-            container.appendChild(rowDiv);
-          });
-      
-          this.parentDiv.appendChild(container);
-      
-          return true;
-        }
-      
-      }
-    
-      class Player {
-        constructor(maze) {
-            this.maze = maze;
-            this.position = { row: maze.rows - 2, col: maze.cols - 2 }; // Start near the entrance
-            this.hasKey = false;
-        }
-    
-        init() {
-            document.addEventListener("keydown", (e) => this.move(e));
-            this.updatePlayerPosition();
-        }
-    
-        move(event) {
-            let { row, col } = this.position;
-    
-            switch (event.key) {
-                case "ArrowUp":
-                    row -= 1;
-                    break;
-                case "ArrowDown":
-                    row += 1;
-                    break;
-                case "ArrowLeft":
-                    col -= 1;
-                    break;
-                case "ArrowRight":
-                    col += 1;
-                    break;
-                default:
+            }
+        
+            countSteps(array, r, c, val, stop) {
+        
+            if(!this.inBounds(r, c)) {
+                return false; /* out of bounds */
+            }
+        
+            if(array[r][c] <= val) {
+                return false; /* shorter route already mapped */
+            }
+        
+            if(!this.isGap([r, c])) {
+                return false; /* not traversable */
+            }
+        
+            array[r][c] = val;
+        
+            if(this.maze[r][c].includes(stop)) {
+                return true; /* reached destination */
+            }
+        
+            this.countSteps(array, r-1, c, val+1, stop);
+            this.countSteps(array, r, c+1, val+1, stop);
+            this.countSteps(array, r+1, c, val+1, stop);
+            this.countSteps(array, r, c-1, val+1, stop);
+        
+            }
+        
+            getKeyLocation() {
+        
+            let fromEntrance = this.initArray();
+            let fromExit = this.initArray();
+        
+            this.totalSteps = -1;
+        
+            for(let j = 1; j < this.cols-1; j++) {
+                if(this.maze[this.rows-1][j].includes("entrance")) {
+                this.countSteps(fromEntrance, this.rows-1, j, 0, "exit");
+                }
+                if(this.maze[0][j].includes("exit")) {
+                this.countSteps(fromExit, 0, j, 0, "entrance");
+                }
+            }
+        
+            let fc = -1, fr = -1;
+        
+            this.maze.forEach((row, r) => {
+                row.forEach((cell, c) => {
+                if(typeof fromEntrance[r][c] == "undefined") {
                     return;
+                }
+                let stepCount = fromEntrance[r][c] + fromExit[r][c];
+                if(stepCount > this.totalSteps) {
+                    fr = r;
+                    fc = c;
+                    this.totalSteps = stepCount;
+                }
+                });
+            });
+        
+            return [fr, fc];
             }
-    
-            if (this.canMoveTo(row, col)) {
-                this.position = { row, col };
-                this.checkInteraction();
+        
+            placeKey() {
+        
+            let fr, fc;
+            [fr, fc] = this.getKeyLocation();
+        
+            this.maze[fr][fc] = ["key"];
+        
+            }
+        
+            display(id) {
+        
+            this.parentDiv = document.getElementById(id);
+        
+            if(!this.parentDiv) {
+                alert("Cannot initialise maze - no element found with id \"" + id + "\"");
+                return false;
+            }
+        
+            while(this.parentDiv.firstChild) {
+                this.parentDiv.removeChild(this.parentDiv.firstChild);
+            }
+        
+            const container = document.createElement("div");
+            container.id = "maze";
+            container.dataset.steps = this.totalSteps;
+        
+            this.maze.forEach((row) => {
+                let rowDiv = document.createElement("div");
+                row.forEach((cell) => {
+                let cellDiv = document.createElement("div");
+                if(cell) {
+                    cellDiv.className = cell.join(" ");
+                }
+                rowDiv.appendChild(cellDiv);
+                });
+                container.appendChild(rowDiv);
+            });
+        
+            this.parentDiv.appendChild(container);
+        
+            return true;
+            }
+        
+        }
+        
+        class Player {
+            constructor(maze) {
+                this.maze = maze;
+                this.position = { row: maze.rows - 2, col: maze.cols - 2 }; // Start near the entrance
+                this.hasKey = false;
+            }
+        
+            init() {
+                document.addEventListener("keydown", (e) => this.move(e));
                 this.updatePlayerPosition();
             }
-        }
-    
-        canMoveTo(row, col) {
-            return (
-                row >= 0 &&
-                row < this.maze.rows &&
-                col >= 0 &&
-                col < this.maze.cols &&
-                !this.maze.maze[row][col].includes("wall")
-            );
-        }
-    
-        generateNewMaze() {
-            let width = Math.floor(Math.random() * 30) + 4; // Random width (min: 4)
-            let height = Math.floor(Math.random() * 20) + 4; // Random height (min: 4)
-            const newMaze = new MazeBuilder(width, height); // Create a new maze
-            newMaze.placeKey(); // Place the key in the new maze
-            newMaze.display("maze_container"); // Display the new maze
         
-            this.maze = newMaze; // Update the player's maze reference
-            this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 }; // Reset player position
-            this.hasKey = false; // Reset the key
-            this.updatePlayerPosition(); // Update the player position in the UI
-        }
-    
-        checkInteraction() {
-            const cell = this.maze.maze[this.position.row][this.position.col];
-            if (cell.includes("key")) {
-                this.pickUpKey();
-            } else if (cell.includes("exit") && this.hasKey) {
-                this.generateNewMaze(); // Call a method to create a new maze
+            move(event) {
+                let { row, col } = this.position;
+        
+                switch (event.key) {
+                    case "ArrowUp":
+                        row -= 1;
+                        break;
+                    case "ArrowDown":
+                        row += 1;
+                        break;
+                    case "ArrowLeft":
+                        col -= 1;
+                        break;
+                    case "ArrowRight":
+                        col += 1;
+                        break;
+                    default:
+                        return;
+                }
+        
+                if (this.canMoveTo(row, col)) {
+                    this.position = { row, col };
+                    this.checkInteraction();
+                    this.updatePlayerPosition();
+                }
+            }
+        
+            canMoveTo(row, col) {
+                return (
+                    row >= 0 &&
+                    row < this.maze.rows &&
+                    col >= 0 &&
+                    col < this.maze.cols &&
+                    !this.maze.maze[row][col].includes("wall")
+                );
+            }
+        
+            generateNewMaze() {
+                let width = Math.floor(Math.random() * 30) + 4; // Random width (min: 4)
+                let height = Math.floor(Math.random() * 20) + 4; // Random height (min: 4)
+                const newMaze = new MazeBuilder(width, height); // Create a new maze
+                newMaze.placeKey(); // Place the key in the new maze
+                newMaze.display("maze_container"); // Display the new maze
+            
+                this.maze = newMaze; // Update the player's maze reference
+                this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 }; // Reset player position
+                this.hasKey = false; // Reset the key
+                this.updatePlayerPosition(); // Update the player position in the UI
+            
+                // Reinitialize the monster with the new maze
+                monster.maze = newMaze; // Update the monster's maze reference
+                monster.position = { row: 1, col: 1 }; // Reset monster position (example starting point)
+                monster.startMovement(); // Restart the monster's movement behavior
+            }
+            
+        
+            checkInteraction() {
+                const cell = this.maze.maze[this.position.row][this.position.col];
+                if (cell.includes("key")) {
+                    this.pickUpKey();
+                } else if (cell.includes("exit") && this.hasKey) {
+                    this.generateNewMaze(); // Call a method to create a new maze
+                }
+            }
+            
+        
+            pickUpKey() {
+                this.hasKey = true;
+        
+                // Remove key from maze data
+                this.maze.maze[this.position.row][this.position.col] = [];
+        
+                // Update the DOM
+                const currentCell = document
+                    .getElementById("maze")
+                    .children[this.position.row]
+                    .children[this.position.col];
+                currentCell.classList.remove("key");
+        
+                // Update UI for key possession
+                document.getElementById("maze_score").classList.add("has-key");
+                alert("You picked up the key!");
+            }
+        
+            updatePlayerPosition() {
+                document.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+                const currentCell = document
+                    .getElementById("maze")
+                    .children[this.position.row]
+                    .children[this.position.col];
+                currentCell.classList.add("hero");
             }
         }
+
+        class Monster {
+            constructor(maze) {
+                this.maze = maze;
+                this.position = { row: 1, col: 1 }; // Start near the entrance
+            }
         
-    
-        pickUpKey() {
-            this.hasKey = true;
-    
-            // Remove key from maze data
-            this.maze.maze[this.position.row][this.position.col] = [];
-    
-            // Update the DOM
-            const currentCell = document
-                .getElementById("maze")
-                .children[this.position.row]
-                .children[this.position.col];
-            currentCell.classList.remove("key");
-    
-            // Update UI for key possession
-            document.getElementById("maze_score").classList.add("has-key");
-            alert("You picked up the key!");
+            init() {
+                this.updateMonsterPosition();
+                this.startHunting();
+            }
+        
+            canMoveTo(row, col) {
+                return (
+                    row >= 0 &&
+                    row < this.maze.rows &&
+                    col >= 0 &&
+                    col < this.maze.cols &&
+                    !this.maze.maze[row][col].includes("wall")
+                );
+            }
+        
+            findShortestPath(targetRow, targetCol) {
+                const directions = [
+                    { row: -1, col: 0 }, // Up
+                    { row: 1, col: 0 },  // Down
+                    { row: 0, col: -1 }, // Left
+                    { row: 0, col: 1 },  // Right
+                ];
+        
+                const queue = [{ row: this.position.row, col: this.position.col, path: [] }];
+                const visited = Array.from({ length: this.maze.rows }, () => Array(this.maze.cols).fill(false));
+                visited[this.position.row][this.position.col] = true;
+        
+                while (queue.length > 0) {
+                    const { row, col, path } = queue.shift();
+        
+                    if (row === targetRow && col === targetCol) {
+                        return path;
+                    }
+        
+                    for (const direction of directions) {
+                        const newRow = row + direction.row;
+                        const newCol = col + direction.col;
+        
+                        if (this.canMoveTo(newRow, newCol) && !visited[newRow][newCol]) {
+                            visited[newRow][newCol] = true;
+                            queue.push({ row: newRow, col: newCol, path: [...path, direction] });
+                        }
+                    }
+                }
+        
+                return []; // No path found
+            }
+        
+            moveTowardsPlayer() {
+                const path = this.findShortestPath(player.position.row, player.position.col);
+                if (path.length > 0) {
+                    const nextMove = path[0];
+                    this.position.row += nextMove.row;
+                    this.position.col += nextMove.col;
+                    this.updateMonsterPosition();
+                    this.checkCollision();
+                }
+            }
+        
+            startHunting() {
+                setInterval(() => this.moveTowardsPlayer(), 500); // Move every 0.5 seconds
+            }
+        
+            updateMonsterPosition() {
+                document.querySelectorAll(".monster").forEach((el) => el.classList.remove("monster"));
+                const currentCell = document
+                    .getElementById("maze")
+                    .children[this.position.row]
+                    .children[this.position.col];
+                currentCell.classList.add("monster");
+            }
+        
+            checkCollision() {
+                const { row, col } = this.position;
+                if (row === player.position.row && col === player.position.col) {
+                    alert("You were caught by the monster! Generating a new maze...");
+                    this.restartGame();
+                }
+            }
+        
+            restartGame() {
+                player.generateNewMaze();
+                this.position = { row: 1, col: 1 }; // Reset monster position
+                this.updateMonsterPosition();
+            }
         }
-    
-        updatePlayerPosition() {
-            document.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
-            const currentCell = document
-                .getElementById("maze")
-                .children[this.position.row]
-                .children[this.position.col];
-            currentCell.classList.add("hero");
+
+        let Maze = new MazeBuilder(Math.floor(Math.random() * 20) + 4, Math.floor(Math.random() * 20) + 4);
+        Maze.placeKey();
+        Maze.display("maze_container");
+
+        // Initialize the player
+        let player = new Player(Maze);
+        player.init();
+
+        let monster = new Monster(Maze);
+        monster.init();
+
+        document.addEventListener("DOMContentLoaded", () => {
+        const startButton = document.getElementById("start_button");
+        const menuButton = document.getElementById("menu_button");
+        const startPage = document.getElementById("start_page");
+        const mazeContainer = document.getElementById("maze_container");
+
+        // Restore state from localStorage
+        const currentState = localStorage.getItem("currentState");
+
+        if (currentState === "maze") {
+            startPage.style.display = "none";
+            mazeContainer.style.display = "block";
+        } else {
+            startPage.style.display = "block";
+            mazeContainer.style.display = "none";
+            startPage.style.display = "flex";
+            startPage.style.justifyContent = "center";
+            startPage.style.alignItems = "center";
+            startPage.style.height = "100vh"; // Ensure full viewport height
         }
-    }
-    let Maze = new MazeBuilder(Math.floor(Math.random() * 20) + 4, Math.floor(Math.random() * 20) + 4);
-    Maze.placeKey();
-    Maze.display("maze_container");
 
-    // Initialize the player
-    let player = new Player(Maze);
-    player.init();
+        // Start button event
+        startButton.addEventListener("click", () => {
+            startPage.style.display = "none";
+            mazeContainer.style.display = "block";
+            localStorage.setItem("currentState", "maze"); // Save the current state
+        });
 
-    document.addEventListener("DOMContentLoaded", () => {
-    const startButton = document.getElementById("start_button");
-    const menuButton = document.getElementById("menu_button");
-    const startPage = document.getElementById("start_page");
-    const mazeContainer = document.getElementById("maze_container");
-
-    // Restore state from localStorage
-    const currentState = localStorage.getItem("currentState");
-
-    if (currentState === "maze") {
-        startPage.style.display = "none";
-        mazeContainer.style.display = "block";
-    } else {
-        startPage.style.display = "block";
-        mazeContainer.style.display = "none";
-        startPage.style.display = "flex";
-        startPage.style.justifyContent = "center";
-        startPage.style.alignItems = "center";
-        startPage.style.height = "100vh"; // Ensure full viewport height
-    }
-
-    // Start button event
-    startButton.addEventListener("click", () => {
-        startPage.style.display = "none";
-        mazeContainer.style.display = "block";
-        localStorage.setItem("currentState", "maze"); // Save the current state
+        // Menu button event
+        menuButton.addEventListener("click", () => {
+            startPage.style.display = "block";
+            mazeContainer.style.display = "none";
+            startPage.style.display = "flex";
+            startPage.style.justifyContent = "center";
+            startPage.style.alignItems = "center";
+            startPage.style.height = "100vh"; // Ensure full viewport height
+            localStorage.setItem("currentState", "start"); // Save the current state
+        });
     });
-
-    // Menu button event
-    menuButton.addEventListener("click", () => {
-        startPage.style.display = "block";
-        mazeContainer.style.display = "none";
-        startPage.style.display = "flex";
-        startPage.style.justifyContent = "center";
-        startPage.style.alignItems = "center";
-        startPage.style.height = "100vh"; // Ensure full viewport height
-        localStorage.setItem("currentState", "start"); // Save the current state
-    });
-});
 
         
 }
