@@ -271,7 +271,7 @@ $conn->close();
         </div>
         <div class="game-container">
             <h2>Maze runner</h2>
-            <p>Klura dig igenom svåra labyrint och hitta den väg rätt!</p>
+            <p>Klura dig igenom svåra labyrinter och hitta den rätta vägen!</p>
             <button class="open-modal-button" onclick="openModal('game4')">Spela Nu</button>
         </div>
         <div class="game-container">

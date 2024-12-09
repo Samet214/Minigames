@@ -20,18 +20,12 @@
             <div id="box9" class="box"></div>
         </div>
 
+        <div id="visible-container"></div>
+
         <button id="spelknapp">Börja spela!</button>
 
         <div id="timer-display">Tid kvar: 0s</div>
         <div id="tries-display">Antal försök: 3</div>
-
-        <div id="mode-switch">
-            <label class="switch">
-                <input type="checkbox" id="mode-toggle">
-                <span class="slider"></span>
-            </label>
-            <p id="mode-label">Normal Mode</p>
-        </div>
 
 
         <div id="game-over-popup" class="popup">

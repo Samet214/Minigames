@@ -2664,7 +2664,8 @@ html[data-page="spel1"] .switch {
     display: inline-block;
     width: 50px;
     height: 24px;
-    margin-right: 10px;
+    margin-left: 37%;
+    margin-top: -6%;
 }
 
 html[data-page="spel1"] .switch input {
@@ -2707,6 +2708,8 @@ html[data-page="spel1"] #mode-label {
     font-family: Arial, sans-serif;
     font-size: 16px;
     color: #333;
+    margin-top: -5.2%;
+    margin-left: -12%;
 }
 
 
@@ -2714,6 +2717,7 @@ html[data-page="spel1"] html, html[data-page="spel1"] body {
 min-width: 500px;
 min-height: 500px;
 overflow: hidden;
+background-color: rgb(49, 47, 47);
 }
 
 html[data-page="spel1"] #container {
@@ -2725,13 +2729,34 @@ min-width: 500px;
 min-height: 500px;
 margin-left: auto;
 margin-right: auto;
-margin-top: 8vh;
+margin-top: 13vh;
 display: flex;
 flex-wrap: wrap;
 justify-content: space-around;
 align-items: center;
 background-color: transparent;
 border: none;
+}
+
+html[data-page="spel1"] #visible-container {
+    width: 80vw;
+    height: 80vh;
+    max-width: 530px;
+    max-height: 530px;
+    min-width: 530px;
+    min-height: 530px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: -56.5vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    background-color: brown;
+    border-radius: 10%;
+    border: 6px solid burlywood;
 }
 
 html[data-page="spel1"] #box1, html[data-page="spel1"] #box2, html[data-page="spel1"] #box3, html[data-page="spel1"] #box4, html[data-page="spel1"] #box5, html[data-page="spel1"] #box6, html[data-page="spel1"] #box7, html[data-page="spel1"] #box8, html[data-page="spel1"] #box9 {
