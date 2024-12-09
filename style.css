@@ -2653,6 +2653,63 @@ color: #333;
 
 /*spel1.php*/
 
+html[data-page="spel1"] #mode-switch {
+    display: flex;
+    align-items: center;
+    margin: 20px;
+}
+
+html[data-page="spel1"] .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+html[data-page="spel1"] .switch input {
+    display: none;
+}
+
+html[data-page="spel1"] .slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 24px;
+    cursor: pointer;
+}
+
+html[data-page="spel1"] .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+html[data-page="spel1"] input:checked + .slider {
+    background-color: #4caf50;
+}
+
+html[data-page="spel1"] input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+html[data-page="spel1"] #mode-label {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+
+
 html[data-page="spel1"] html, html[data-page="spel1"] body {
 min-width: 500px;
 min-height: 500px;

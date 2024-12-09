@@ -720,6 +720,72 @@ if (currentPhpFile === "game_display.php") {
     });    
 } else if (currentPhpFile === "spel1.php") {
 
+    const modeToggle = document.getElementById("mode-toggle");
+    const modeLabel = document.getElementById("mode-label");
+    const levelDisplay = document.getElementById("level-display");
+
+    let sequence = [];
+    let memoryMode = false;
+
+    // Listen for mode toggle changes
+    modeToggle.addEventListener("change", () => {
+        memoryMode = modeToggle.checked;
+        modeLabel.textContent = memoryMode ? "Memory Mode" : "Normal Mode";
+        resetGame();
+    });
+
+    // Generate a random sequence
+    function generateRandomSequence(length) {
+        const sequence = [];
+        for (let i = 0; i < length; i++) {
+            sequence.push(Math.floor(Math.random() * 9) + 1);
+        }
+        return sequence;
+    }
+
+    // Add one random block to the sequence
+    function addToSequence(sequence) {
+        sequence.push(Math.floor(Math.random() * 9) + 1);
+    }
+
+    // Reset the game
+    function resetGame() {
+        sequence = [];
+        levelDisplay.textContent = "Level: 1";
+    }
+
+    // Start the game
+    document.getElementById("spelknapp").addEventListener("click", () => {
+        let level = 1;
+        let currentSequence = memoryMode ? [...sequence] : generateRandomSequence(level);
+
+        if (memoryMode) {
+            addToSequence(currentSequence);
+            sequence = [...currentSequence];
+        }
+
+        playSequence(currentSequence);
+        level++;
+        levelDisplay.textContent = `Level: ${level}`;
+    });
+
+    // Simulate playing the sequence (example)
+    function playSequence(sequence) {
+        sequence.forEach((block, index) => {
+            setTimeout(() => {
+                highlightBlock(block);
+            }, index * 1000); // 1-second delay between highlights
+        });
+    }
+
+    // Highlight a block (example)
+    function highlightBlock(blockNumber) {
+        const block = document.getElementById(`box${blockNumber}`);
+        block.classList.add("highlight");
+        setTimeout(() => block.classList.remove("highlight"), 500);
+    }
+
+
     let currentLevel = 1; // Default level
     let isAnimating = false; // To prevent multiple animations at the same time
     let cancelAnimation = false; // To stop long-running animations when new clicks happen

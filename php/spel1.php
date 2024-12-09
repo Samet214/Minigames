@@ -25,6 +25,15 @@
         <div id="timer-display">Tid kvar: 0s</div>
         <div id="tries-display">Antal försök: 3</div>
 
+        <div id="mode-switch">
+            <label class="switch">
+                <input type="checkbox" id="mode-toggle">
+                <span class="slider"></span>
+            </label>
+            <p id="mode-label">Normal Mode</p>
+        </div>
+
+
         <div id="game-over-popup" class="popup">
         <div class="popup-content">
             <span class="close-btn" onclick="closeGameOverPopup()">&times;</span>
