@@ -2655,342 +2655,83 @@ color: #333;
 
 /*spel1.php*/
 
-html[data-page="spel1"] #mode-switch {
+html[data-page="spel1"] body {
+    font-family: 'Poppins', sans-serif;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    margin: 20px;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    color: #333;
 }
-
-html[data-page="spel1"] .switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
-    margin-left: 37%;
-    margin-top: -6%;
+html[data-page="spel1"] .game-container {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
 }
-
-html[data-page="spel1"] .switch input {
-    display: none;
+html[data-page="spel1"] .level {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
-
-html[data-page="spel1"] .slider {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 24px;
+html[data-page="spel1"] .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 150px);
+    gap: 20px;
+    margin-bottom: 10px;
+}
+html[data-page="spel1"] .box {
+    width: 150px;
+    height: 150px;
+    background-color: #f5f5f5;
+    border: 3px solid #ddd;
+    border-radius: 15px;
     cursor: pointer;
+    transition: transform 0.3s ease, background-color 0.3s ease;
 }
-
-html[data-page="spel1"] .slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 4px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
+html[data-page="spel1"] .box:hover {
+    transform: scale(1.1);
+    background-color: #e0e0e0;
 }
-
-html[data-page="spel1"] input:checked + .slider {
+html[data-page="spel1"] .box.active {
+    background-color: #ffd700;
+}
+html[data-page="spel1"] .box.correct {
     background-color: #4caf50;
 }
-
-html[data-page="spel1"] input:checked + .slider:before {
-    transform: translateX(26px);
+html[data-page="spel1"] .box.incorrect {
+    background-color: #f44336;
 }
-
-html[data-page="spel1"] #mode-label {
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    color: #333;
-    margin-top: -5.2%;
-    margin-left: -12%;
+html[data-page="spel1"] .controls {
+    margin: 30px 0;
 }
-
-
-html[data-page="spel1"] html, html[data-page="spel1"] body {
-min-width: 500px;
-min-height: 500px;
-overflow: hidden;
-background-color: rgb(49, 47, 47);
+html[data-page="spel1"] .stats {
+    margin-top: 30px;
+    font-size: 1.5em;
+    color: #555;
 }
-
-html[data-page="spel1"] #container {
-width: 80vw;
-height: 80vh;
-max-width: 700px;
-max-height: 700px;
-min-width: 700px;
-min-height: 700px;
-margin-left: auto;
-margin-right: auto;
-margin-top: 13vh;
-display: flex;
-flex-wrap: wrap;
-justify-content: space-around;
-align-items: center;
-background-color: transparent;
-border: none;
-margin-top: 80px;
-}
-
-html[data-page="spel1"] #container #spelknapp {
-    margin-left: -600px;
-}
-
-html[data-page="spel1"] #visible-container {
-    width: 80vw;
-    height: 80vh;
-    max-width: 810px;
-    max-height: 890px;
-    min-width: 810px;
-    min-height: 890px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: -56.5vh;
+html[data-page="spel1"] .switch-container {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
     align-items: center;
-    background-color: transparent;
-    border: none;
-    background-color: brown;
-    border-radius: 10%;
-    border: 6px solid burlywood;
-    margin-top: -910px;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: -3%;
 }
-
-html[data-page="spel1"] #box1, html[data-page="spel1"] #box2, html[data-page="spel1"] #box3, html[data-page="spel1"] #box4, html[data-page="spel1"] #box5, html[data-page="spel1"] #box6, html[data-page="spel1"] #box7, html[data-page="spel1"] #box8, html[data-page="spel1"] #box9 {
-width: 30%;
-height: 30%;
-background-color: #007bff;
-border-radius: 20%;
-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-transition: transform 0.3s ease, box-shadow 0.3s ease;
-margin-top: 30px;
-}
-
-html[data-page="spel1"] #box1:hover, html[data-page="spel1"] #box2:hover, html[data-page="spel1"] #box3:hover,html[data-page="spel1"]  #box4:hover, html[data-page="spel1"] #box5:hover, html[data-page="spel1"] #box6:hover, html[data-page="spel1"] #box7:hover, html[data-page="spel1"] #box8:hover, html[data-page="spel1"] #box9:hover {
-transform: scale(1.1);
-box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-html[data-page="spel1"] #spelknapp {
-margin-left: 45%;
-padding: 15px 30px;
-background-color: #4CAF50; /* Green background */
-color: white; /* White text */
-border: none; /* Remove default border */
-border-radius: 8px; /* Rounded corners */
-cursor: pointer; /* Pointer on hover */
-font-size: 16px; /* Increase font size */
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-font-size: 25px;
-}
-
-html[data-page="spel1"] #spelknapp:hover {
-background-color: #45a049; /* Slightly darker green on hover */
-box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Increase shadow */
-transform: scale(1.05); /* Slightly enlarge button */
-}
-
-html[data-page="spel1"] #level-display {
-display: none; /* Initially hidden */
-font-size: 2em;
-font-weight: bold;
-position: absolute;
-top: 2%;
-left: 50%;
-transform: translateX(-50%);
-color: white;
-}
-
-html[data-page="spel1"] #spelknapp:hover {
-background-color: #45a049; /* Slightly darker green on hover */
-box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* Increase shadow */
-transform: scale(1.05); /* Slightly enlarge button */
-}
-
-html[data-page="spel1"] .highlight {
-background-color: lightblue !important; /* Keep lightblue color when highlighted */
-}
-
-html[data-page="spel1"] .grow {
-transform: scale(1.2); /* Makes the box bigger when highlighted */
-}
-
-html[data-page="spel1"] h1 {
-text-align: center;
-margin-bottom: 20px;
-position: absolute;
-top: 10px;
-left: 50%;
-transform: translateX(-50%);
-}
-
-html[data-page="spel1"] .no-hover html[data-page="spel1"] .box {
-pointer-events: none; /* Disables interaction, including hover */
-}
-
-/* Changes the box to orange when clicked */
-html[data-page="spel1"] .clicked {
-background-color: greenyellow !important; /* Turns orange on click */
-box-shadow: 0 8px 20px rgba(255, 165, 0, 0.3); /* Add an orange shadow for emphasis */
-}
-
-html[data-page="spel1"] #timer-display {
-display: none;
-text-align: center;
-font-size: 1.5em;
-margin-top: 10px;
-color: white;
-}
-
-html[data-page="spel1"] #tries-display {
-display: none;
-text-align: center;
-font-size: 1.5em;
-margin-top: 5px;
-color: white;
-}
-
-/* Highlight the box red when the user clicks incorrectly */
-html[data-page="spel1"] .wrong {
-background-color: red !important; /* Turns red on incorrect tap */
-box-shadow: 0 8px 20px rgba(255, 0, 0, 0.3); /* Add red shadow for emphasis */
-}
-
-html[data-page="spel1"] .popup {
-display: none; /* Hidden by default */
-position: fixed;
-z-index: 1000;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-background-color: rgba(0, 0, 0, 0.5); /* Dark background with transparency */
-animation: fade-in 0.5s ease-in-out;
-}
-
-html[data-page="spel1"] .popup-content {
-background-color: white;
-margin: 0 auto;
-padding: 20px;
-border-radius: 8px;
-width: 300px;
-text-align: center;
-position: absolute;
-top: -100%; /* Initially off the screen */
-left: 50%;
-transform: translateX(-50%);
-transition: top 0.6s ease-in-out; /* Smooth transition for sliding down */
-}
-
-html[data-page="spel1"] .popup-content.active {
-top: 30%; /* Final position: center of the screen */
-}
-
-html[data-page="spel1"] .close-btn {
-color: #aaa;
-font-size: 28px;
-font-weight: bold;
-float: right;
-cursor: pointer;
-}
-
-html[data-page="spel1"] .close-btn:hover, html[data-page="spel1"] .close-btn:focus {
-color: black;
-}
-
-/* Fade-in animation for the background */
-@keyframes fade-in {
-from {
-background-color: rgba(0, 0, 0, 0);
-}
-to {
-background-color: rgba(0, 0, 0, 0.5);
-}
-}
-
-html[data-page="spel1"] #circle-container {
-position: relative;
-display: inline-block;
-}
-
-html[data-page="spel1"] #hover-circle {
-position: absolute;
-top: 45%;
-left: 50%;
-transform: translate(-50%, -50%); /* Center the circle */
-height: 60px; /* Circle height */
-width: 55px;  /* Circle width */
-border-radius: 50%; /* Makes it a circle */
-border-color: rgba(0, 255, 255, 0.8);
-border-width: 5px;
-border-style: solid; /* Ensure the border appears */
-box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
-0 0 45px rgba(0, 255, 255, 0.5),
-0 0 60px rgba(0, 255, 255, 0.4);
-opacity: 0; /* Start invisible */
-z-index: -1; /* Ensure it's behind the logo */
-transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
-}
-
-html[data-page="spel1"] #circle-container:hover html[data-page="spel1"] #hover-circle {
-opacity: 1; /* Make it visible when hovering */
-box-shadow: 0 0 15px rgba(0, 255, 255, 0.8),
-0 0 30px rgba(0, 255, 255, 0.7),
-0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
-}
-
-@keyframes neonPulse {
-0%, 100% {
-box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
-}
-50% {
-box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
-}
-}
-
-html[data-page="spel1"] #logo {
-cursor: pointer;
-height: 48px; /* Circle height */
-width: 48px;  /* Circle width */
-margin-top: 25px;
-transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
-}
-
-html[data-page="spel1"] #logo:hover {
-transform: scale(1.1) translateY(-3px); /* Scale up and move up */
-}
-
-html[data-page="spel1"] #switch-text {
-    color: white;
-    font-size: 30px;
-}
-
-/* Switch styling */
 html[data-page="spel1"] .switch {
     position: relative;
     display: inline-block;
-    width: 60px;
+    width: 80px;
     height: 40px;
-    margin-right: 10px;
 }
-
 html[data-page="spel1"] .switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
-
 html[data-page="spel1"] .slider {
     position: absolute;
     cursor: pointer;
@@ -2998,103 +2739,94 @@ html[data-page="spel1"] .slider {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 20px;
+    background-color: #ddd;
+    transition: .4s;
+    border-radius: 40px;
 }
-
-html[data-page="spel1"] .slider:before {
+.slider:before {
     position: absolute;
     content: "";
-    height: 35px;
-    width: 35px;
-    left: 3px;
-    bottom: 3px;
+    height: 30px;
+    width: 30px;
+    left: 5px;
+    bottom: 5px;
     background-color: white;
-    transition: 0.4s;
+    transition: .4s;
     border-radius: 50%;
 }
-
 html[data-page="spel1"] input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #4caf50;
 }
-
 html[data-page="spel1"] input:checked + .slider:before {
-    transform: translateX(14px);
+    transform: translateX(40px);
 }
-
-/* When the switch is toggled on */
-html[data-page="spel1"] input:checked + .slider {
-    background-color: #4CAF50; /* Green background when on */
-}
-
-/* Move the toggle circle to the other side */
-html[data-page="spel1"] input:checked + .slider:before {
-    transform: translateX(38px); /* Moves the toggle circle */
-}
-
-html[data-page="spel1"] .switch-container {
-    margin-left: 620px;
-    margin-top: 60px;
-    transform: translateX(-350px);
-}
-
-html[data-page="spel1"] .switch {
-    position: relative;
-    display: inline-block;
-    width: 120px;
-    height: 68px;
-}
-
-html[data-page="spel1"] .switch input {
-    display: none;
-}
-
-html[data-page="spel1"] .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 34px;
-    transform: translateX(-100px);
-}
-
-html[data-page="spel1"] .slider:before {
-    position: absolute;
-    content: "";
-    height: 63px;
-    width: 63px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-}
-
-html[data-page="spel1"]input:checked + .slider {
-    background-color: #2196F3;
-}
-
-html[data-page="spel1"] input:checked + .slider:before {
-    transform: translateX(48px);
-}
-
-html[data-page="spel1"] .submit-button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #2196F3;
+html[data-page="spel1"] button {
+    background: #4caf50;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.2em;
     cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+html[data-page="spel1"] button:hover {
+    background-color: #45a049;
+    transform: scale(1.1);
+}
+html[data-page="spel1"] button:active {
+    transform: scale(1);
+}
+html[data-page="spel1"] .popup {
+    position: fixed;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    transition: top 0.5s ease;
+    z-index: 1000;
+}
+html[data-page="spel1"] .popup.visible {
+    top: 30%;
+}
+html[data-page="spel1"] .popup .close-btn {
+    background: none;
+    border: none;
+    font-size: 2em;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: black;
+}
+html[data-page="spel1"] .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+html[data-page="spel1"] .overlay.visible {
+    display: block;
 }
 
-html[data-page="spel1"] .submit-button:hover {
-    background-color: #0b7dda;
+html[data-page="spel1"] .button-switch-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+html[data-page="spel1"] #start-button {
+    margin-right: 15%;
+    margin-bottom: -3%;
 }
 
 
