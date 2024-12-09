@@ -2001,8 +2001,8 @@ Events.on(engine, 'collisionEnd', (event) => {
             }
         
             generateNewMaze() {
-                let width = Math.floor(Math.random() * 30) + 4; // Random width (min: 4)
-                let height = Math.floor(Math.random() * 20) + 4; // Random height (min: 4)
+                let width = 40; // Random width (min: 4)
+                let height = 24; // Random height (min: 4)
                 const newMaze = new MazeBuilder(width, height); // Create a new maze
                 newMaze.placeKey(); // Place the key in the new maze
                 newMaze.display("maze_container"); // Display the new maze
@@ -2150,7 +2150,7 @@ Events.on(engine, 'collisionEnd', (event) => {
             }
         }
 
-        let Maze = new MazeBuilder(Math.floor(Math.random() * 20) + 4, Math.floor(Math.random() * 20) + 4);
+        let Maze = new MazeBuilder(40,24);
         Maze.placeKey();
         Maze.display("maze_container");
 

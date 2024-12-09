@@ -3319,6 +3319,7 @@ position: relative;
 background-color: #a7c53f;
 background-image: radial-gradient(circle at 0% 0%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at center, rgba(0,0,0,0.1) 50%, transparent 50%), radial-gradient(circle at 100% 100%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at 0% 100%, transparent 50%, rgba(0,0,0,0.1) 50%), radial-gradient(circle at 100% 0%, transparent 50%, rgba(0,0,0,0.1) 50%);
 background-size: 8em 8em;
+transform: translateY(80px);
 }
 html[data-page="spel4"] #maze div {
 display: flex;
@@ -3434,3 +3435,39 @@ flex: 3;
 text-align: right;
 }
 
+html[data-page="spel4"] body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #2d572c; /* Deep green base */
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.2), transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.2), transparent 60%),
+        linear-gradient(135deg, #a7c53f 25%, #6a994e 25%, #6a994e 50%, #a7c53f 50%, #a7c53f 75%, #6a994e 75%);
+    background-size: 150px 150px, 300px 300px, 500px 500px, 100px 100px;
+    background-repeat: repeat, no-repeat, no-repeat, repeat;
+    background-blend-mode: overlay;
+    color: #fff; /* Ensure text is readable */
+}
+
+html[data-page="spel4"] #wooden-board {
+    width: 300px;
+    height: 50px;
+    background-color: red;
+    margin-left: 42%;
+}
+
+html[data-page="spel4"] #wooden-triangle {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-top: 60px solid transparent; /* Top side is transparent */
+    border-left: 80px solid green;      /* Left side forms the triangle */
+    border-right: 0;                   /* Right side is removed */
+    border-bottom: 0;                  /* Bottom side is removed */
+    margin: 2rem;
+    rotate: 180deg;
+    margin-left: -80px;
+    margin-top: -10px;
+}
