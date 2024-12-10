@@ -2222,6 +2222,7 @@ height: 100vh;
 }
 
 html[data-page="spel"] #spelknapp {
+position: fixed;
 padding: 15px 30px;
 background-color: #4CAF50; /* Green background */
 color: white; /* White text */
@@ -2230,7 +2231,8 @@ border-radius: 8px; /* Rounded corners */
 cursor: pointer; /* Pointer on hover */
 font-size: 16px; /* Increase font size */
 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-margin-top: 10px;
+top: 50px;
+
 }
 
 html[data-page="spel"] nav ul {
@@ -2723,10 +2725,10 @@ background-color: rgb(49, 47, 47);
 html[data-page="spel1"] #container {
 width: 80vw;
 height: 80vh;
-max-width: 500px;
-max-height: 500px;
-min-width: 500px;
-min-height: 500px;
+max-width: 700px;
+max-height: 700px;
+min-width: 700px;
+min-height: 700px;
 margin-left: auto;
 margin-right: auto;
 margin-top: 13vh;
@@ -2736,15 +2738,20 @@ justify-content: space-around;
 align-items: center;
 background-color: transparent;
 border: none;
+margin-top: 80px;
+}
+
+html[data-page="spel1"] #container #spelknapp {
+    margin-left: -600px;
 }
 
 html[data-page="spel1"] #visible-container {
     width: 80vw;
     height: 80vh;
-    max-width: 530px;
-    max-height: 530px;
-    min-width: 530px;
-    min-height: 530px;
+    max-width: 810px;
+    max-height: 890px;
+    min-width: 810px;
+    min-height: 890px;
     margin-left: auto;
     margin-right: auto;
     margin-top: -56.5vh;
@@ -2757,6 +2764,7 @@ html[data-page="spel1"] #visible-container {
     background-color: brown;
     border-radius: 10%;
     border: 6px solid burlywood;
+    margin-top: -910px;
 }
 
 html[data-page="spel1"] #box1, html[data-page="spel1"] #box2, html[data-page="spel1"] #box3, html[data-page="spel1"] #box4, html[data-page="spel1"] #box5, html[data-page="spel1"] #box6, html[data-page="spel1"] #box7, html[data-page="spel1"] #box8, html[data-page="spel1"] #box9 {
@@ -2766,6 +2774,7 @@ background-color: #007bff;
 border-radius: 20%;
 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 transition: transform 0.3s ease, box-shadow 0.3s ease;
+margin-top: 30px;
 }
 
 html[data-page="spel1"] #box1:hover, html[data-page="spel1"] #box2:hover, html[data-page="spel1"] #box3:hover,html[data-page="spel1"]  #box4:hover, html[data-page="spel1"] #box5:hover, html[data-page="spel1"] #box6:hover, html[data-page="spel1"] #box7:hover, html[data-page="spel1"] #box8:hover, html[data-page="spel1"] #box9:hover {
@@ -2783,7 +2792,7 @@ border-radius: 8px; /* Rounded corners */
 cursor: pointer; /* Pointer on hover */
 font-size: 16px; /* Increase font size */
 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-margin-top: 10px;
+font-size: 25px;
 }
 
 html[data-page="spel1"] #spelknapp:hover {
@@ -2962,14 +2971,6 @@ html[data-page="spel1"] #logo:hover {
 transform: scale(1.1) translateY(-3px); /* Scale up and move up */
 }
 
-/* Switch container */
-html[data-page="spel1"] #switch-container {
-    display: flex;
-    align-items: center;
-    margin-top: -35px;
-    margin-left: 500px;
-}
-
 html[data-page="spel1"] #switch-text {
     color: white;
     font-size: 30px;
@@ -2979,7 +2980,7 @@ html[data-page="spel1"] #switch-text {
 html[data-page="spel1"] .switch {
     position: relative;
     display: inline-block;
-    width: 80px;
+    width: 60px;
     height: 40px;
     margin-right: 10px;
 }
@@ -3030,6 +3031,70 @@ html[data-page="spel1"] input:checked + .slider {
 /* Move the toggle circle to the other side */
 html[data-page="spel1"] input:checked + .slider:before {
     transform: translateX(38px); /* Moves the toggle circle */
+}
+
+html[data-page="spel1"] .switch-container {
+    margin-left: 620px;
+    margin-top: 60px;
+    transform: translateX(-350px);
+}
+
+html[data-page="spel1"] .switch {
+    position: relative;
+    display: inline-block;
+    width: 120px;
+    height: 68px;
+}
+
+html[data-page="spel1"] .switch input {
+    display: none;
+}
+
+html[data-page="spel1"] .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+    transform: translateX(-100px);
+}
+
+html[data-page="spel1"] .slider:before {
+    position: absolute;
+    content: "";
+    height: 63px;
+    width: 63px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+html[data-page="spel1"]input:checked + .slider {
+    background-color: #2196F3;
+}
+
+html[data-page="spel1"] input:checked + .slider:before {
+    transform: translateX(48px);
+}
+
+html[data-page="spel1"] .submit-button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+html[data-page="spel1"] .submit-button:hover {
+    background-color: #0b7dda;
 }
 
 
@@ -3225,7 +3290,7 @@ display: grid;
 grid-template-columns: repeat(4, 100px);
 grid-template-rows: repeat(4, 100px);
 gap: 10px;
-border: 5px solid blue;
+border: 5px solid grey;
 padding: 15px;
 background-color: #fff;
 }
@@ -3279,10 +3344,12 @@ font-size: 24px;
 font-weight: bold;
 margin-bottom: 10px; /* Adjust margin as needed */
 text-align: center;
+color:white;
 }
 
 html[data-page="spel3"] #timer, html[data-page="spel3"] #attempts {
 margin: 5px 0;
+color:white;
 }
 
 html[data-page="spel3"] #start-button {
@@ -3305,6 +3372,7 @@ font-size: 24px;
 font-weight: bold;
 margin-bottom: 20px;
 }
+
 
 /*spel4.php*/
 

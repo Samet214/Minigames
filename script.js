@@ -882,6 +882,26 @@ if (currentPhpFile === "game_display.php") {
         document.getElementById('level-display').style.display = 'block'; // Show level display
         document.getElementById('timer-display').style.display = 'block'; // Show level display
         document.getElementById('tries-display').style.display = 'block'; // Show level display
+        document.getElementById('container').style.marginTop = '260px';
+        document.getElementById('box1').style.marginTop = '-300px';
+        document.getElementById('box2').style.marginTop = '-300px';
+        document.getElementById('box3').style.marginTop = '-300px';
+        document.getElementById('box4').style.marginTop = '-300px';
+        document.getElementById('box5').style.marginTop = '-300px';
+        document.getElementById('box6').style.marginTop = '-300px';
+        document.getElementById('box7').style.marginTop = '-300px';
+        document.getElementById('box8').style.marginTop = '-300px';
+        document.getElementById('box9').style.marginTop = '-300px';
+
+        let elements = document.getElementsByClassName('switch-container');
+
+        // Loop through elements
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].style.marginTop = '-90px'; // Example: Change text color
+            elements[i].style.transform = 'translateY(120px)';
+            elements[i].style.transform = 'translateX(-350px)';
+        }
+
         updateTriesDisplay(); // Show the tries display
         startLevel(); // Start the first level
     });
@@ -960,15 +980,11 @@ if (currentPhpFile === "game_display.php") {
         }, 200);
     }
 
-    document.getElementById("game-mode-toggle").addEventListener("change", function () {
-        if (this.checked) {
-            console.log("Switch turned ON");
-            // Add functionality for ON state here
-        } else {
-            console.log("Switch turned OFF");
-            // Add functionality for OFF state here
-        }
-    }); 
+    // Example: Optional alert for switch toggle
+    document.getElementById('toggleSwitch').addEventListener('click', function () {
+        
+    });
+
 } else if (currentPhpFile === "spel2.php") {
     const { Engine, Render, Runner, World, Bodies, Body, Events } = Matter;
 

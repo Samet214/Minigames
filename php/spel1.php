@@ -20,9 +20,18 @@
             <div id="box9" class="box"></div>
         </div>
 
-        <div id="visible-container"></div>
+        <div class="switch-container">
+            <form method="POST" id="toggleForm">
+                <label class="switch">
+                    <input type="checkbox" id="toggleSwitch" name="switchState" <?php echo isset($_POST['switchState']) && $_POST['switchState'] === "on" ? 'checked' : ''; ?>>
+                    <span class="slider"></span>
+                </label>
+            </form>
+        </div>
 
         <button id="spelknapp">Börja spela!</button>
+
+        <div id="visible-container"></div>
 
         <div id="timer-display">Tid kvar: 0s</div>
         <div id="tries-display">Antal försök: 3</div>
