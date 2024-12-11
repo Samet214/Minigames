@@ -28,5 +28,3 @@ function Användarinformation() {
     return $conn;
 }
 ?>
-
-https://prod.liveshare.vsengsaas.visualstudio.com/join?B314BD66BA0D925574695C3A85E988F811C7
