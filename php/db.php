@@ -28,3 +28,5 @@ function Användarinformation() {
     return $conn;
 }
 ?>
+
+asdasdas
