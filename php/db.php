@@ -28,5 +28,3 @@ function Användarinformation() {
     return $conn;
 }
 ?>
-
-asdasd
