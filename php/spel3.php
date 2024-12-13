@@ -18,6 +18,18 @@
             <button id="start-button">Start Game</button>
         </div>
     </div>
+
+    <div id="popup-overlay">
+        <div id="game-over-popup">
+            <button id="popup-close">X</button>
+            <h2>Game Over</h2>
+            <p id="popup-level"></p>
+            <p id="popup-time"></p>
+            <p id="popup-exp"></p>
+            <p id="popup-money"></p>
+        </div>
+    </div>
+
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
     <script src="../script.js"></script>
 </body>

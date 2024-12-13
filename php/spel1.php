@@ -14,6 +14,7 @@
         </div>
         <div class="button-switch-container">
             <div class="switch-container" id="switch-container">
+                <span id="switch-text">Random </span> <!-- Default text -->
                 <label class="switch">
                     <input type="checkbox" id="mode-switch">
                     <span class="slider"></span>
@@ -34,6 +35,7 @@
         <p>Level Reached: <span id="final-level"></span></p>
         <p>Tid: <span id="total-time"></span> seconds</p>
         <p>Experience Points (XP) Gained: <span id="final-xp"></span></p>
+        <p>Arcade Point Coins (AP) Gained: <span id="final-money"></span></p>
     </div>
 
     <script>
@@ -43,11 +45,13 @@
         const attemptsDisplay = document.getElementById('attempts');
         const timeDisplay = document.getElementById('time');
         const modeSwitch = document.getElementById('mode-switch');
+        const switchText = document.getElementById('switch-text');
         const popup = document.getElementById('popup');
         const overlay = document.getElementById('overlay');
         const closePopupButton = document.getElementById('close-popup');
         const finalLevel = document.getElementById('final-level');
         const finalXP = document.getElementById('final-xp');
+        const finalAP = document.getElementById('final-money');
         const totalTime = document.getElementById('total-time');
         const switchContainer = document.getElementById('switch-container');
 
@@ -60,6 +64,19 @@
         let canInteract = false;
         let progressiveMode = false;
         let startTime, endTime;
+
+        // Update switch text dynamically
+        modeSwitch.addEventListener('change', () => {
+            if (modeSwitch.checked) {
+                switchText.textContent = 'Progressive ';
+                progressiveMode = true;
+                startButton.style.marginRight = "40%";
+            } else {
+                switchText.textContent = 'Random ';
+                progressiveMode = false;
+                startButton.style.marginRight = "35%";
+            }
+        });
 
         // Generate the grid
         for (let i = 0; i < 9; i++) {
@@ -74,10 +91,6 @@
                 }
             });
         }
-
-        modeSwitch.addEventListener('change', () => {
-            progressiveMode = modeSwitch.checked;
-        });
 
         startButton.addEventListener('click', () => {
             startButton.style.display = 'none';
@@ -200,6 +213,7 @@
 
             finalLevel.textContent = level;
             finalXP.textContent = level * 10; // Calculate XP
+            finalAP.textContent = level * 10;
             totalTime.textContent = totalTimeElapsed; // Display total time
 
             popup.classList.add('visible');

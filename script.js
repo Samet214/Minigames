@@ -1589,14 +1589,20 @@ Events.on(engine, 'collisionEnd', (event) => {
     const timerDisplay = document.getElementById('timer');
     const attemptsDisplay = document.getElementById('attempts');
     const startButton = document.getElementById('start-button');
+    const gameOverPopup = document.getElementById('game-over-popup');
+    const popupCloseButton = document.getElementById('popup-close');
+    const popupOverlay = document.getElementById('popup-overlay');
 
     let level = 1;
     let attempts = 3;
     let timer = 10;
     let timerInterval;
+    let startTime; // To track time played
+    let timePlayed = 0; // Total time played in seconds
     let targetBoxIndex = null;
     let colorDifference = 50; // Starting difference in RGB values
     let originalColors = []; // Store original colors of boxes
+    let gameStarted = false; // Flag to check if the game has started
 
     function generateRandomColor() {
         return {
@@ -1631,6 +1637,7 @@ Events.on(engine, 'collisionEnd', (event) => {
     }
 
     function startGame() {
+        gameStarted = true; // Game starts
         levelInfo.style.display = 'block';
         document.getElementById('info-container').style.display = 'block';
         startButton.style.display = 'none';
@@ -1638,8 +1645,10 @@ Events.on(engine, 'collisionEnd', (event) => {
         levelInfo.textContent = `Level: ${level}`;
         attempts = 3;
         attemptsDisplay.textContent = `Attempts: ${attempts}`;
-        timer = 10 + level;
+        timer = 10 + (level - 1) * 5;
         timerDisplay.textContent = `Time Left: ${timer}s`;
+
+        startTime = Date.now(); // Start time of the game
 
         const baseColor = generateRandomColor();
         const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
@@ -1659,13 +1668,14 @@ Events.on(engine, 'collisionEnd', (event) => {
             timer--;
             timerDisplay.textContent = `Time Left: ${timer}s`;
             if (timer <= 0) {
-                resetGame(); // Directly refresh without alert
+                handleGameOver();
             }
         }, 1000);
     }
 
-
     function handleBoxClick(box, index) {
+        if (!gameStarted) return; // Ignore clicks before the game starts
+
         if (index === targetBoxIndex) {
             box.style.backgroundColor = 'green';
             box.style.transform = 'scale(1.2)';
@@ -1688,19 +1698,53 @@ Events.on(engine, 'collisionEnd', (event) => {
             }, 500);
 
             if (attempts <= 0) {
-                alert('You have lost! Restarting...');
-                resetGame();
+                handleGameOver();
             }
         }
     }
 
-    function resetGame() {
+    function handleGameOver() {
+        gameStarted = false; // Stop the game
+        clearInterval(timerInterval);
+    
+        // Calculate total time played
+        timePlayed = Math.floor((Date.now() - startTime) / 1000);
+    
+        // Calculate experience and money earned
+        const experience = level * 10;
+        const money = level * 10;
+    
+        // Update popup content
+        document.getElementById('popup-level').textContent = `Level: ${level}`;
+        document.getElementById('popup-time').textContent = `Time Played: ${timePlayed}s`;
+        document.getElementById('popup-exp').textContent = `Experience Gained: ${experience}`;
+        document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
+    
+        // Show the popup
+        popupOverlay.style.display = 'block';
+    
+        // Add a slight delay before setting the animation state for smoothness
+        setTimeout(() => {
+            gameOverPopup.style.opacity = '1';
+            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+        }, 100);
+    }
+    
+
+    // Close the popup
+    function closePopup() {
+        popupOverlay.style.display = 'none';
         location.reload(); // Refresh the page to restart the game
     }
 
-    // Initialize grid and attach event listener to the button
+    // Initialize grid and attach event listeners
     createGrid();
     startButton.addEventListener('click', startGame);
+    popupCloseButton.addEventListener('click', closePopup);
+    popupOverlay.addEventListener('click', (e) => {
+        if (e.target === popupOverlay) closePopup(); // Close popup on outside click
+    });
+
 
     } else if (currentPhpFile === "spel4.php") {
         class MazeBuilder {
