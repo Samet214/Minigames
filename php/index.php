@@ -5,7 +5,7 @@
     $current_exp = 0;
     $next_level_exp = 100;
 } else {
-    $username = $_SESSIN['username'];
+    $username = $_SESSION['username'];
     $profile_picture = 'default.png'; // Replace with actual profile picture logic
     $level = 1;
     $current_exp = 0;
@@ -38,7 +38,7 @@ include 'sidebar.php';
             <nav>
                 <ul>
                     <li><a href="spel.php">Spel</a></li>
-                    <li><a href="ledartavlor.php">Ledartavla</a></li>
+                    <li><a href="topplista.php">Topplista</a></li>
                     <li><a href="info.php">Info</a></li>
                     <li><a href="#" id="a-tag4">Profil</a></li>
                 </ul>
@@ -51,7 +51,6 @@ include 'sidebar.php';
             </div>
         </div>
         <div id="currency-bar">
-            <button id="add-currency" onclick="gainCurrency(10)">+</button>
             <span id="currency-amount">0</span>
             <img src="../bilder/mynt.png" id="currency-icon" alt="Coin Icon">
         </div>

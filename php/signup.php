@@ -27,7 +27,7 @@ $next_level_exp = 100;
             <nav>
                 <ul>
                     <li><a href="spel.php">Spel</a></li>
-                    <li><a href="ledartavlor.php">Ledartavla</a></li>
+                    <li><a href="topplista.php">Topplista</a></li>
                     <li><a href="info.php">Info</a></li>
                     <li><a href="profile.php" id="a-tag4">Profil</a></li>
                 </ul>
@@ -38,7 +38,6 @@ $next_level_exp = 100;
             </div>
         </div>
         <div id="currency-bar">
-            <button id="add-currency" onclick="gainCurrency(10)">+</button>
             <span id="currency-amount">0</span>
             <img src="../bilder/mynt.png" id="currency-icon" alt="Coin Icon">
         </div>

@@ -60,12 +60,110 @@ function gainExp(expAmount, callback) {
     xhr.send("add_exp=true&exp_amount=" + expAmount);
 }
 
-let currency = 0;
+let currency = 0; // Default starting amount
 
 function gainCurrency(amount) {
-    currency += amount;
-    document.getElementById('currency-amount').textContent = currency;
+    // Fetch the current currency value from the server before updating
+    fetch('get_currency.php')  // This PHP script returns the current user's currency value
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === 'success') {
+                let currency = data.value; // Get the current currency value for the logged-in user
+
+                // Add the amount to the current value
+                currency += amount;
+
+                // Update the currency display
+                document.getElementById('currency-amount').textContent = currency;
+
+                // Send the updated value to the server to store in the database
+                fetch('update_ekonomi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=gain&amount=${amount}`,
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        if (data.status === 'success') {
+                            console.log('Currency updated successfully.');
+                        } else {
+                            console.error('Error updating currency:', data.message);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Fetch error:', error);
+                    });
+            } else {
+                console.error('Error retrieving current currency value:', data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Fetch error:', error);
+        });
 }
+
+
+async function updateNetworth() {
+    try {
+        // Fetch the networth value from the PHP script
+        const response = await fetch('get_networth.php');
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const networth = await response.text();
+
+        // Update the span with the networth value
+        document.getElementById('currency-amount').textContent = networth;
+    } catch (error) {
+        console.error('Error fetching networth:', error);
+    }
+}
+
+// Call the function when the page loads
+window.onload = updateNetworth;
+
+function loseCurrency(amount) {
+    if (currency - amount < 0) {
+        console.log('Not enough currency to lose.');
+        return;
+    }
+
+    currency -= amount;
+    document.getElementById('currency-amount').textContent = currency;
+
+    fetch('update_ekonomi.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=lose&amount=${amount}`,
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.status === 'success') {
+                console.log('Currency updated successfully.');
+            } else {
+                console.error('Error updating currency:', data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Fetch error:', error);
+        });
+}
+
+
 
 //Specifika filer
 if (currentPhpFile === "game_display.php") {
@@ -719,272 +817,216 @@ if (currentPhpFile === "game_display.php") {
         }
     });    
 } else if (currentPhpFile === "spel1.php") {
+    const grid = document.getElementById('grid');
+    const startButton = document.getElementById('start-button');
+    const levelDisplay = document.getElementById('level');
+    const attemptsDisplay = document.getElementById('attempts');
+    const timeDisplay = document.getElementById('time');
+    const modeSwitch = document.getElementById('mode-switch');
+    const switchText = document.getElementById('switch-text');
+    const popup = document.getElementById('popup');
+    const overlay = document.getElementById('overlay');
+    const closePopupButton = document.getElementById('close-popup');
+    const finalLevel = document.getElementById('final-level');
+    const finalXP = document.getElementById('final-xp');
+    const finalAP = document.getElementById('final-money');
+    const totalTime = document.getElementById('total-time');
+    const switchContainer = document.getElementById('switch-container');
+    const username = phpFileInfoElement.dataset.username;
 
-    currentLevel = 1; // Default level
-    let isAnimating = false; // To prevent multiple animations at the same time
-    let cancelAnimation = false; // To stop long-running animations when new clicks happen
-    
-    let remainingTime = 0;
-    let timerInterval;
-    let remainingTries = 3; // Default value of 3 tries
-    let highlightedSequence = [];
-    let currentTapIndex = 0; // To track the current index of user tap
-    
-    // Function to update the displayed level
-    function setLevel(level) {
-        currentLevel = level;
-        document.getElementById('level-display').textContent = `Level: ${level}`;
-    }
-    
-    // Function to update the tries display
-    function updateTriesDisplay() {
-        const triesDisplay = document.getElementById('tries-display');
-        triesDisplay.textContent = `Antal försök: ${remainingTries}`;
-    }
-    
-    // Function to calculate the time for the current level
-    function calculateTimeForLevel(level) {
-        if (level <= 3) {
-            return 10; // 10 seconds for levels 1 to 3
+    let sequence = [];
+    let userSequence = [];
+    let level = 1;
+    let attempts = 3;
+    let timeRemaining = 10;
+    let timer;
+    let canInteract = false;
+    let progressiveMode = false;
+    let startTime, endTime;
+
+    // Update switch text dynamically
+    modeSwitch.addEventListener('change', () => {
+        if (modeSwitch.checked) {
+            switchText.textContent = 'Progressive ';
+            progressiveMode = true;
+            startButton.style.marginRight = "40%";
         } else {
-            return 10 + (level - 3) * 5; // Add 5 seconds for each level after level 3
+            switchText.textContent = 'Random ';
+            progressiveMode = false;
+            startButton.style.marginRight = "35%";
         }
-    }
-    
-    // Function to start the timer
-    function startTimer(duration) {
-        remainingTime = duration;
-        const timerDisplay = document.getElementById('timer-display');
-        timerDisplay.textContent = `Tid kvar: ${remainingTime}s`;
-    
-        timerInterval = setInterval(() => {
-            remainingTime--;
-            timerDisplay.textContent = `Tid kvar: ${remainingTime}s`;
+    });
 
-    
-            if (remainingTime <= 0) {
-                clearInterval(timerInterval); // Stop the timer when it reaches 0
-                loseAllAttempts(); // Player loses all attempts if time runs out
+    // Generate the grid
+    for (let i = 0; i < 9; i++) {
+        const box = document.createElement('div');
+        box.classList.add('box');
+        box.dataset.index = i;
+        grid.appendChild(box);
+
+        box.addEventListener('click', () => {
+            if (canInteract) {
+                handleUserInput(Number(box.dataset.index));
             }
-        }, 1000); // Update every second
-    }
-    
-    // Function to highlight a box and store the sequence
-    function highlightBox(box) {
-        return new Promise(resolve => {
-            highlightedSequence.push(box); // Store this box in the sequence
-            box.classList.add('highlight');
-            box.classList.add('grow');
-            
-            setTimeout(() => {
-                box.classList.remove('grow'); // Shrinking animation begins
-                
-                setTimeout(() => {
-                    box.classList.remove('highlight'); // Remove highlight after box returns to normal
-                    resolve();
-                }, 300); // 0.4 second delay for shrinking
-            }, 300); // 0.4 second for growing
         });
     }
-    
-    // Function to start a new level
-    async function startLevel() {
-        const container = document.getElementById('container');
-        container.classList.add('no-hover');
-        isAnimating = true;
-        cancelAnimation = false;
-    
-        const boxes = document.querySelectorAll('.box');
-        highlightedSequence = []; // Reset the sequence for the new level
-    
-        // Highlight the sequence based on the current level
-        for (let i = 0; i < currentLevel; i++) {
-            if (cancelAnimation) break;
-            const randomIndex = Math.floor(Math.random() * boxes.length);
-            await highlightBox(boxes[randomIndex]);
-        }
-    
-        container.classList.remove('no-hover');
-        isAnimating = false;
-        currentTapIndex = 0; // Reset tap index for this level
-    
-        // Start the timer for the new level
-        const timeForLevel = calculateTimeForLevel(currentLevel);
-        startTimer(timeForLevel);
+
+    startButton.addEventListener('click', () => {
+        startButton.style.display = 'none';
+        switchContainer.remove(); // Remove the switch container
+        startGame();
+    });
+
+    closePopupButton.addEventListener('click', closePopup);
+    overlay.addEventListener('click', closePopup);
+
+    function startGame() {
+        level = 1;
+        attempts = 3;
+        timeRemaining = 10;
+        sequence = [];
+        startTime = Date.now(); // Record start time
+        updateStats();
+        nextLevel();
     }
-    
-    // Function to handle when the user taps a box
-    function handleBoxClick(box) {
-        if (remainingTries <= 0) return; // No attempts left, ignore taps
-        if (currentTapIndex >= highlightedSequence.length) return; // If sequence is complete, do nothing
-    
-        const expectedBox = highlightedSequence[currentTapIndex];
-        if (box === expectedBox) {
-            // Correct box clicked
-            box.classList.add('clicked'); // Temporarily highlight the box orange
-            setTimeout(() => {
-                box.classList.remove('clicked'); // Remove the clicked highlight
-            }, 300);
-            currentTapIndex++; // Move to the next box in the sequence
-    
-            if (currentTapIndex === highlightedSequence.length) {
-                // Player has correctly tapped all the boxes, proceed to the next level
-                clearInterval(timerInterval); // Stop the timer
-                setTimeout(() => {
-                    nextLevel(); // Proceed to the next level after a short delay
-                }, 500); // Small delay before starting the next level
-            }
-        } else {
-            // Incorrect box clicked
-            box.classList.add('wrong'); // Temporarily highlight the box red
-            setTimeout(() => {
-                box.classList.remove('wrong');
-            }, 300);
-            remainingTries--; // Decrease attempts
-            updateTriesDisplay();
-    
-            if (remainingTries <= 0) {
-                clearInterval(timerInterval); // Stop the timer if no attempts are left
-                loseAllAttempts(); // Game over logic
-            }
-        }
-    }
-    
-    // Function to proceed to the next level
+
     function nextLevel() {
-        currentLevel++; // Increase the level
-        setLevel(currentLevel); // Update the level display
-        startLevel(); // Start the next level
-    }
-    
-    // Lose all attempts when the timer runs out or attempts are 0
-    function loseAllAttempts() {
-        remainingTries = 0;
-        updateTriesDisplay();
-        document.querySelectorAll('.box').forEach(box => {
-            box.classList.add('wrong'); // Highlight all boxes red as a game-over indicator
-            setTimeout(() => {
-                box.classList.remove('wrong');
-            }, 500); // Remove the red highlight after 500ms
-        });
-    }
-    
-    // Add the click event listener to each box
-    document.querySelectorAll('.box').forEach(box => {
-        box.addEventListener('click', function() {
-            handleBoxClick(box);
-        });
-    });
-    
-    // Start the game when the "Start Game" button is clicked
-    document.getElementById('spelknapp').addEventListener('click', function() {
-        this.style.display = 'none'; // Hide start button
-        document.getElementById('level-display').style.display = 'block'; // Show level display
-        document.getElementById('timer-display').style.display = 'block'; // Show level display
-        document.getElementById('tries-display').style.display = 'block'; // Show level display
-        document.getElementById('container').style.marginTop = '260px';
-        document.getElementById('box1').style.marginTop = '-300px';
-        document.getElementById('box2').style.marginTop = '-300px';
-        document.getElementById('box3').style.marginTop = '-300px';
-        document.getElementById('box4').style.marginTop = '-300px';
-        document.getElementById('box5').style.marginTop = '-300px';
-        document.getElementById('box6').style.marginTop = '-300px';
-        document.getElementById('box7').style.marginTop = '-300px';
-        document.getElementById('box8').style.marginTop = '-300px';
-        document.getElementById('box9').style.marginTop = '-300px';
+        canInteract = false;
+        userSequence = [];
+        levelDisplay.textContent = level;
+        timeRemaining = 10 + (level - 1) * 5; // Adjust timer for each level
+        updateStats();
 
-        let elements = document.getElementsByClassName('switch-container');
-
-        // Loop through elements
-        for (let i = 0; i < elements.length; i++) {
-            elements[i].style.marginTop = '-90px'; // Example: Change text color
-            elements[i].style.transform = 'translateY(120px)';
-            elements[i].style.transform = 'translateX(-350px)';
+        if (progressiveMode) {
+            sequence.push(Math.floor(Math.random() * 9));
+        } else {
+            sequence = Array.from({ length: level }, () => Math.floor(Math.random() * 9));
         }
 
-        updateTriesDisplay(); // Show the tries display
-        startLevel(); // Start the first level
-    });
-    
-    // Set the initial level
-    setLevel(1);
-    
-    let bestLevel = 1; // Store the best level
-    
-    // Function to show the game over popup with sliding animation
-    function showGameOverPopup() {
-        const popup = document.getElementById('game-over-popup');
-        const popupContent = document.querySelector('.popup-content');
-    
-        // Update popup content with level, exp, and best level
-        document.getElementById('popup-level').textContent = currentLevel;
-        document.getElementById('popup-exp').textContent = currentLevel * 10; // Example EXP calculation
-        document.getElementById('popup-best-level').textContent = bestLevel;
-    
-        if (currentLevel > bestLevel) {
-            bestLevel = currentLevel; // Update best level if current level is higher
-        }
-    
-        // Display the popup
-        popup.style.display = 'block';
-    
-        // Slide the popup content from top to center
-        setTimeout(() => {
-            popupContent.classList.add('active'); // Apply the 'active' class to trigger the transition
-        }, 100); // Slight delay for smoother animation
-    }
-    
-    // Close the popup if the user clicks outside of the content
-    window.addEventListener('click', function(event) {
-        const popup = document.getElementById('game-over-popup');
-        const popupContent = document.querySelector('.popup-content');
-        if (event.target === popup) {
-            closeGameOverPopup();
-        }
-    });
-    
-    // Modify the closeGameOverPopup function to ensure the popup hides properly
-    function closeGameOverPopup() {
-        const popup = document.getElementById('game-over-popup');
-        const popupContent = document.querySelector('.popup-content');
-    
-        // Remove 'active' class to slide the popup back up
-        popupContent.classList.remove('active');
-    
-        // Hide popup after the transition ends (0.6s for sliding)
-        setTimeout(() => {
-            popup.style.display = 'none';
-    
-            // Refresh the game after the popup is hidden
-            setTimeout(() => {
-                window.location.reload();
-            }, 0);
-        }, 200); // Match the transition duration of the sliding animation
-    }
-    
-    
-    // Modify the loseAllAttempts function to show the popup
-    function loseAllAttempts() {
-        remainingTries = 0;
-        updateTriesDisplay();
-        document.querySelectorAll('.box').forEach(box => {
-            box.classList.add('wrong'); // Highlight all boxes red as a game-over indicator
-            setTimeout(() => {
-                box.classList.remove('wrong');
-            }, 500); // Remove the red highlight after 500ms
+        displaySequence(() => {
+            // Start the timer only after the sequence is displayed
+            startTimer();
         });
-    
-        // Show the game over popup slightly after the red highlight
-        setTimeout(() => {
-            showGameOverPopup();
-        }, 200);
     }
 
-    // Example: Optional alert for switch toggle
-    document.getElementById('toggleSwitch').addEventListener('click', function () {
-        
-    });
+    function displaySequence(callback) {
+        let index = 0;
+        const boxes = document.querySelectorAll('.box');
 
+        const interval = setInterval(() => {
+            if (index > 0) boxes[sequence[index - 1]].classList.remove('active');
+
+            if (index < sequence.length) {
+                boxes[sequence[index]].classList.add('active');
+                index++;
+            } else {
+                clearInterval(interval);
+                boxes.forEach((box) => box.classList.remove('active'));
+                canInteract = true;
+
+                // Invoke the callback after sequence display completes
+                if (typeof callback === 'function') callback();
+            }
+        }, 800);
+    }
+
+    function startTimer() {
+        clearInterval(timer); // Ensure no overlapping timers
+        timer = setInterval(() => {
+            timeRemaining--;
+            updateStats();
+
+            if (timeRemaining <= 0) {
+                clearInterval(timer);
+                attempts--;
+                updateStats();
+                if (attempts <= 0) {
+                    endGame();
+                } else {
+                    nextLevel();
+                }
+            }
+        }, 1000);
+    }
+
+    function handleUserInput(index) {
+        const boxes = document.querySelectorAll('.box');
+
+        // Highlight user input
+        if (sequence[userSequence.length] === index) {
+            userSequence.push(index);
+            boxes[index].classList.add('correct');
+            setTimeout(() => boxes[index].classList.remove('correct'), 500);
+
+            // Check if user completed the sequence
+            if (userSequence.length === sequence.length) {
+                level++;
+                setTimeout(nextLevel, 1000);
+            }
+        } else {
+            // Handle incorrect input
+            boxes[index].classList.add('incorrect');
+            setTimeout(() => boxes[index].classList.remove('incorrect'), 500);
+
+            attempts--;
+            updateStats();
+
+            if (attempts <= 0) {
+                endGame();
+            } else {
+                // Do not reset userSequence; allow continued attempts within the current level
+            }
+        }
+    }
+
+    function updateStats() {
+        attemptsDisplay.textContent = attempts;
+        timeDisplay.textContent = timeRemaining;
+    }
+
+    function endGame() {
+        canInteract = false;
+        clearInterval(timer); // Stop the timer
+        endTime = Date.now(); // Record end time
+        const totalTimeElapsed = Math.floor((endTime - startTime) / 1000); // Calculate elapsed time in seconds
+
+        finalLevel.textContent = level;
+        finalXP.textContent = level * 10; // Calculate XP
+        finalAP.textContent = level * 10;
+        totalTime.textContent = totalTimeElapsed; // Display total time
+
+        // Console log username or guest status
+        if (username !== 'guest') {
+            console.log(level);
+            console.log(level * 10);
+            console.log(level * 10);
+            console.log(totalTimeElapsed / level);
+
+            // Fetch additional data from the server
+            fetch(`fetch_user_data.php?username=${encodeURIComponent(username)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                    } else {
+                        console.log(data.level);
+                        console.log(data.networth);
+                    }
+                })
+                .catch(error => console.error("Error fetching user data:", error));
+        } else {
+            
+        }
+
+        popup.classList.add('visible');
+        overlay.classList.add('visible');
+    }
+
+    function closePopup() {
+        popup.classList.remove('visible');
+        overlay.classList.remove('visible');
+        location.reload(); // Reload the game
+    }
 } else if (currentPhpFile === "spel2.php") {
     const { Engine, Render, Runner, World, Bodies, Body, Events } = Matter;
 
@@ -2273,4 +2315,354 @@ Events.on(engine, 'collisionEnd', (event) => {
     });
 
         
+} else if (currentPhpFile === "topplista.php") {
+    document.addEventListener("DOMContentLoaded", function () {
+        const modes = [
+            {
+                text: "Memory - Topplista",
+                tiles: ["Nivå", "Genomsnitt tid per nivå", "Level av användare", "Netvärde", "Pegnar tjänat i spel", "EXP tjänat i spel"]
+            },
+            {
+                text: "Squigglegolf - Topplista",
+                tiles: ["7", "8", "9", "10", "11", "12"]
+            },
+            {
+                text: "Colourvision - Topplista",
+                tiles: ["13", "14", "15", "16", "17", "18"]
+            },
+            {
+                text: "Maze runner - Topplista",
+                tiles: ["19", "20", "21", "22", "23", "24"]
+            },
+            {
+                text: "Biljard - Topplista",
+                tiles: ["25", "26", "27", "28", "29", "30"]
+            },
+        ];
+    
+        let currentMode = 0;
+        const leftButton = document.getElementById("left-button");
+        const rightButton = document.getElementById("right-button");
+        const leaderboardText = document.getElementById("leaderboard-text");
+        const tiles = document.querySelectorAll(".leaderboard-tile");
+    
+        function updateMode() {
+            leaderboardText.textContent = modes[currentMode].text;
+    
+            // Loop through all the leaderboard tiles and update them with content and inner tile
+            tiles.forEach((tile, index) => {
+                // Update the tile content
+                const innerTile = tile.querySelector(".inner-tile") || document.createElement("div");
+                innerTile.classList.add("inner-tile");
+                innerTile.textContent = modes[currentMode].tiles[index] || "Empty Tile";
+    
+                // Ensure the inner tile is updated or added
+                tile.innerHTML = ''; // Clear the existing content
+                tile.appendChild(innerTile); // Add the inner tile to the tile
+    
+                // Apply the styles for the inner tile
+                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)"; // Blackish background
+                innerTile.style.color = "white";
+                innerTile.style.padding = "10px";
+                innerTile.style.height = "85%";
+                innerTile.style.width = "90%";
+                innerTile.style.overflowY = "auto"; // Scrollable if content overflows
+                innerTile.style.maxHeight = "100%";
+                innerTile.style.borderRadius = "5px";
+                innerTile.style.display = "flex";
+                innerTile.style.flexDirection = "column";
+                innerTile.style.justifyContent = "flex-start";
+    
+                // Create the text outside the inner tile, detached from it
+                const text = innerTile.textContent;
+                innerTile.innerHTML = ''; // Clear existing text content
+    
+                // Create a new span for the text
+                const textSpan = document.createElement("span");
+                textSpan.textContent = text;
+                textSpan.style.position = "absolute"; // Use absolute positioning
+                textSpan.style.top = "10px"; // Adjust top to control vertical position
+                textSpan.style.left = "50%"; // Center horizontally
+                textSpan.style.transform = "translateX(-50%)"; // Exact centering
+                textSpan.style.zIndex = "10"; // Ensure the text stays above the inner tile
+    
+                // Add the new text span to the tile, not inside inner-tile
+                tile.appendChild(textSpan);
+    
+                // Re-apply styles to inner tile to make it functional
+                innerTile.style.position = "relative"; // Make sure inner tile is relative
+            });
+    
+            // Disable/enable buttons based on the mode
+            leftButton.disabled = currentMode === 0;
+            rightButton.disabled = currentMode === modes.length - 1;
+        }
+    
+        leftButton.addEventListener("click", () => {
+            if (currentMode > 0) {
+                currentMode--;
+                updateMode();
+            }
+        });
+    
+        rightButton.addEventListener("click", () => {
+            if (currentMode < modes.length - 1) {
+                currentMode++;
+                updateMode();
+            }
+        });
+    
+        // Initialize first mode
+        updateMode();
+    });
+    
+    
+} else if (currentPhpFile === "sida.php") {
+
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        var toggleButton = document.getElementById("sidebar-toggle");
+    
+        sidebar.classList.toggle("open");
+    
+        // Check if sidebar is open and move the button accordingly
+        if (sidebar.classList.contains("open")) {
+            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+        } else {
+            toggleButton.style.left = "10px"; // Reset to original position
+        }
+    }
+    
+    function toggleProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchBox = document.getElementById('searchInput');
+    
+        document.addEventListener('click', handleOutsideClick);
+    
+        // Ensure profileSquare remains visible without re-toggling
+        if (profileSquare.classList.contains('active')) {
+            closeProfile();
+        } else {
+            profileSquare.classList.add('active');
+            profileSquare.style.display = 'block';
+            profileSquare.style.opacity = '1';
+            profileSquare.style.transform = 'translateY(10px)';
+        }
+    }
+    
+    // Function to close the profile square
+    function closeProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+    
+        profileSquare.style.opacity = '0';
+        profileSquare.style.transform = 'translateY(0px)';
+    
+        // Timeout to wait for the animation to finish before hiding
+        setTimeout(() => {
+            profileSquare.classList.remove('active');
+            profileSquare.style.display = 'none';
+        }, 300); // Match the CSS transition duration
+    
+        // Remove the event listener
+        document.removeEventListener('click', handleOutsideClick);
+    }
+    
+    // Handle clicks outside of the square
+    function handleOutsideClick(event) {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchProfileBtn = document.getElementById('searchProfileBtn');
+        
+        // Check if the click is outside profileSquare and not on result-item or close-button
+        if (
+            !profileSquare.contains(event.target) &&
+            event.target !== searchProfileBtn &&
+            !event.target.classList.contains('result-item') &&
+            !event.target.classList.contains('close-button') &&
+            !event.target.classList.contains('profile-image') &&
+            event.target.id !== 'sidebar-toggle' &&
+            !event.target.classList.contains('messagebutton')
+        ) {
+            closeProfile();
+        }
+    }
+    
+    // Assuming searchProfiles is where you create and display search results
+    function searchProfiles() {
+        const searchInput = document.getElementById('searchInput').value.trim();
+    
+        if (searchInput === '') {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+    
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
+    
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const results = JSON.parse(xhr.responseText);
+                const searchResultsContainer = document.getElementById('searchResults');
+                searchResultsContainer.innerHTML = '';
+    
+                if (results.message) {
+                    const noUserFound = document.createElement('div');
+                    noUserFound.classList.add('result-item');
+                    noUserFound.textContent = results.message;
+                    searchResultsContainer.appendChild(noUserFound);
+                } else {
+                    results.forEach(function(user) {
+                        const profileImage = user.Profil_bild || 'default.png';
+                        const resultItem = document.createElement('div');
+                        resultItem.classList.add('result-item');
+    
+                        // Set data attributes for level, exp, and exp threshold
+                        resultItem.dataset.profileImage = profileImage;
+                        resultItem.dataset.level = user.Levels;
+                        resultItem.dataset.exp = user.EXP;
+                        resultItem.dataset.expThreshold = user.EXP_GRÄNS;
+    
+                        const img = document.createElement('img');
+                        img.classList.add('profile-image');
+                        img.src = '../pfp/' + profileImage;
+    
+                        const username = document.createElement('span');
+                        username.classList.add('username');
+                        username.textContent = user.Namn;
+    
+                        resultItem.appendChild(img);
+                        resultItem.appendChild(username);
+                        searchResultsContainer.appendChild(resultItem);
+                    });
+                }
+            }
+        };
+    
+        xhr.send();
+    }
+    
+    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
+        const searchResultsContainer = document.getElementById('searchResults');
+    
+        // Clear previous results
+        searchResultsContainer.innerHTML = '';
+    
+        // Create a new container for the selected profile
+        const selectedProfileContainer = document.createElement('div');
+        selectedProfileContainer.style.display = 'flex';
+        selectedProfileContainer.style.alignItems = 'center';
+        selectedProfileContainer.style.flexDirection = 'column';
+        selectedProfileContainer.style.textAlign = 'center';
+    
+        // Add profile picture and username
+        const profileCircle = document.createElement('img');
+        profileCircle.src = '../pfp/' + profileImageSrc;
+        profileCircle.classList.add('selected-profile-circle');
+    
+        const username = document.createElement('span');
+        username.classList.add('username2');
+        username.textContent = userName;
+    
+        // Create the level section with EXP details as plain text
+        const levelSection = document.createElement('div');
+        levelSection.classList.add('level-section2');
+        levelSection.innerHTML = `
+            <h4>Level <span>${userLevel}</span></h4>
+            <div class="exp-bar2">
+                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
+            </div>
+            <p>${userExp} / ${expThreshold} EXP</p>
+        `;
+    
+        // Append elements to the new profile container
+        selectedProfileContainer.appendChild(profileCircle);
+        selectedProfileContainer.appendChild(username);
+        selectedProfileContainer.appendChild(levelSection);
+    
+        const messagebutton = document.createElement('button');
+        messagebutton.classList.add('messagebutton');
+    
+        messagebutton.textContent = 'Meddelande'
+    
+        searchResultsContainer.appendChild(messagebutton);
+    
+        // Append to the search results container
+        searchResultsContainer.appendChild(selectedProfileContainer);
+    
+        // Add the close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            searchResultsContainer.innerHTML = '';
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
+            searchProfiles(); // Reload the search results
+        });
+        selectedProfileContainer.appendChild(closeButton);
+    }
+    
+    function openMessageContainer() {
+        const searchResultsContainer = document.getElementById('searchResults');
+        searchResultsContainer.innerHTML = ''; // Clear any previous content
+    
+        // Create and configure the "Close" button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            // Return to the search input and reload search results
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box
+            searchResultsContainer.innerHTML = ''; // Clear the message container
+            searchProfiles(); // Reload the search results
+        });
+    
+        // Message display area
+        const messageDisplay = document.createElement('div');
+        messageDisplay.classList.add('message-display');
+    
+        // Input field for composing new messages
+        const messageInput = document.createElement('input');
+        messageInput.type = 'text';
+        messageInput.classList.add('message-input');
+        messageInput.placeholder = 'Write a message...';
+    
+        // "Send" button for sending messages
+        const sendButton = document.createElement('button');
+        sendButton.textContent = 'Send';
+        sendButton.classList.add('send-button');
+    
+        // Append elements to display the message UI
+        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
+        searchResultsContainer.appendChild(closeButton);
+        searchResultsContainer.appendChild(messageDisplay);
+        searchResultsContainer.appendChild(messageInput);
+        searchResultsContainer.appendChild(sendButton);
+    }
+    
+    
+    // Event listener for handling profile and message interactions
+    document.addEventListener('click', function(event) {
+        const searchResultsContainer = document.getElementById('searchResults');
+        const searchBox = document.getElementById('searchInput');
+    
+        // Check if a profile item or profile image is clicked
+        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
+            const clickedItem = event.target.closest('.result-item');
+            const profileImageSrc = clickedItem.dataset.profileImage;
+            const userName = clickedItem.querySelector('.username').textContent;
+            const userLevel = clickedItem.dataset.level;
+            const userExp = clickedItem.dataset.exp;
+            const expThreshold = clickedItem.dataset.expThreshold;
+    
+            // Hide the search box
+            searchBox.style.display = 'none';
+    
+            // Display the selected profile with its details
+            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+        }
+    
+        // Check if the "Meddelande" (Message) button is clicked
+        if (event.target.classList.contains('messagebutton')) {
+            openMessageContainer();
+        }
+    });
 }

@@ -13,6 +13,14 @@ html[data-page="game_display"] body {
     width: 99.3%;
 }
 
+
+
+html[data-page="game_display"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
+}
+
 html[data-page="game_display"] iframe {
     width: 100.5%;
     height: 94%;
@@ -35,6 +43,17 @@ html[data-page="game_display"] header a {
     font-size: 1.2rem;
 }
 
+html[data-page="game_display"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 70px;
+    position: relative;
+}
+
 /*index.php*/
 
 html[data-page="index"] html, html[data-page="index"] body {
@@ -44,6 +63,23 @@ html[data-page="index"] html, html[data-page="index"] body {
     background-color: #131A20;
     color: white;
     height: 100%;
+}
+
+html[data-page="index"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 70px;
+    position: relative;
+}
+
+html[data-page="index"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
 }
 
 html[data-page="index"] * {
@@ -401,7 +437,7 @@ html[data-page="index"] footer {
     text-align: center;
     padding: 20px;
     font-size: 14px;
-    margin-top: 80px;
+    margin-top: 190px;
 }
 
 html[data-page="index"] #category-1 {
@@ -523,17 +559,6 @@ html[data-page="index"] #category-1:hover {
     color: rgb(0, 150, 255); /* New text color on hover */
 }
 
-html[data-page="index"] #currency-bar {
-    display: flex;
-    align-items: center;
-    background-color: #333; /* Dark background for the bar */
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    width: 100px;
-    position: relative;
-}
-
 html[data-page="index"] #add-currency {
     background-color: #007bff; /* Blue button */
     color: white;
@@ -551,18 +576,6 @@ html[data-page="index"] #currency-amount {
     margin-right: 8px;
 }
 
-html[data-page="index"] #currency-icon {
-    position: absolute;
-    height: 30px;
-    right: 3px;
-}
-
-html[data-page="index"] #currency-icon {
-    position: absolute;
-    height: 30px;
-    right: 3px;
-}
-
 /*login.php*/
 
 /* General Resets */
@@ -575,6 +588,12 @@ html[data-page="login"] body {
     text-align: center;
     background-size: cover;
     padding-top: 100px;
+}
+
+html[data-page="login"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
 }
     
 /* Container for the login and sign-in buttons */
@@ -608,6 +627,17 @@ html[data-page="login"] nav ul li a {
     color: white;
     text-decoration: none;
     font-size: 18px;
+}
+
+html[data-page="login"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 70px;
+    position: relative;
 }
 
 html[data-page="login"] #signin, html[data-page="login"] #hemsida {
@@ -908,16 +938,6 @@ transform: translate(-50%, 0) scale(1.05); /* Slightly larger */
 }
 }
 
-html[data-page="login"] #currency-bar {
-display: flex;
-align-items: center;
-background-color: #333; /* Dark background for the bar */
-color: white;
-padding: 5px 10px;
-border-radius: 5px;
-width: 100px;
-position: relative;
-}
 
 html[data-page="login"] #add-currency {
 background-color: #007bff; /* Blue button */
@@ -936,17 +956,6 @@ font-size: 18px;
 margin-right: 8px;
 }
 
-html[data-page="login"] #currency-icon {
-position: absolute;
-height: 30px;
-right: 3px;
-}
-
-html[data-page="login"] #currency-icon {
-position: absolute;
-height: 30px;
-right: 3px;
-}
 
 /*sida.php*/
 
@@ -978,6 +987,12 @@ z-index: 1000;
 transition: left 0.5s;
 }
 
+html[data-page="sida"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
+}
+
 /* Sidebar */
 html[data-page="sida"] .sidebar {
 height: 100%;
@@ -995,6 +1010,17 @@ box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
 
 html[data-page="sida"] .sidebar.open {
 width: 250px;
+}
+
+html[data-page="sida"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 70px;
+    position: relative;
 }
 
 /* Profile Section */
@@ -1391,6 +1417,23 @@ html[data-page="signup"] nav ul li a {
     font-size: 18px;
 }
 
+html[data-page="signup"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
+}
+
+html[data-page="signup"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 70px;
+    position: relative;
+}
+
 /* Container for the login and sign-in buttons */
 html[data-page="signup"] #container1 {
 display: flex;
@@ -1744,17 +1787,6 @@ transform: translate(-50%, 0) scale(1.05); /* Slightly larger */
 }
 }
 
-html[data-page="signup"] #currency-bar {
-display: flex;
-align-items: center;
-background-color: #333; /* Dark background for the bar */
-color: white;
-padding: 5px 10px;
-border-radius: 5px;
-width: 100px;
-position: relative;
-}
-
 html[data-page="signup"] #add-currency {
 background-color: #007bff; /* Blue button */
 color: white;
@@ -1772,17 +1804,6 @@ font-size: 18px;
 margin-right: 8px;
 }
 
-html[data-page="signup"] #currency-icon {
-position: absolute;
-height: 30px;
-right: 3px;
-}
-
-html[data-page="signup"] #currency-icon {
-position: absolute;
-height: 30px;
-right: 3px;
-}
 
 /*spel.php*/
 
@@ -1795,9 +1816,26 @@ color: white;
 height: 100%;
 }
 
+html[data-page="spel"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 70px;
+    position: relative;
+}
+
 html[data-page="spel"] * {
 scrollbar-width: none; /* Firefox */
 -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html[data-page="spel"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
 }
 
 html[data-page="spel"] *::-webkit-scrollbar {
@@ -2056,17 +2094,6 @@ background-color: #00BFBF; /* Darker cyan on hover */
 box-shadow: 0px 8px 20px rgba(0, 255, 255, 0.6);
 }
 
-html[data-page="spel"] #currency-bar {
-display: flex;
-align-items: center;
-background-color: #333; /* Dark background for the bar */
-color: white;
-padding: 5px 10px;
-border-radius: 5px;
-width: 100px;
-position: relative;
-}
-
 html[data-page="spel"] #add-currency {
 background-color: #007bff; /* Blue button */
 color: white;
@@ -2084,11 +2111,6 @@ font-size: 18px;
 margin-right: 8px;
 }
 
-html[data-page="spel"] #currency-icon {
-position: absolute;
-height: 30px;
-right: 3px;
-}
 
 /* Overlay styling */
 html[data-page="spel"] #overlay {
@@ -3379,4 +3401,317 @@ html[data-page="spel4"] #wooden-triangle {
     rotate: 180deg;
     margin-left: -80px;
     margin-top: -10px;
+}
+
+/*topplista.php*/
+
+/* General Resets */
+html[data-page="topplista"] body {
+    font-family: 'Arial', sans-serif;
+    background-color: #131A20; /* Match background with hemsida.php */
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background-size: cover;
+    padding-top: 100px;
+}
+    
+/* Container for the topplista and sign-in buttons */
+html[data-page="topplista"] #container1 {
+display: flex;
+justify-content: space-between; /* Distributes logo/title and buttons evenly */
+align-items: center; /* Centers items vertically */
+padding: 20px;
+box-sizing: border-box;
+width: 100%;
+}
+
+html[data-page="topplista"] .buttons {
+display: flex; /* Ensures buttons stay side by side */
+gap: 20px; /* Space between buttons */
+}
+
+html[data-page="topplista"] #logo-title {
+display: flex;
+align-items: center; /* Aligns logo and title vertically */
+gap: 10px; /* Space between logo and title */
+}
+
+html[data-page="topplista"] nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+
+html[data-page="topplista"] nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+html[data-page="topplista"] #signin, html[data-page="topplista"] #hemsida {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 0.9em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 120px;
+height: 40px;
+}
+
+html[data-page="topplista"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
+}
+
+/* Hover Effect */
+html[data-page="topplista"] #signin:hover, html[data-page="topplista"] #hemsida:hover {
+background-color: #293845; /* Slightly lighter on hover */
+border-color: #FFEB3B; /* Maintain the yellow border */
+box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+transform: translateY(-3px); /* Small lift effect */
+}
+
+/* Active Effect */
+html[data-page="topplista"] #signin:active, html[data-page="topplista"] #hemsida:active {
+background-color: #17202B; /* Darker on click */
+transform: translateY(1px);
+box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+
+
+/* Header Section */
+html[data-page="topplista"] #header {
+position: fixed; /* Fixes the header at the top */
+top: 0;
+left: 0;
+right: 0;
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 0 20px;
+height: 80px;
+background-color: #0D1117;
+z-index: 1000; /* Ensures it's always on top */
+}
+
+html[data-page="topplista"] #logo {
+width: 80px;
+height: 80px;
+margin-top: 10px;
+width: auto;
+}
+
+
+html[data-page="topplista"] #container1 h1 {
+font-size: 2.5em;
+white-space: nowrap;
+color: #FFD700; /* Gold color for a classy look */
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+letter-spacing: 3px;
+text-transform: uppercase;
+margin: 0; /* Removes extra margin */
+}
+
+
+html[data-page="topplista"] #circle-container {
+position: relative;
+display: inline-block;
+}
+
+html[data-page="topplista"] #hover-circle {
+position: absolute;
+top: 45%;
+left: 50%;
+transform: translate(-50%, -50%); /* Center the circle */
+height: 60px; /* Circle height */
+width: 55px;  /* Circle width */
+border-radius: 50%; /* Makes it a circle */
+border-color: rgba(0, 255, 255, 0.8);
+border-width: 5px;
+border-style: solid; /* Ensure the border appears */
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+0 0 45px rgba(0, 255, 255, 0.5),
+0 0 60px rgba(0, 255, 255, 0.4);
+opacity: 0; /* Start invisible */
+z-index: -1; /* Ensure it's behind the logo */
+transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+html[data-page="topplista"] #circle-container:hover #hover-circle {
+opacity: 1; /* Make it visible when hovering */
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.8),
+0 0 30px rgba(0, 255, 255, 0.7),
+0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+0%, 100% {
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+}
+50% {
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+}
+}
+
+html[data-page="topplista"] #logo {
+cursor: pointer;
+height: 48px; /* Circle height */
+width: 48px;  /* Circle width */
+margin-top: 25px;
+transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+html[data-page="topplista"] #logo:hover {
+transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+html[data-page="topplista"] #add-currency {
+background-color: #007bff; /* Blue button */
+color: white;
+border: none;
+border-radius: 50%;
+width: 25px;
+height: 25px;
+font-size: 16px;
+cursor: pointer;
+margin-right: 8px;
+}
+
+html[data-page="topplista"] #currency-amount {
+font-size: 18px;
+margin-right: 8px;
+}
+
+
+html[data-page="topplista"] #leaderboard-container {
+    padding: 20px;
+    margin-top: -20px; /* Space below the header */
+    height: calc(100vh - 120px); /* Occupy the full viewport height minus the header height */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+html[data-page="topplista"] #leaderboard-grid {
+    display: grid;
+    grid-template-rows: auto 1fr; /* Add a row for the text and another for the tiles */
+    grid-template-columns: repeat(3, 1fr); /* Maintain 3 columns for tiles */
+    grid-gap: 20px; /* Space between items */
+    width: 95%; /* Occupy 95% of the container's width */
+    max-width: 1400px; /* Increase max-width for a wider grid */
+    background-color: #1E2A38; /* Match container color */
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6); /* Soft shadow */
+    overflow-y: auto; /* Allow scrolling if necessary */
+    margin-top: 30px;
+}
+
+html[data-page="topplista"] .leaderboard-tile {
+    height: 340px; /* Make each tile tall */
+    background-color: #293845; /* Slightly lighter than the background */
+    color: #FFD700; /* Gold color for text */
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 5px rgba(255, 215, 0, 0.7); /* Add a glow to the text */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+html[data-page="topplista"] .leaderboard-tile:hover {
+    transform: scale(1.02); /* Slight zoom on hover */
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.8); /* Stronger shadow on hover */
+}
+
+#leaderboard-text {
+    font-size: 1.5em;
+    text-align: center;
+}
+
+html[data-page="topplista"] #leaderboard-grid {
+    display: grid;
+    grid-template-rows: auto 1fr; /* Add space for controls and tiles */
+    gap: 20px; /* Space between the controls and the tiles */
+}
+
+html[data-page="topplista"] #leaderboard-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: #1E2A38;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+html[data-page="topplista"] #leaderboard-grid .leaderboard-tile {
+    background-color: #2B3A4D;
+    color: white;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1em;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+html[data-page="topplista"] #leaderboard-navigation {
+    grid-column: span 3; /* This makes it span across the entire grid */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+html[data-page="topplista"] #leaderboard-navigation button {
+    background-color: #1E2A38;
+    color: #FFFFFF;
+    border: 2px solid #FFD700;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+html[data-page="topplista"] #leaderboard-navigation button:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+html[data-page="topplista"] #left-button,
+html[data-page="topplista"] #right-button {
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+html[data-page="topplista"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 70px;
+    position: relative;
 }

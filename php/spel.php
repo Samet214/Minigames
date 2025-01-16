@@ -220,7 +220,7 @@ $conn->close();
                 <nav style="margin-right: 500px;">
                     <ul>
                         <li><a href="spel.php">Spel</a></li>
-                        <li><a href="ledartavlor.php">Ledartavla</a></li>
+                        <li><a href="topplista.php">Topplista</a></li>
                         <li><a href="info.php">Info</a></li>
                         <li><a href="profile.php" id="a-tag4">Profil</a></li>
                     </ul>
@@ -231,12 +231,12 @@ $conn->close();
                     <button id="searchProfileBtn" onclick="toggleProfile()">Sök profiler</button>
                 </div>
             <?php else: ?>
-                <nav style="margin-right: 400px;">
+                <nav style="margin-right: 600px;">
                     <ul>
                         <li><a href="spel.php">Spel</a></li>
-                        <li><a href="ledartavlor.php">Ledartavla</a></li>
+                        <li><a href="topplista.php">Topplista</a></li>
                         <li><a href="info.php">Info</a></li>
-                        <li><a href="logout.php" id="logoutLink">Logga ut</a></li>
+                        <li><a href="profile.php" id="a-tag4">Profil</a></li>
                     </ul>
                 </nav>
                 <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
@@ -246,7 +246,6 @@ $conn->close();
             </div>
         </div>
         <div id="currency-bar">
-            <button id="add-currency" onclick="gainCurrency(10)">+</button>
             <span id="currency-amount">0</span>
             <img src="../bilder/mynt.png" id="currency-icon" alt="Coin Icon">
         </div>
