@@ -989,44 +989,60 @@ if (currentPhpFile === "game_display.php") {
         clearInterval(timer); // Stop the timer
         endTime = Date.now(); // Record end time
         const totalTimeElapsed = Math.floor((endTime - startTime) / 1000); // Calculate elapsed time in seconds
-
+    
         finalLevel.textContent = level;
         finalXP.textContent = level * 10; // Calculate XP
         finalAP.textContent = level * 10;
         totalTime.textContent = totalTimeElapsed; // Display total time
-
+    
         // Console log username or guest status
         if (username !== 'guest') {
-            console.log(level);
-            console.log(level * 10);
-            console.log(level * 10);
-            console.log(totalTimeElapsed / level);
-
-            // Fetch additional data from the server
+            console.log("nivå: ", level);
+            console.log("pengar_tjänat: ", level * 10);
+            console.log("exp_tjänat: ", level * 10);
+            console.log("tid: ", totalTimeElapsed / level);
+    
+            // Fetch additional user data
             fetch(`fetch_user_data.php?username=${encodeURIComponent(username)}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
                         console.error(data.error);
                     } else {
-                        console.log(data.level);
-                        console.log(data.networth);
+                        console.log("level: ", data.level);
+                        console.log("networth: ", data.networth);
                     }
                 })
                 .catch(error => console.error("Error fetching user data:", error));
-        } else {
-            
+    
+            // Fetch memory table data
+            fetch('http://localhost:3000/memory')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Memory Table Data:', data); // Log the entire memory table data
+                })
+                .catch(error => console.error("Error fetching memory table data:", error));
+    
+            // Fetch "netvärde" column data
+            fetch('http://localhost:3000/netvarde')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Netvärde Data:', data); // Log the "netvärde" column data
+                })
+                .catch(error => console.error("Error fetching netvärde data:", error));
         }
-
+    
         popup.classList.add('visible');
         overlay.classList.add('visible');
     }
-
+    
+    
     function closePopup() {
         popup.classList.remove('visible');
         overlay.classList.remove('visible');
         location.reload(); // Reload the game
     }
+    
 } else if (currentPhpFile === "spel2.php") {
     const { Engine, Render, Runner, World, Bodies, Body, Events } = Matter;
 
