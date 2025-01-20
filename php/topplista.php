@@ -14,6 +14,44 @@ $next_level_exp = 100;
 
 ?>
 
+<?php
+// API endpoint to fetch user counts
+$apiUrl = 'http://localhost:3000/user-counts';
+
+// Initialize cURL session
+$ch = curl_init();
+
+// Set cURL options
+curl_setopt($ch, CURLOPT_URL, $apiUrl);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPGET, true);
+
+// Execute cURL request
+$response = curl_exec($ch);
+
+// Check for cURL errors
+if (curl_errno($ch)) {
+    echo 'Error:' . curl_error($ch);
+} else {
+    // Decode the JSON response
+    $data = json_decode($response, true);
+
+    if ($data) {
+        // Echo only the numbers (user counts)
+        foreach ($data as $count) {
+            echo $count . "\n"; // Each count on a new line
+        }
+    } else {
+        echo "Failed to fetch user counts.";
+    }
+}
+
+// Close cURL session
+curl_close($ch);
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="sv" data-page="topplista">
 <head>

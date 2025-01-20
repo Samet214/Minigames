@@ -139,6 +139,47 @@ app.post('/add-memory', (req, res) => {
   });
 });
 
+// Route to fetch and log the total number of users in the "memory" table
+app.get('/memory-count', (req, res) => {
+  const query = 'SELECT COUNT(*) AS totalUsers FROM memory';
+  spelDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching user count from memory table:', err);
+      return res.status(500).send('Error fetching user count from the memory table.');
+    }
+
+    const totalUsers = results[0].totalUsers;
+    console.log('Total number of users in the memory table:', totalUsers);
+
+    res.json({ totalUsers }); // Send the count as JSON
+  });
+});
+
+// Route to fetch user counts from multiple tables in the "Spel" database
+app.get('/user-counts', (req, res) => {
+  const tables = ['biljard', 'colourvision', 'mazerunner', 'memory', 'squigglegolf'];
+  const results = {};
+  let completed = 0;
+
+  tables.forEach((table) => {
+    const query = `SELECT COUNT(*) AS totalUsers FROM ${table}`;
+    spelDb.query(query, (err, tableResults) => {
+      if (err) {
+        console.error(`Error fetching user count from ${table} table:`, err);
+        results[table] = 'Error fetching count';
+      } else {
+        results[table] = tableResults[0].totalUsers;
+        console.log(`Total users in ${table} table:`, tableResults[0].totalUsers);
+      }
+
+      completed++;
+      if (completed === tables.length) {
+        res.json(results); // Send the results after processing all tables
+      }
+    });
+  });
+});
+
 // Start the server on a specific port
 const PORT = 3000;
 app.listen(PORT, () => {
