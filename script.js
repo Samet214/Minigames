@@ -2402,26 +2402,11 @@ Events.on(engine, 'collisionEnd', (event) => {
 } else if (currentPhpFile === "topplista.php") {
     document.addEventListener("DOMContentLoaded", function () {
         const modes = [
-            {
-                text: "Memory - Topplista",
-                tiles: ["Nivå", "Genomsnitt tid per nivå", "Level av användare", "Netvärde", "Pegnar tjänat i spel", "EXP tjänat i spel"]
-            },
-            {
-                text: "Squigglegolf - Topplista",
-                tiles: ["7", "8", "9", "10", "11", "12"]
-            },
-            {
-                text: "Colourvision - Topplista",
-                tiles: ["13", "14", "15", "16", "17", "18"]
-            },
-            {
-                text: "Maze runner - Topplista",
-                tiles: ["19", "20", "21", "22", "23", "24"]
-            },
-            {
-                text: "Biljard - Topplista",
-                tiles: ["25", "26", "27", "28", "29", "30"]
-            },
+            { text: "Memory - Topplista" },
+            { text: "Squigglegolf - Topplista" },
+            { text: "Colourvision - Topplista" },
+            { text: "Maze Runner - Topplista" },
+            { text: "Biljard - Topplista" },
         ];
     
         let currentMode = 0;
@@ -2430,111 +2415,92 @@ Events.on(engine, 'collisionEnd', (event) => {
         const leaderboardText = document.getElementById("leaderboard-text");
         const tiles = document.querySelectorAll(".leaderboard-tile");
     
-        function updateMode() {
+        // Update leaderboard based on current mode
+        function updateMode(userCounts) {
             leaderboardText.textContent = modes[currentMode].text;
     
-            // Loop through all the leaderboard tiles and update them with content and inner tile
+            // Clear and populate tiles
             tiles.forEach((tile, index) => {
-                // Update the tile content
-                const innerTile = tile.querySelector(".inner-tile") || document.createElement("div");
+                tile.innerHTML = ""; // Clear previous content
+    
+                const innerTile = document.createElement("div");
                 innerTile.classList.add("inner-tile");
-                innerTile.textContent = modes[currentMode].tiles[index] || "Empty Tile";
-    
-                // Ensure the inner tile is updated or added
-                tile.innerHTML = ''; // Clear the existing content
-                tile.appendChild(innerTile); // Add the inner tile to the tile
-    
-                // Apply the styles for the inner tile
-                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)"; // Blackish background
+                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
                 innerTile.style.color = "white";
                 innerTile.style.padding = "10px";
                 innerTile.style.height = "85%";
                 innerTile.style.width = "90%";
-                innerTile.style.overflowY = "auto"; // Scrollable if content overflows
+                innerTile.style.overflowY = "auto";
                 innerTile.style.maxHeight = "100%";
                 innerTile.style.borderRadius = "5px";
                 innerTile.style.display = "flex";
                 innerTile.style.flexDirection = "column";
                 innerTile.style.justifyContent = "flex-start";
+                innerTile.style.position = "relative";
     
-                // Create the text outside the inner tile, detached from it
-                const text = innerTile.textContent;
-                innerTile.innerHTML = ''; // Clear existing text content
+                // Get the number of divs for the current mode
+                const numberOfDivs = userCounts[modes[currentMode].text.toLowerCase().split(" - ")[0]] || 0;
     
-                // Create a new span for the text
-                const textSpan = document.createElement("span");
-                textSpan.textContent = text;
-                textSpan.style.position = "absolute"; // Use absolute positioning
-                textSpan.style.top = "10px"; // Adjust top to control vertical position
-                textSpan.style.left = "50%"; // Center horizontally
-                textSpan.style.transform = "translateX(-50%)"; // Exact centering
-                textSpan.style.zIndex = "10"; // Ensure the text stays above the inner tile
+                // Create the required number of divs
+                for (let i = 1; i <= numberOfDivs; i++) {
+                    const div = document.createElement("div");
+                    div.textContent = `Tile ${i}`;
+                    div.style.textAlign = "center";
+                    div.style.margin = "5px 0";
+                    div.style.padding = "10px";
+                    div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                    div.style.borderRadius = "3px";
+                    innerTile.appendChild(div);
+                }
     
-                // Add the new text span to the tile, not inside inner-tile
-                tile.appendChild(textSpan);
-    
-                // Re-apply styles to inner tile to make it functional
-                innerTile.style.position = "relative"; // Make sure inner tile is relative
+                tile.appendChild(innerTile);
             });
     
-            // Disable/enable buttons based on the mode
+            // Enable/disable navigation buttons
             leftButton.disabled = currentMode === 0;
             rightButton.disabled = currentMode === modes.length - 1;
         }
     
+        // Fetch user counts from the API
+        function fetchUserCounts() {
+            fetch("http://localhost:3000/user-counts")
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch user counts");
+                    }
+                    return response.json();
+                })
+                .then((userCounts) => {
+                    updateMode(userCounts); // Update mode with fetched counts
+                })
+                .catch((error) => {
+                    console.error("Error fetching user counts:", error);
+                });
+        }
+    
+        // Add navigation button event listeners
         leftButton.addEventListener("click", () => {
             if (currentMode > 0) {
                 currentMode--;
-                updateMode();
+                fetchUserCounts(); // Fetch and update when navigating
             }
         });
     
         rightButton.addEventListener("click", () => {
             if (currentMode < modes.length - 1) {
                 currentMode++;
-                updateMode();
+                fetchUserCounts(); // Fetch and update when navigating
             }
         });
     
-        // Initialize first mode
-        updateMode();
+        // Initialize leaderboard
+        fetchUserCounts();
     });
 
-    let memorydata3;
-
-    fetch('http://localhost:3000/memory') // URL of the Node.js server
-            .then(response => response.json())
-            .then(data => {
-                // Log the data to the browser's console
-                memorydata3 = data;
-
-                // Optional: Add rows to the HTML table for visualization
-                const tableBody = document.querySelector('#topplista-table tbody');
-                data.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${row.id}</td>
-                        <td>${row.username}</td>
-                        <td>${row.nivå}</td>
-                        <td>${row.exp_tjänat}</td>
-                        <td>${row.tid}</td>
-                        <td>${row.position}</td>
-                        <td>${row.netvarde}</td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    setTimeout(() => {
-        console.log(memorydata3.length);  // Logging the length
+    document.getElementById("logo").addEventListener("click", function() {
+        redirect('index.php');
+    });
     
-        // Loop through memorydata3 to create divs
-        memorydata3.forEach((item, index) => {
-
-        });
-    }, 100);  // 100ms delay (adjust as needed)
     
 } else if (currentPhpFile === "sida.php") {
 
@@ -2784,7 +2750,5 @@ Events.on(engine, 'collisionEnd', (event) => {
             openMessageContainer();
         }
     });
-
-    
 
 }

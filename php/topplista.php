@@ -3,7 +3,6 @@ session_start();
 
 ini_set('display_errors', 0);
 
-
 include 'db.php';
 
 $username = 'Guest';
@@ -12,42 +11,6 @@ $level = 1;
 $current_exp = 0;
 $next_level_exp = 100;
 
-?>
-
-<?php
-// API endpoint to fetch user counts
-$apiUrl = 'http://localhost:3000/user-counts';
-
-// Initialize cURL session
-$ch = curl_init();
-
-// Set cURL options
-curl_setopt($ch, CURLOPT_URL, $apiUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPGET, true);
-
-// Execute cURL request
-$response = curl_exec($ch);
-
-// Check for cURL errors
-if (curl_errno($ch)) {
-    echo 'Error:' . curl_error($ch);
-} else {
-    // Decode the JSON response
-    $data = json_decode($response, true);
-
-    if ($data) {
-        // Echo only the numbers (user counts)
-        foreach ($data as $count) {
-            echo $count . "\n"; // Each count on a new line
-        }
-    } else {
-        echo "Failed to fetch user counts.";
-    }
-}
-
-// Close cURL session
-curl_close($ch);
 ?>
 
 
@@ -63,7 +26,7 @@ curl_close($ch);
     <header id="header">
         <?php include 'sidebar.php'; ?>
         <div id="circle-container" style="position: relative; display: inline-block;">
-            <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;"> <!-- Replace with your logo image -->
+            <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;">
             <div id="hover-circle"></div> <!-- This will be the neon circle -->
         </div>
         <div id="container1">
@@ -90,22 +53,24 @@ curl_close($ch);
     </header>
 
     <main id="leaderboard-container">
-
-    <section id="leaderboard-grid">
-        <div id="leaderboard-navigation">
-            <button id="left-button" disabled>Previous</button>
-            <div id="leaderboard-text">Welcome to the Leaderboard</div>
-            <button id="right-button">Next</button>
-        </div>
-        <div class="leaderboard-tile"></div>
-        <div class="leaderboard-tile"></div>
-        <div class="leaderboard-tile"></div>
-        <div class="leaderboard-tile"></div>
-        <div class="leaderboard-tile"></div>
-        <div class="leaderboard-tile"></div>
-    </section>
+        <section id="leaderboard-grid">
+            <div id="leaderboard-navigation">
+                <button id="left-button" disabled>Previous</button>
+                <div id="leaderboard-text">Welcome to the Leaderboard</div>
+                <button id="right-button">Next</button>
+            </div>
+            <div class="leaderboard-tile"></div>
+            <div class="leaderboard-tile"></div>
+            <div class="leaderboard-tile"></div>
+            <div class="leaderboard-tile"></div>
+            <div class="leaderboard-tile"></div>
+            <div class="leaderboard-tile"></div>
+        </section>
     </main>
+
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+
+
+    <script src="../script.js"></script>
 </body>
-<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
-<script src="../script.js"></script>
-</html> 
+</html>
