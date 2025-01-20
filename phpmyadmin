@@ -1,0 +1,11 @@
+mysqldump --user=samet --password=samet --all-databases --default-character-set=utf8mb4 \
+--ignore-table=mysql.user --ignore-table=mysql.columns_priv --ignore-table=mysql.db \
+--ignore-table=mysql.tables_priv --ignore-table=mysql.procs_priv | sed 's/utf8mb4_0900_ai_ci/utf8mb4_general_ci/g' > all_databases_dump.sql
+
+mysql --user=samet --password=samet --quick < all_databases_dump.sql
+
+SET foreign_key_checks = 0;
+SET unique_checks = 0;
+
+SET foreign_key_checks = 1;
+SET unique_checks = 1;
