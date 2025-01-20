@@ -984,6 +984,7 @@ if (currentPhpFile === "game_display.php") {
         timeDisplay.textContent = timeRemaining;
     }
 
+
     function endGame() {
         canInteract = false;
         clearInterval(timer); // Stop the timer
@@ -995,46 +996,113 @@ if (currentPhpFile === "game_display.php") {
         finalAP.textContent = level * 10;
         totalTime.textContent = totalTimeElapsed; // Display total time
     
-        // Console log username or guest status
         if (username !== 'guest') {
-            console.log("nivå: ", level);
-            console.log("pengar_tjänat: ", level * 10);
-            console.log("exp_tjänat: ", level * 10);
-            console.log("tid: ", totalTimeElapsed / level);
+            const userarray = [];
+            let leaderboardarray = [];
+            let memorydata, memorydata2;
     
-            // Fetch additional user data
-            fetch(`fetch_user_data.php?username=${encodeURIComponent(username)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error(data.error);
+            // Fetch user data, memory data, and netvärde data
+            Promise.all([
+                fetch(`fetch_user_data.php?username=${encodeURIComponent(username)}`).then(res => res.json()),
+                fetch('http://localhost:3000/memory').then(res => res.json()),
+                fetch('http://localhost:3000/netvarde').then(res => res.json()),
+            ])
+                .then(([userData, memoryResponse, netvardeResponse]) => {
+                    // Handle user data
+                    if (userData.error) {
+                        console.error(userData.error);
                     } else {
-                        console.log("level: ", data.level);
-                        console.log("networth: ", data.networth);
+                        userarray.push(level, parseInt(userData.level, 10), level * 10, level * 10, totalTimeElapsed / level);
                     }
-                })
-                .catch(error => console.error("Error fetching user data:", error));
     
-            // Fetch memory table data
-            fetch('http://localhost:3000/memory')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Memory Table Data:', data); // Log the entire memory table data
-                })
-                .catch(error => console.error("Error fetching memory table data:", error));
+                    // Assign memory and netvarde data
+                    memorydata = memoryResponse;
+                    memorydata2 = netvardeResponse;
     
-            // Fetch "netvärde" column data
-            fetch('http://localhost:3000/netvarde')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Netvärde Data:', data); // Log the "netvärde" column data
+                    // Populate netvarde in userarray
+                    let usernamefound = false;
+                    for (let z = 0; z < memorydata2.length; z++) {
+                        if (username === Object.values(memorydata2[z])[0]) {
+                            userarray.push(Object.values(memorydata2[z])[3]); // Add netvarde
+                            usernamefound = true;
+                            break;
+                        }
+                    }
+    
+                    // If no data, set default netvarde
+                    if (!usernamefound) {
+                        userarray.push(0); // Default netvarde
+                    }
+    
+                    // Calculate leaderboard
+                    if (memorydata.length === 0) {
+                        leaderboardarray = [1, 1, 1, 1, 1, 1];
+                    } else {
+                        let rank = 1; // Default rank is 1 if there are no users in the memory table
+                        if (memorydata.length > 0) {
+                            rank = 1; // Start at 1 since rank is 1-based
+                            for (let i = 0; i < memorydata.length; i++) {
+                                const userNetWorth = Object.values(memorydata[i])[5]; // Assuming netvarde is the 6th column (index 5)
+                                if (userNetWorth > userarray[5]) {
+                                    rank++;
+                                }
+                            }
+                        }
+
+                        for (let z = 0; z < userarray.length - 1; z++) {
+                            let rank2 = 0;
+                            if (z < userarray.length - 2) {
+                                for (let i = 0; i < memorydata.length; i++) {
+                                    if (userarray[z] <= Object.values(memorydata[i])[z + 1]) {
+                                        rank2++;
+                                    }
+                                }
+                            } else {
+                                for (let i = 0; i < memorydata.length; i++) {
+                                    if (userarray[z] >= Object.values(memorydata[i])[z + 1]) {
+                                        rank2++;
+                                    }
+                                }
+                            }
+                            leaderboardarray.push(rank2);
+                        }
+                        leaderboardarray.push(rank);
+                    }
+    
+                    const jsonArray = JSON.stringify(leaderboardarray);
+    
+                    let data = {
+                        username: username,
+                        nivå: userarray[0],
+                        level: userarray[1],
+                        pengar_tjänat: userarray[2],
+                        exp_tjänat: userarray[3],
+                        tid: userarray[4],
+                        position: jsonArray,
+                        netvarde: userarray[5],
+                    };
+    
+                    // Send data to the backend
+                    return fetch('http://localhost:3000/add-memory', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                    });
                 })
-                .catch(error => console.error("Error fetching netvärde data:", error));
+                .then(response => response.json())
+                .then(result => {
+                    // Handle result if needed
+                    popup.classList.add('visible');
+                    overlay.classList.add('visible');
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            popup.classList.add('visible');
+            overlay.classList.add('visible');
         }
-    
-        popup.classList.add('visible');
-        overlay.classList.add('visible');
     }
+    
+    
     
     
     function closePopup() {
@@ -2431,7 +2499,42 @@ Events.on(engine, 'collisionEnd', (event) => {
         // Initialize first mode
         updateMode();
     });
+
+    let memorydata3;
+
+    fetch('http://localhost:3000/memory') // URL of the Node.js server
+            .then(response => response.json())
+            .then(data => {
+                // Log the data to the browser's console
+                memorydata3 = data;
+
+                // Optional: Add rows to the HTML table for visualization
+                const tableBody = document.querySelector('#topplista-table tbody');
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row.id}</td>
+                        <td>${row.username}</td>
+                        <td>${row.nivå}</td>
+                        <td>${row.exp_tjänat}</td>
+                        <td>${row.tid}</td>
+                        <td>${row.position}</td>
+                        <td>${row.netvarde}</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    setTimeout(() => {
+        console.log(memorydata3.length);  // Logging the length
     
+        // Loop through memorydata3 to create divs
+        memorydata3.forEach((item, index) => {
+
+        });
+    }, 100);  // 100ms delay (adjust as needed)
     
 } else if (currentPhpFile === "sida.php") {
 
@@ -2681,4 +2784,7 @@ Events.on(engine, 'collisionEnd', (event) => {
             openMessageContainer();
         }
     });
+
+    
+
 }

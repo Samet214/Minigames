@@ -3715,3 +3715,22 @@ html[data-page="topplista"] #currency-bar {
     width: 70px;
     position: relative;
 }
+
+html[data-page="topplista"] .leaderboard-tile {
+    position: relative;
+    overflow-y: auto;
+    max-height: 300px; /* Adjust height as needed */
+    background-color: rgba(22, 20, 20, 0.7);
+    border-radius: 5px;
+    padding: 10px;
+    color: white;
+}
+
+.memory-item {
+    width: 100px;
+    margin: 10px;
+    padding: 10px;
+    background-color: lightblue;
+    border-radius: 5px;
+    text-align: center;
+}
