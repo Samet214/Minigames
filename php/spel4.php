@@ -14,11 +14,6 @@
     <div id="start_page">
         <button id="start_button">Start!</button> 
     </div>
-
-    <div id="wooden-triangle2"></div>
-    <div id="wooden-board">
-        <div id="wooden-triangle"></div>
-    </div>
     
 
     <div id="maze_container" style="display: none;"><!-- --></div>

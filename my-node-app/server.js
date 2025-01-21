@@ -94,9 +94,9 @@ app.post('/add-memory', (req, res) => {
         netvarde: Math.max(existingData.netvarde || 0, netvarde),
       };
 
-      const updateQuery = `
-        UPDATE memory 
-        SET nivå = ?, level = ?, pengar_tjänat = ?, exp_tjänat = ?, tid = ?, position = ?, netvarde = ?
+      const updateQuery = 
+        `UPDATE memory 
+        SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, position = ?, netvarde = ?
         WHERE username = ?
       `;
       spelDb.query(
@@ -120,13 +120,13 @@ app.post('/add-memory', (req, res) => {
         }
       );
     } else {
-      const query = `
-        INSERT INTO memory (username, nivå, level, pengar_tjänat, exp_tjänat, tid, position, netvarde)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      const query = 
+        `INSERT INTO memory (username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
       spelDb.query(
         query,
-        [username, nivå, level, pengar_tjänat, exp_tjänat, tid, position, netvarde],
+        [username, nivå, level, pengar_tjänat, exp_tjänat, tid, netvarde],
         (err) => {
           if (err) {
             console.error('Error inserting data into memory table:', err);
@@ -165,11 +165,11 @@ app.get('/user-counts', (req, res) => {
     const query = `SELECT COUNT(*) AS totalUsers FROM ${table}`;
     spelDb.query(query, (err, tableResults) => {
       if (err) {
-        console.error(`Error fetching user count from ${table} table:`, err);
+        console.error(`Error fetching user count from ${table} table:, err`);
         results[table] = 'Error fetching count';
       } else {
         results[table] = tableResults[0].totalUsers;
-        console.log(`Total users in ${table} table:`, tableResults[0].totalUsers);
+        console.log(`Total users in ${table} table:, tableResults[0].totalUsers`);
       }
 
       completed++;
@@ -180,11 +180,112 @@ app.get('/user-counts', (req, res) => {
   });
 });
 
+// Route to fetch nivå values along with usernames, sorted by nivå in descending order
+app.get('/memory/niva', (req, res) => {
+  const query = 
+    `SELECT username, nivå
+    FROM memory
+    ORDER BY nivå DESC
+  `;
+
+  spelDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching nivå data from memory table:', err);
+      return res.status(500).send('Error fetching nivå data from memory table.');
+    }
+
+    res.json(results); // Send the sorted results as JSON
+  });
+});
+
+app.get('/memory/levels', (req, res) => {
+  const query = 
+    `SELECT username, level
+    FROM memory
+    ORDER BY level DESC
+  `;
+
+  spelDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching nivå data from memory table:', err);
+      return res.status(500).send('Error fetching nivå data from memory table.');
+    }
+
+    res.json(results); // Send the sorted results as JSON
+  });
+});
+
+app.get('/memory/tid', (req, res) => {
+  const query = 
+    `SELECT username, tid
+    FROM memory
+    ORDER BY tid ASC
+  `;
+
+  spelDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching nivå data from memory table:', err);
+      return res.status(500).send('Error fetching nivå data from memory table.');
+    }
+
+    res.json(results); // Send the sorted results as JSON
+  });
+});
+
+app.get('/memory/pengar', (req, res) => {
+  const query = 
+    `SELECT username, pengar_tjanat
+    FROM memory
+    ORDER BY pengar_tjanat DESC
+  `;
+
+  spelDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching nivå data from memory table:', err);
+      return res.status(500).send('Error fetching nivå data from memory table.');
+    }
+
+    res.json(results); // Send the sorted results as JSON
+  });
+});
+
+app.get('/memory/exp', (req, res) => {
+  const query = 
+    `SELECT username, exp_tjanat
+    FROM memory
+    ORDER BY exp_tjanat DESC
+  `;
+
+  spelDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching nivå data from memory table:', err);
+      return res.status(500).send('Error fetching nivå data from memory table.');
+    }
+
+    res.json(results); // Send the sorted results as JSON
+  });
+});
+
+app.get('/memory/netvarde', (req, res) => {
+  const query = 
+    `SELECT username, netvarde
+    FROM memory
+    ORDER BY netvarde DESC
+  `;
+
+  spelDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching nivå data from memory table:', err);
+      return res.status(500).send('Error fetching nivå data from memory table.');
+    }
+
+    res.json(results); // Send the sorted results as JSON
+  });
+});
 
 
 // Start the server on a specific port
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://samet-desktop.adm.huddinge.se:${PORT}`);
 });
-

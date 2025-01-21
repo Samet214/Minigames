@@ -998,16 +998,14 @@ if (currentPhpFile === "game_display.php") {
     
         if (username !== 'guest') {
             const userarray = [];
-            let leaderboardarray = [];
             let memorydata, memorydata2;
     
-            // Fetch user data, memory data, and netvärde data
+            // Fetch user data and netvarde data
             Promise.all([
                 fetch(`fetch_user_data.php?username=${encodeURIComponent(username)}`).then(res => res.json()),
-                fetch('http://localhost:3000/memory').then(res => res.json()),
-                fetch('http://localhost:3000/netvarde').then(res => res.json()),
+                fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde').then(res => res.json()),
             ])
-                .then(([userData, memoryResponse, netvardeResponse]) => {
+                .then(([userData, netvardeResponse]) => {
                     // Handle user data
                     if (userData.error) {
                         console.error(userData.error);
@@ -1015,11 +1013,10 @@ if (currentPhpFile === "game_display.php") {
                         userarray.push(level, parseInt(userData.level, 10), level * 10, level * 10, totalTimeElapsed / level);
                     }
     
-                    // Assign memory and netvarde data
-                    memorydata = memoryResponse;
+                    // Assign netvarde data
                     memorydata2 = netvardeResponse;
     
-                    // Populate netvarde in userarray
+                    // Add netvarde to userarray
                     let usernamefound = false;
                     for (let z = 0; z < memorydata2.length; z++) {
                         if (username === Object.values(memorydata2[z])[0]) {
@@ -1034,43 +1031,7 @@ if (currentPhpFile === "game_display.php") {
                         userarray.push(0); // Default netvarde
                     }
     
-                    // Calculate leaderboard
-                    if (memorydata.length === 0) {
-                        leaderboardarray = [1, 1, 1, 1, 1, 1];
-                    } else {
-                        let rank = 1; // Default rank is 1 if there are no users in the memory table
-                        if (memorydata.length > 0) {
-                            rank = 1; // Start at 1 since rank is 1-based
-                            for (let i = 0; i < memorydata.length; i++) {
-                                const userNetWorth = Object.values(memorydata[i])[5]; // Assuming netvarde is the 6th column (index 5)
-                                if (userNetWorth > userarray[5]) {
-                                    rank++;
-                                }
-                            }
-                        }
-
-                        for (let z = 0; z < userarray.length - 1; z++) {
-                            let rank2 = 0;
-                            if (z < userarray.length - 2) {
-                                for (let i = 0; i < memorydata.length; i++) {
-                                    if (userarray[z] <= Object.values(memorydata[i])[z + 1]) {
-                                        rank2++;
-                                    }
-                                }
-                            } else {
-                                for (let i = 0; i < memorydata.length; i++) {
-                                    if (userarray[z] >= Object.values(memorydata[i])[z + 1]) {
-                                        rank2++;
-                                    }
-                                }
-                            }
-                            leaderboardarray.push(rank2);
-                        }
-                        leaderboardarray.push(rank);
-                    }
-    
-                    const jsonArray = JSON.stringify(leaderboardarray);
-    
+                    // Prepare data for the backend
                     let data = {
                         username: username,
                         nivå: userarray[0],
@@ -1078,12 +1039,11 @@ if (currentPhpFile === "game_display.php") {
                         pengar_tjänat: userarray[2],
                         exp_tjänat: userarray[3],
                         tid: userarray[4],
-                        position: jsonArray,
                         netvarde: userarray[5],
                     };
     
                     // Send data to the backend
-                    return fetch('http://localhost:3000/add-memory', {
+                    return fetch('http://samet-desktop.adm.huddinge.se:3000/add-memory', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data),
@@ -1100,7 +1060,7 @@ if (currentPhpFile === "game_display.php") {
             popup.classList.add('visible');
             overlay.classList.add('visible');
         }
-    }
+    } 
     
     
     
@@ -2402,11 +2362,11 @@ Events.on(engine, 'collisionEnd', (event) => {
 } else if (currentPhpFile === "topplista.php") {
     document.addEventListener("DOMContentLoaded", function () {
         const modes = [
-            { text: "Memory - Topplista" },
-            { text: "Squigglegolf - Topplista" },
-            { text: "Colourvision - Topplista" },
-            { text: "Maze Runner - Topplista" },
-            { text: "Biljard - Topplista" },
+            { text: "Memory - Topplista", tileTexts: ["Nivå", "Level", "Tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Squigglegolf - Topplista", tileTexts: ["Golf 1", "Golf 2", "Golf 3", "Golf 4", "Golf 5", "Golf 6"] },
+            { text: "Colourvision - Topplista", tileTexts: ["Vision 1", "Vision 2", "Vision 3", "Vision 4", "Vision 5", "Vision 6"] },
+            { text: "Maze Runner - Topplista", tileTexts: ["Maze 1", "Maze 2", "Maze 3", "Maze 4", "Maze 5", "Maze 6"] },
+            { text: "Biljard - Topplista", tileTexts: ["Biljard 1", "Biljard 2", "Biljard 3", "Biljard 4", "Biljard 5", "Biljard 6"] },
         ];
     
         let currentMode = 0;
@@ -2415,13 +2375,25 @@ Events.on(engine, 'collisionEnd', (event) => {
         const leaderboardText = document.getElementById("leaderboard-text");
         const tiles = document.querySelectorAll(".leaderboard-tile");
     
-        // Update leaderboard based on current mode
-        function updateMode(userCounts) {
+        function updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData) {
             leaderboardText.textContent = modes[currentMode].text;
     
-            // Clear and populate tiles
             tiles.forEach((tile, index) => {
-                tile.innerHTML = ""; // Clear previous content
+                tile.innerHTML = "";  // Clear previous content
+    
+                const container = document.createElement("div");
+                container.style.display = "flex";
+                container.style.flexDirection = "column";
+                container.style.alignItems = "center";
+                container.style.height = "100%";
+                container.style.width = "100%";
+    
+                const outerText = document.createElement("div");
+                outerText.textContent = modes[currentMode].tileTexts[index];
+                outerText.style.textAlign = "center";
+                outerText.style.marginBottom = "10px";
+                outerText.style.fontWeight = "bold";
+                container.appendChild(outerText);
     
                 const innerTile = document.createElement("div");
                 innerTile.classList.add("inner-tile");
@@ -2436,319 +2408,257 @@ Events.on(engine, 'collisionEnd', (event) => {
                 innerTile.style.display = "flex";
                 innerTile.style.flexDirection = "column";
                 innerTile.style.justifyContent = "flex-start";
-                innerTile.style.position = "relative";
     
-                // Get the number of divs for the current mode
-                const numberOfDivs = userCounts[modes[currentMode].text.toLowerCase().split(" - ")[0]] || 0;
+                if (index === 0 && modes[currentMode].text === "Memory - Topplista") {
+                    // Display the Memory - Topplista in the first tile (memoryData)
+                    innerTile.innerHTML = "";
+                    memoryData.sort((a, b) => b.nivå - a.nivå).forEach((row, rank) => {
+                        const div = document.createElement("div");
+                        div.style.display = "flex";
+                        div.style.justifyContent = "space-between";
+                        div.style.margin = "5px 0";
+                        div.style.padding = "10px";
+                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        div.style.borderRadius = "3px";
     
-                // Create the required number of divs
-                for (let i = 1; i <= numberOfDivs; i++) {
-                    const div = document.createElement("div");
-                    div.textContent = `Tile ${i}`;
-                    div.style.textAlign = "center";
-                    div.style.margin = "5px 0";
-                    div.style.padding = "10px";
-                    div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                    div.style.borderRadius = "3px";
-                    innerTile.appendChild(div);
+                        const leftSpan = document.createElement("span");
+                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.style.flex = "1";
+                        leftSpan.style.textAlign = "left";
+    
+                        const rightSpan = document.createElement("span");
+                        rightSpan.textContent = `${row.nivå}`;
+                        rightSpan.style.flex = "0";
+                        rightSpan.style.textAlign = "right";
+    
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+                        innerTile.appendChild(div);
+                    });
+                } else if (index === 1 && modes[currentMode].text === "Memory - Topplista") {
+                    // Display Memory levels in the second tile (levelsData)
+                    innerTile.innerHTML = "";
+                    levelsData.sort((a, b) => b.level - a.level).forEach((row, rank) => {
+                        const div = document.createElement("div");
+                        div.style.display = "flex";
+                        div.style.justifyContent = "space-between";
+                        div.style.margin = "5px 0";
+                        div.style.padding = "10px";
+                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        div.style.borderRadius = "3px";
+    
+                        const leftSpan = document.createElement("span");
+                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.style.flex = "1";
+                        leftSpan.style.textAlign = "left";
+    
+                        const rightSpan = document.createElement("span");
+                        rightSpan.textContent = `${row.level}`;
+                        rightSpan.style.flex = "0";
+                        rightSpan.style.textAlign = "right";
+    
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+                        innerTile.appendChild(div);
+                    });
+                } else if (index === 2 && modes[currentMode].text === "Memory - Topplista") {
+                    // Display Memory time (Tid) in the third tile (tidData)
+                    innerTile.innerHTML = "";
+                    tidData.sort((a, b) => b.tid - a.tid).forEach((row, rank) => {
+                        const div = document.createElement("div");
+                        div.style.display = "flex";
+                        div.style.justifyContent = "space-between";
+                        div.style.margin = "5px 0";
+                        div.style.padding = "10px";
+                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        div.style.borderRadius = "3px";
+    
+                        const leftSpan = document.createElement("span");
+                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.style.flex = "1";
+                        leftSpan.style.textAlign = "left";
+    
+                        const rightSpan = document.createElement("span");
+                        rightSpan.textContent = `${row.tid}`;
+                        rightSpan.style.flex = "0";
+                        rightSpan.style.textAlign = "right";
+    
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+                        innerTile.appendChild(div);
+                    });
+                } else if (index === 3 && modes[currentMode].text === "Memory - Topplista") {
+                    // Display Pengar (Money) in the fourth tile (pengarData)
+                    innerTile.innerHTML = "";
+                    pengarData.sort((a, b) => b.pengar_tjanat - a.pengar_tjanat).forEach((row, rank) => {
+                        const div = document.createElement("div");
+                        div.style.display = "flex";
+                        div.style.justifyContent = "space-between";
+                        div.style.margin = "5px 0";
+                        div.style.padding = "10px";
+                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        div.style.borderRadius = "3px";
+    
+                        const leftSpan = document.createElement("span");
+                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.style.flex = "1";
+                        leftSpan.style.textAlign = "left";
+    
+                        const rightSpan = document.createElement("span");
+                        rightSpan.textContent = `${row.pengar_tjanat}`;
+                        rightSpan.style.flex = "0";
+                        rightSpan.style.textAlign = "right";
+    
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+                        innerTile.appendChild(div);
+                    });
+                } else if (index === 4 && modes[currentMode].text === "Memory - Topplista") {
+                    // Display EXP in the fifth tile (expData)
+                    innerTile.innerHTML = "";
+                    expData.sort((a, b) => b.exp_tjanat - a.exp_tjanat).forEach((row, rank) => {
+                        const div = document.createElement("div");
+                        div.style.display = "flex";
+                        div.style.justifyContent = "space-between";
+                        div.style.margin = "5px 0";
+                        div.style.padding = "10px";
+                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        div.style.borderRadius = "3px";
+    
+                        const leftSpan = document.createElement("span");
+                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.style.flex = "1";
+                        leftSpan.style.textAlign = "left";
+    
+                        const rightSpan = document.createElement("span");
+                        rightSpan.textContent = `${row.exp_tjanat}`;
+                        rightSpan.style.flex = "0";
+                        rightSpan.style.textAlign = "right";
+    
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+                        innerTile.appendChild(div);
+                    });
+                } else if (index === 5 && modes[currentMode].text === "Memory - Topplista") {
+                    // Display Netvärde in the sixth tile (netvardeData)
+                    innerTile.innerHTML = "";
+                    netvardeData.sort((a, b) => b.netvarde - a.netvarde).forEach((row, rank) => {
+                        const div = document.createElement("div");
+                        div.style.display = "flex";
+                        div.style.justifyContent = "space-between";
+                        div.style.margin = "5px 0";
+                        div.style.padding = "10px";
+                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        div.style.borderRadius = "3px";
+    
+                        const leftSpan = document.createElement("span");
+                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.style.flex = "1";
+                        leftSpan.style.textAlign = "left";
+    
+                        const rightSpan = document.createElement("span");
+                        rightSpan.textContent = `${row.netvarde}`;
+                        rightSpan.style.flex = "0";
+                        rightSpan.style.textAlign = "right";
+    
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+                        innerTile.appendChild(div);
+                    });
+                } else {
+                    const numberOfDivs = userCounts[modes[currentMode].text.toLowerCase().split(" - ")[0]] || 0;
+                    for (let i = 1; i <= numberOfDivs; i++) {
+                        const div = document.createElement("div");
+                        div.textContent = `Tile ${i}`;
+                        div.style.textAlign = "center";
+                        div.style.margin = "5px 0";
+                        div.style.padding = "10px";
+                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        div.style.borderRadius = "3px";
+                        innerTile.appendChild(div);
+                    }
                 }
     
-                tile.appendChild(innerTile);
+                container.appendChild(innerTile);
+                tile.appendChild(container);
             });
     
-            // Enable/disable navigation buttons
             leftButton.disabled = currentMode === 0;
             rightButton.disabled = currentMode === modes.length - 1;
         }
     
-        // Fetch user counts from the API
-        function fetchUserCounts() {
-            fetch("http://localhost:3000/user-counts")
-                .then((response) => {
+        function fetchLeaderboardData() {
+            Promise.all([
+                fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch user counts");
                     }
                     return response.json();
+                }),
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/niva").then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch memory levels");
+                    }
+                    return response.json();
+                }),
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/levels").then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch memory levels");
+                    }
+                    return response.json();
+                }),
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/tid").then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch memory time");
+                    }
+                    return response.json();
+                }),
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/pengar").then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch memory money data");
+                    }
+                    return response.json();
+                }),
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/exp").then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch memory EXP data");
+                    }
+                    return response.json();
+                }),
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/netvarde").then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch memory net worth data");
+                    }
+                    return response.json();
                 })
-                .then((userCounts) => {
-                    updateMode(userCounts); // Update mode with fetched counts
-                })
-                .catch((error) => {
-                    console.error("Error fetching user counts:", error);
-                });
+            ])
+            .then(([userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData]) => {
+                updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData);
+            })
+            .catch((error) => {
+                console.error("Error fetching leaderboard data:", error);
+            });
         }
     
-        // Add navigation button event listeners
         leftButton.addEventListener("click", () => {
             if (currentMode > 0) {
                 currentMode--;
-                fetchUserCounts(); // Fetch and update when navigating
+                fetchLeaderboardData();
             }
         });
     
         rightButton.addEventListener("click", () => {
             if (currentMode < modes.length - 1) {
                 currentMode++;
-                fetchUserCounts(); // Fetch and update when navigating
+                fetchLeaderboardData();
             }
         });
     
-        // Initialize leaderboard
-        fetchUserCounts();
-    });
-
-    document.getElementById("logo").addEventListener("click", function() {
-        redirect('index.php');
-    });
+        fetchLeaderboardData();
     
-    
-} else if (currentPhpFile === "sida.php") {
-
-    function toggleSidebar() {
-        var sidebar = document.getElementById("sidebar");
-        var toggleButton = document.getElementById("sidebar-toggle");
-    
-        sidebar.classList.toggle("open");
-    
-        // Check if sidebar is open and move the button accordingly
-        if (sidebar.classList.contains("open")) {
-            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
-        } else {
-            toggleButton.style.left = "10px"; // Reset to original position
-        }
-    }
-    
-    function toggleProfile() {
-        const profileSquare = document.getElementById('profileSquare');
-        const searchBox = document.getElementById('searchInput');
-    
-        document.addEventListener('click', handleOutsideClick);
-    
-        // Ensure profileSquare remains visible without re-toggling
-        if (profileSquare.classList.contains('active')) {
-            closeProfile();
-        } else {
-            profileSquare.classList.add('active');
-            profileSquare.style.display = 'block';
-            profileSquare.style.opacity = '1';
-            profileSquare.style.transform = 'translateY(10px)';
-        }
-    }
-    
-    // Function to close the profile square
-    function closeProfile() {
-        const profileSquare = document.getElementById('profileSquare');
-    
-        profileSquare.style.opacity = '0';
-        profileSquare.style.transform = 'translateY(0px)';
-    
-        // Timeout to wait for the animation to finish before hiding
-        setTimeout(() => {
-            profileSquare.classList.remove('active');
-            profileSquare.style.display = 'none';
-        }, 300); // Match the CSS transition duration
-    
-        // Remove the event listener
-        document.removeEventListener('click', handleOutsideClick);
-    }
-    
-    // Handle clicks outside of the square
-    function handleOutsideClick(event) {
-        const profileSquare = document.getElementById('profileSquare');
-        const searchProfileBtn = document.getElementById('searchProfileBtn');
-        
-        // Check if the click is outside profileSquare and not on result-item or close-button
-        if (
-            !profileSquare.contains(event.target) &&
-            event.target !== searchProfileBtn &&
-            !event.target.classList.contains('result-item') &&
-            !event.target.classList.contains('close-button') &&
-            !event.target.classList.contains('profile-image') &&
-            event.target.id !== 'sidebar-toggle' &&
-            !event.target.classList.contains('messagebutton')
-        ) {
-            closeProfile();
-        }
-    }
-    
-    // Assuming searchProfiles is where you create and display search results
-    function searchProfiles() {
-        const searchInput = document.getElementById('searchInput').value.trim();
-    
-        if (searchInput === '') {
-            document.getElementById('searchResults').innerHTML = '';
-            return;
-        }
-    
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
-    
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const results = JSON.parse(xhr.responseText);
-                const searchResultsContainer = document.getElementById('searchResults');
-                searchResultsContainer.innerHTML = '';
-    
-                if (results.message) {
-                    const noUserFound = document.createElement('div');
-                    noUserFound.classList.add('result-item');
-                    noUserFound.textContent = results.message;
-                    searchResultsContainer.appendChild(noUserFound);
-                } else {
-                    results.forEach(function(user) {
-                        const profileImage = user.Profil_bild || 'default.png';
-                        const resultItem = document.createElement('div');
-                        resultItem.classList.add('result-item');
-    
-                        // Set data attributes for level, exp, and exp threshold
-                        resultItem.dataset.profileImage = profileImage;
-                        resultItem.dataset.level = user.Levels;
-                        resultItem.dataset.exp = user.EXP;
-                        resultItem.dataset.expThreshold = user.EXP_GRÄNS;
-    
-                        const img = document.createElement('img');
-                        img.classList.add('profile-image');
-                        img.src = '../pfp/' + profileImage;
-    
-                        const username = document.createElement('span');
-                        username.classList.add('username');
-                        username.textContent = user.Namn;
-    
-                        resultItem.appendChild(img);
-                        resultItem.appendChild(username);
-                        searchResultsContainer.appendChild(resultItem);
-                    });
-                }
-            }
-        };
-    
-        xhr.send();
-    }
-    
-    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
-        const searchResultsContainer = document.getElementById('searchResults');
-    
-        // Clear previous results
-        searchResultsContainer.innerHTML = '';
-    
-        // Create a new container for the selected profile
-        const selectedProfileContainer = document.createElement('div');
-        selectedProfileContainer.style.display = 'flex';
-        selectedProfileContainer.style.alignItems = 'center';
-        selectedProfileContainer.style.flexDirection = 'column';
-        selectedProfileContainer.style.textAlign = 'center';
-    
-        // Add profile picture and username
-        const profileCircle = document.createElement('img');
-        profileCircle.src = '../pfp/' + profileImageSrc;
-        profileCircle.classList.add('selected-profile-circle');
-    
-        const username = document.createElement('span');
-        username.classList.add('username2');
-        username.textContent = userName;
-    
-        // Create the level section with EXP details as plain text
-        const levelSection = document.createElement('div');
-        levelSection.classList.add('level-section2');
-        levelSection.innerHTML = `
-            <h4>Level <span>${userLevel}</span></h4>
-            <div class="exp-bar2">
-                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
-            </div>
-            <p>${userExp} / ${expThreshold} EXP</p>
-        `;
-    
-        // Append elements to the new profile container
-        selectedProfileContainer.appendChild(profileCircle);
-        selectedProfileContainer.appendChild(username);
-        selectedProfileContainer.appendChild(levelSection);
-    
-        const messagebutton = document.createElement('button');
-        messagebutton.classList.add('messagebutton');
-    
-        messagebutton.textContent = 'Meddelande'
-    
-        searchResultsContainer.appendChild(messagebutton);
-    
-        // Append to the search results container
-        searchResultsContainer.appendChild(selectedProfileContainer);
-    
-        // Add the close button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'X';
-        closeButton.classList.add('close-button');
-        closeButton.addEventListener('click', function() {
-            searchResultsContainer.innerHTML = '';
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
-            searchProfiles(); // Reload the search results
+        document.getElementById("logo").addEventListener("click", function () {
+            redirect("index.php");
         });
-        selectedProfileContainer.appendChild(closeButton);
-    }
-    
-    function openMessageContainer() {
-        const searchResultsContainer = document.getElementById('searchResults');
-        searchResultsContainer.innerHTML = ''; // Clear any previous content
-    
-        // Create and configure the "Close" button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'X';
-        closeButton.classList.add('close-button');
-        closeButton.addEventListener('click', function() {
-            // Return to the search input and reload search results
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box
-            searchResultsContainer.innerHTML = ''; // Clear the message container
-            searchProfiles(); // Reload the search results
-        });
-    
-        // Message display area
-        const messageDisplay = document.createElement('div');
-        messageDisplay.classList.add('message-display');
-    
-        // Input field for composing new messages
-        const messageInput = document.createElement('input');
-        messageInput.type = 'text';
-        messageInput.classList.add('message-input');
-        messageInput.placeholder = 'Write a message...';
-    
-        // "Send" button for sending messages
-        const sendButton = document.createElement('button');
-        sendButton.textContent = 'Send';
-        sendButton.classList.add('send-button');
-    
-        // Append elements to display the message UI
-        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
-        searchResultsContainer.appendChild(closeButton);
-        searchResultsContainer.appendChild(messageDisplay);
-        searchResultsContainer.appendChild(messageInput);
-        searchResultsContainer.appendChild(sendButton);
-    }
-    
-    
-    // Event listener for handling profile and message interactions
-    document.addEventListener('click', function(event) {
-        const searchResultsContainer = document.getElementById('searchResults');
-        const searchBox = document.getElementById('searchInput');
-    
-        // Check if a profile item or profile image is clicked
-        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
-            const clickedItem = event.target.closest('.result-item');
-            const profileImageSrc = clickedItem.dataset.profileImage;
-            const userName = clickedItem.querySelector('.username').textContent;
-            const userLevel = clickedItem.dataset.level;
-            const userExp = clickedItem.dataset.exp;
-            const expThreshold = clickedItem.dataset.expThreshold;
-    
-            // Hide the search box
-            searchBox.style.display = 'none';
-    
-            // Display the selected profile with its details
-            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
-        }
-    
-        // Check if the "Meddelande" (Message) button is clicked
-        if (event.target.classList.contains('messagebutton')) {
-            openMessageContainer();
-        }
     });
-
+    
 }
