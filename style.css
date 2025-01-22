@@ -3726,7 +3726,7 @@ html[data-page="topplista"] .leaderboard-tile {
     color: white;
 }
 
-.memory-item {
+html[data-page="topplista"] .memory-item {
     width: 100px;
     margin: 10px;
     padding: 10px;

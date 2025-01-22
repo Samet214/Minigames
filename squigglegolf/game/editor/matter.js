@@ -1,8 +1,3 @@
-/*!
- * matter-js 0.18.0 by @liabru
- * http://brm.io/matter-js/
- * License MIT
- */
 !(function (e, t) {
   "object" == typeof exports && "object" == typeof module
     ? (module.exports = t())

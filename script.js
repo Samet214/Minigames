@@ -1005,7 +1005,7 @@ if (currentPhpFile === "game_display.php") {
         gainCurrency(level * 10);
         gainExp(level * 10);
 
-        fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+        fetch('http://localhost:3000/ekonomi')
         .then(res => res.json())
         .then(ekonomiResponse => {
             // Find the user in the ekonomi table based on username
@@ -1024,7 +1024,7 @@ if (currentPhpFile === "game_display.php") {
                 };
 
                 // Send the updated data to the backend
-                fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                fetch('http://localhost:3000/update-ekonomi', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updateData),
@@ -1045,7 +1045,7 @@ if (currentPhpFile === "game_display.php") {
         
     
         if (username !== 'guest') {
-            fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
+            fetch('http://localhost:3000/memory')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     let userExists = false;
@@ -1078,7 +1078,7 @@ if (currentPhpFile === "game_display.php") {
                             };
     
                             // Send updated data to the backend
-                            return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
+                            return fetch('http://localhost:3000/update-memory', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(updatedData),
@@ -1101,7 +1101,7 @@ if (currentPhpFile === "game_display.php") {
                     
                             try {
                                 // Fetch data from the poängssystem endpoint
-                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
                                 const poangssystemData = await poangssystemResponse.json();
                     
                                 // Look for a match in the 'Namn' column
@@ -1114,7 +1114,7 @@ if (currentPhpFile === "game_display.php") {
                                 }
                     
                                 // Fetch data from the ekonomi endpoint
-                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi');
                                 const ekonomiData = await ekonomiResponse.json();
                     
                                 // Look for a match in the 'username' column
@@ -1139,7 +1139,7 @@ if (currentPhpFile === "game_display.php") {
                                 };
                     
                                 // Send the data to the backend to insert into the Spel database
-                                const insertResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
+                                const insertResponse = await fetch('http://localhost:3000/insert-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(dataToInsert),
@@ -2467,8 +2467,8 @@ Events.on(engine, 'collisionEnd', (event) => {
 } else if (currentPhpFile === "topplista.php") {
     document.addEventListener("DOMContentLoaded", function () {
         const modes = [
-            { text: "Memory - Topplista", tileTexts: ["Nivå", "Level", "Tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Squigglegolf - Topplista", tileTexts: ["Golf 1", "Golf 2", "Golf 3", "Golf 4", "Golf 5", "Golf 6"] },
+            { text: "Memory - Topplista", tileTexts: ["Nivå", "Level", "Tid/Level", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Squigglegolf - Topplista", tileTexts: ["Mängden slag", "Level", "Total tid", "Antalet dödsfall", "Mynt plockad", "Netvärde"] },
             { text: "Colourvision - Topplista", tileTexts: ["Vision 1", "Vision 2", "Vision 3", "Vision 4", "Vision 5", "Vision 6"] },
             { text: "Maze Runner - Topplista", tileTexts: ["Maze 1", "Maze 2", "Maze 3", "Maze 4", "Maze 5", "Maze 6"] },
             { text: "Biljard - Topplista", tileTexts: ["Biljard 1", "Biljard 2", "Biljard 3", "Biljard 4", "Biljard 5", "Biljard 6"] },
@@ -2537,85 +2537,9 @@ Events.on(engine, 'collisionEnd', (event) => {
                         rightSpan.style.flex = "0";
                         rightSpan.style.textAlign = "right";
                 
-                        // Fetch all users' data once for matching usernames and their profile pictures
-                        fetch("http://samet-desktop.adm.huddinge.se:3000/anvandare")
-                            .then((response) => {
-                                if (!response.ok) throw new Error("Failed to fetch all user data");
-                                return response.json();
-                            })
-                            .then((allUserData) => {
-                                // Find the user from allUserData where 'Namn' matches the row.username
-                                const matchedUser = allUserData.find((user) => user.Namn === row.username);
-                
-                                // Log the matched user to verify the data
-                                console.log("Matched User:", matchedUser);
-                
-                                let profileImgSrc = "../pfp/default.png"; // Default to the default image
-                
-                                // If we find a matching user and their 'Profil_bild' is not null or empty
-                                if (matchedUser && matchedUser.Profil_bild && matchedUser.Profil_bild.trim() !== "") {
-                                    // If the Profil_bild is base64-encoded, use it directly
-                                    const base64Pattern = /^([A-Za-z0-9+\/=]|\r|\n)+$/;
-                                    if (base64Pattern.test(matchedUser.Profil_bild)) {
-                                        profileImgSrc = `data:image/png;base64,${matchedUser.Profil_bild}`;
-                                    } else {
-                                        // If the Profil_bild is a valid URL, use that instead
-                                        profileImgSrc = matchedUser.Profil_bild;
-                                    }
-                                }
-                
-                                const profileImg = document.createElement("img");
-                                profileImg.src = profileImgSrc;
-                                profileImg.alt = `${row.username}'s profile picture`;
-                
-                                // Log the profile image alt text for debugging
-                                console.log(profileImg.alt);
-                
-                                profileImg.style.width = "40px";
-                                profileImg.style.height = "40px";
-                                profileImg.style.borderRadius = "50%";
-                                profileImg.style.marginRight = "10px";
-                
-                                const profileContainer = document.createElement("div");
-                                profileContainer.style.display = "flex";
-                                profileContainer.style.alignItems = "center";
-                
-                                // Append the image and the username in the correct order
-                                profileContainer.appendChild(profileImg);
-                                profileContainer.appendChild(leftSpan);
-                
-                                div.insertBefore(profileContainer, div.firstChild);
-                
-                                // Add rightSpan and the div to the innerTile
-                                div.appendChild(rightSpan);
-                                innerTile.appendChild(div);
-                            })
-                            .catch((error) => {
-                                console.error("Error fetching user data:", error);
-                
-                                // Use default image if error occurs
-                                const profileImg = document.createElement("img");
-                                profileImg.src = "../pfp/default.png"; // Use default image in case of error
-                                profileImg.alt = `${row.username}'s profile picture`;
-                                profileImg.style.width = "40px";
-                                profileImg.style.height = "40px";
-                                profileImg.style.borderRadius = "50%";
-                                profileImg.style.marginRight = "10px";
-                
-                                const profileContainer = document.createElement("div");
-                                profileContainer.style.display = "flex";
-                                profileContainer.style.alignItems = "center";
-                
-                                // Append the image and the username in the correct order
-                                profileContainer.appendChild(profileImg);
-                                profileContainer.appendChild(leftSpan);
-                
-                                div.insertBefore(profileContainer, div.firstChild);
-                
-                                // Add rightSpan and the div to the innerTile
-                                div.appendChild(rightSpan);
-                                innerTile.appendChild(div);
-                            });
+                        div.appendChild(leftSpan);
+                        div.appendChild(rightSpan);
+                        innerTile.appendChild(div);
                     });
                 }
                 
@@ -2773,43 +2697,43 @@ Events.on(engine, 'collisionEnd', (event) => {
     
         function fetchLeaderboardData() {
             Promise.all([
-                fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then((response) => {
+                fetch("http://localhost:3000/user-counts").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch user counts");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/niva").then((response) => {
+                fetch("http://localhost:3000/memory/niva").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory levels");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/levels").then((response) => {
+                fetch("http://localhost:3000/memory/levels").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory levels");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/tid").then((response) => {
+                fetch("http://localhost:3000/memory/tid").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory time");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/pengar").then((response) => {
+                fetch("http://localhost:3000/memory/pengar").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory money data");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/exp").then((response) => {
+                fetch("http://localhost:3000/memory/exp").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory EXP data");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/netvarde").then((response) => {
+                fetch("http://localhost:3000/memory/netvarde").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory net worth data");
                     }
