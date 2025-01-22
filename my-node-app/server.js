@@ -9,9 +9,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+
 // Create a MySQL database connection for the "Spel" database
 const spelDb = mysql.createConnection({
-  host: 'localhost',
+  host: 'samet-desktop.adm.huddinge.se',
   user: 'samet',
   password: 'samet', // Replace with your MySQL password
   database: 'Spel', // "Spel" database name
@@ -19,7 +21,7 @@ const spelDb = mysql.createConnection({
 
 // Create a MySQL database connection for the "ekonomi" database
 const ekonomiDb = mysql.createConnection({
-  host: 'localhost',
+  host: 'samet-desktop.adm.huddinge.se',
   user: 'samet',
   password: 'samet', // Replace with your MySQL password
   database: 'ekonomi', // "ekonomi" database name
@@ -31,7 +33,6 @@ spelDb.connect((err) => {
     console.error('Error connecting to the Spel database:', err);
     process.exit(1);
   }
-  console.log('Connected to the Spel database.');
 });
 
 // Connect to the "ekonomi" database
@@ -40,7 +41,6 @@ ekonomiDb.connect((err) => {
     console.error('Error connecting to the ekonomi database:', err);
     process.exit(1);
   }
-  console.log('Connected to the ekonomi database.');
 });
 
 // Route to fetch all data from the "memory" table in the "Spel" database
@@ -138,6 +138,83 @@ app.post('/add-memory', (req, res) => {
     }
   });
 });
+
+const db = mysql.createConnection({
+  host: 'samet-desktop.adm.huddinge.se', // or your DB host
+  user: 'samet', // username
+  password: 'samet', // password
+  database: 'spel', // database name
+});
+
+db.connect(err => {
+  if (err) {
+      console.error('Database connection failed:', err);
+      process.exit(1);
+  }
+});
+
+app.post('/update-memory', (req, res) => {
+  const { username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde } = req.body;
+
+  if (!username || nivå == null || level == null || pengar_tjanat == null || exp_tjanat == null || tid == null || netvarde == null) {
+      return res.status(400).json({ error: 'Invalid request body' });
+  }
+
+  // Check if user exists in the database
+  const query = 'SELECT * FROM memory WHERE username = ?';
+  db.query(query, [username], (err, results) => {
+      if (err) {
+          console.error('Database query error:', err);
+          return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (results.length === 0) {
+          return res.status(404).json({ error: 'User not found' });
+      }
+
+      const user = results[0];
+
+      // Update logic
+      const updatedUser = {
+          nivå: Math.max(user.nivå, nivå),
+          level: Math.max(user.level, level),
+          pengar_tjanat: Math.max(user.pengar_tjanat, pengar_tjanat),
+          exp_tjanat: Math.max(user.exp_tjanat, exp_tjanat),
+          tid: Math.min(user.tid, tid),
+          netvarde: Math.max(user.netvarde, netvarde),
+      };
+
+      const updateQuery = `
+          UPDATE memory
+          SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ?
+          WHERE username = ?
+      `;
+
+      db.query(
+          updateQuery,
+          [
+              updatedUser.nivå,
+              updatedUser.level,
+              updatedUser.pengar_tjanat,
+              updatedUser.exp_tjanat,
+              updatedUser.tid,
+              updatedUser.netvarde,
+              username,
+          ],
+          (err, updateResults) => {
+              if (err) {
+                  console.error('Error updating user:', err);
+                  return res.status(500).json({ error: 'Failed to update user' });
+              }
+
+              console.log('User updated successfully:', updatedUser);
+              res.json({ message: 'User updated successfully', user: updatedUser });
+          }
+      );
+  });
+});
+
+
 
 // Route to fetch and log the total number of users in the "memory" table
 app.get('/memory-count', (req, res) => {
@@ -283,9 +360,10 @@ app.get('/memory/netvarde', (req, res) => {
   });
 });
 
-
 // Start the server on a specific port
 const PORT = 3000;
+
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://samet-desktop.adm.huddinge.se:${PORT}`);
+    console.log(`Server is running on http://samet-desktop.adm.huddinge.se:${PORT}`);
 });

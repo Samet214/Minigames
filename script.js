@@ -20,10 +20,6 @@ function gainExp(expAmount, callback) {
             var nextLevelExp = response.next_level_exp;
             var level = response.level;
 
-            console.log("Current EXP:", currentExp);
-            console.log("Next Level EXP:", nextLevelExp);
-            console.log("Level:", level);
-
             // Format numbers with appropriate units (K, M, G)
             function formatNumber(number) {
                 if (number >= 1000000000) {
@@ -995,72 +991,96 @@ if (currentPhpFile === "game_display.php") {
         finalXP.textContent = level * 10; // Calculate XP
         finalAP.textContent = level * 10;
         totalTime.textContent = totalTimeElapsed; // Display total time
+
+        gainCurrency(level * 10);
+        gainExp(level * 10);
     
         if (username !== 'guest') {
-            const userarray = [];
-            let memorydata, memorydata2;
+            fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
+                .then(res => res.json())
+                .then(memoryResponse => {
+                    let userExists = false;
     
-            // Fetch user data and netvarde data
-            Promise.all([
-                fetch(`fetch_user_data.php?username=${encodeURIComponent(username)}`).then(res => res.json()),
-                fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde').then(res => res.json()),
-            ])
-                .then(([userData, netvardeResponse]) => {
-                    // Handle user data
-                    if (userData.error) {
-                        console.error(userData.error);
-                    } else {
-                        userarray.push(level, parseInt(userData.level, 10), level * 10, level * 10, totalTimeElapsed / level);
-                    }
+                    for (const record of memoryResponse) {
+                        if (record.username === username) {
+                            userExists = true;
+
+                            record.netvarde += level * 10;
     
-                    // Assign netvarde data
-                    memorydata2 = netvardeResponse;
+                            // Prepare current game data
+                            const currentGameData = {
+                                nivå: level,
+                                level: level,
+                                pengar_tjanat: level * 10,
+                                exp_tjanat: level * 10,
+                                tid: totalTimeElapsed / level,
+                                netvarde: record.netvarde, // Keep existing netvarde if not playing with netvarde logic
+                            };
     
-                    // Add netvarde to userarray
-                    let usernamefound = false;
-                    for (let z = 0; z < memorydata2.length; z++) {
-                        if (username === Object.values(memorydata2[z])[0]) {
-                            userarray.push(Object.values(memorydata2[z])[3]); // Add netvarde
-                            usernamefound = true;
-                            break;
+                            // Compare and update values if needed
+                            const updatedData = {
+                                username: record.username,
+                                nivå: Math.max(record.nivå, currentGameData.nivå),
+                                level: Math.max(record.level, currentGameData.level),
+                                pengar_tjanat: Math.max(record.pengar_tjanat, currentGameData.pengar_tjanat),
+                                exp_tjanat: Math.max(record.exp_tjanat, currentGameData.exp_tjanat),
+                                tid: Math.min(record.tid, currentGameData.tid), // Opposite logic for tid
+                                netvarde: Math.max(record.netvarde, currentGameData.netvarde),
+                            };
+    
+                            console.log("Existing User Data Updated:");
+                            console.table(updatedData);
+    
+                            // Send updated data to the backend
+                            return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(updatedData),
+                            })
+                                .then(response => response.json())
+                                .then(result => {
+                                    // Show popup after successful update
+                                    popup.classList.add('visible');
+                                    overlay.classList.add('visible');
+                                });
                         }
                     }
     
-                    // If no data, set default netvarde
-                    if (!usernamefound) {
-                        userarray.push(0); // Default netvarde
+                    // If the user does not exist, insert new data
+                    if (!userExists) {
+                        console.log("New user, adding to database...");
+                        let newData = {
+                            username: username,
+                            nivå: level,
+                            level: level,
+                            pengar_tjanat: level * 10,
+                            exp_tjanat: level * 10,
+                            tid: totalTimeElapsed / level,
+                            netvarde: 0, // Default value for new users
+                        };
+    
+                        // Send data to the backend
+                        return fetch('http://samet-desktop.adm.huddinge.se:3000/add-memory', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(newData),
+                        })
+                            .then(response => response.json())
+                            .then(result => {
+                                // Show popup after successful insertion
+                                popup.classList.add('visible');
+                                overlay.classList.add('visible');
+                            });
                     }
-    
-                    // Prepare data for the backend
-                    let data = {
-                        username: username,
-                        nivå: userarray[0],
-                        level: userarray[1],
-                        pengar_tjänat: userarray[2],
-                        exp_tjänat: userarray[3],
-                        tid: userarray[4],
-                        netvarde: userarray[5],
-                    };
-    
-                    // Send data to the backend
-                    return fetch('http://samet-desktop.adm.huddinge.se:3000/add-memory', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data),
-                    });
-                })
-                .then(response => response.json())
-                .then(result => {
-                    // Handle result if needed
-                    popup.classList.add('visible');
-                    overlay.classList.add('visible');
                 })
                 .catch(error => console.error('Error:', error));
         } else {
             popup.classList.add('visible');
             overlay.classList.add('visible');
         }
-    } 
+    }
+    
+    
     
     
     
