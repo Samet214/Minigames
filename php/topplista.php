@@ -23,6 +23,8 @@ $next_level_exp = 100;
     <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 <body>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA
+AAAFCAYAAACNbyblAAAAHElEQVQI12P4/wcAAwAB/1zDl1cAAAAASUVORK5CYII=">
     <header id="header">
         <?php include 'sidebar.php'; ?>
         <div id="circle-container" style="position: relative; display: inline-block;">

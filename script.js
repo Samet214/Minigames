@@ -3,6 +3,8 @@
 // Get the PHP file name from the data attribute
 const phpFileInfoElement = document.getElementById('php-file-info');
 const currentPhpFile = phpFileInfoElement.getAttribute('data-php-file');
+let currentProfile = {};  // Global object to hold the current profile data
+
 
 function redirect(url) {
     window.location.href = url;
@@ -113,10 +115,10 @@ async function updateNetworth() {
         if (!response.ok) {
             throw new Error('Network response was not ok ' + response.statusText);
         }
-        const networth = await response.text();
+        const value = await response.text();
 
         // Update the span with the networth value
-        document.getElementById('currency-amount').textContent = networth;
+        document.getElementById('currency-amount').textContent = value;
     } catch (error) {
         console.error('Error fetching networth:', error);
     }
@@ -451,8 +453,7 @@ if (currentPhpFile === "game_display.php") {
         searchResultsContainer.appendChild(messageInput);
         searchResultsContainer.appendChild(sendButton);
     }
-    
-    
+
     // Event listener for handling profile and message interactions
     document.addEventListener('click', function(event) {
         const searchResultsContainer = document.getElementById('searchResults');
@@ -463,22 +464,29 @@ if (currentPhpFile === "game_display.php") {
             const clickedItem = event.target.closest('.result-item');
             const profileImageSrc = clickedItem.dataset.profileImage;
             const userName = clickedItem.querySelector('.username').textContent;
-            const userLevel = clickedItem.dataset.level;
-            const userExp = clickedItem.dataset.exp;
-            const expThreshold = clickedItem.dataset.expThreshold;
+    
+            // Update the global profile data
+            currentProfile = {
+                userLevel: clickedItem.dataset.level,
+                userName: userName,
+                userExp: clickedItem.dataset.exp,
+                expThreshold: clickedItem.dataset.expThreshold,
+                profileImage: profileImageSrc,
+            };
     
             // Hide the search box
             searchBox.style.display = 'none';
     
             // Display the selected profile with its details
-            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+            updateProfile(profileImageSrc, userName, currentProfile.userLevel, currentProfile.userExp, currentProfile.expThreshold);
         }
     
         // Check if the "Meddelande" (Message) button is clicked
         if (event.target.classList.contains('messagebutton')) {
             openMessageContainer();
         }
-    });    
+    });
+      
 } else if (currentPhpFile === "signup.php") {
     
     document.addEventListener("DOMContentLoaded", function () {
@@ -686,6 +694,7 @@ if (currentPhpFile === "game_display.php") {
     
         xhr.send();
     }
+
     
     function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
         const searchResultsContainer = document.getElementById('searchResults');
@@ -708,6 +717,7 @@ if (currentPhpFile === "game_display.php") {
         const username = document.createElement('span');
         username.classList.add('username2');
         username.textContent = userName;
+        
     
         // Create the level section with EXP details as plain text
         const levelSection = document.createElement('div');
@@ -991,9 +1001,48 @@ if (currentPhpFile === "game_display.php") {
         finalXP.textContent = level * 10; // Calculate XP
         finalAP.textContent = level * 10;
         totalTime.textContent = totalTimeElapsed; // Display total time
-
+    
         gainCurrency(level * 10);
         gainExp(level * 10);
+
+        fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+        .then(res => res.json())
+        .then(ekonomiResponse => {
+            // Find the user in the ekonomi table based on username
+            const matchedUser = ekonomiResponse.find(user => user.username === username);
+
+            if (matchedUser) {
+                // Add level * 10 to the existing value and networth
+                const updatedValue = matchedUser.value + (level * 10);
+                const updatedNetworth = matchedUser.networth + (level * 10);
+
+                // Prepare data to send to the backend to update the user's values
+                const updateData = {
+                    username: username,
+                    value: updatedValue,
+                    networth: updatedNetworth
+                };
+
+                // Send the updated data to the backend
+                fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData),
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        
+                    } else {
+                        
+                    }
+                })
+                .catch(error => console.error('Error updating ekonomi table:', error));
+            } else {
+                
+            }
+        })
+        
     
         if (username !== 'guest') {
             fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
@@ -1004,7 +1053,7 @@ if (currentPhpFile === "game_display.php") {
                     for (const record of memoryResponse) {
                         if (record.username === username) {
                             userExists = true;
-
+    
                             record.netvarde += level * 10;
     
                             // Prepare current game data
@@ -1014,7 +1063,7 @@ if (currentPhpFile === "game_display.php") {
                                 pengar_tjanat: level * 10,
                                 exp_tjanat: level * 10,
                                 tid: totalTimeElapsed / level,
-                                netvarde: record.netvarde, // Keep existing netvarde if not playing with netvarde logic
+                                netvarde: record.netvarde,
                             };
     
                             // Compare and update values if needed
@@ -1027,9 +1076,6 @@ if (currentPhpFile === "game_display.php") {
                                 tid: Math.min(record.tid, currentGameData.tid), // Opposite logic for tid
                                 netvarde: Math.max(record.netvarde, currentGameData.netvarde),
                             };
-    
-                            console.log("Existing User Data Updated:");
-                            console.table(updatedData);
     
                             // Send updated data to the backend
                             return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
@@ -1046,32 +1092,75 @@ if (currentPhpFile === "game_display.php") {
                         }
                     }
     
-                    // If the user does not exist, insert new data
+                    // If the user does not exist, check poangssystem for a match
                     if (!userExists) {
-                        console.log("New user, adding to database...");
-                        let newData = {
-                            username: username,
-                            nivå: level,
-                            level: level,
-                            pengar_tjanat: level * 10,
-                            exp_tjanat: level * 10,
-                            tid: totalTimeElapsed / level,
-                            netvarde: 0, // Default value for new users
-                        };
-    
-                        // Send data to the backend
-                        return fetch('http://samet-desktop.adm.huddinge.se:3000/add-memory', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(newData),
-                        })
-                            .then(response => response.json())
-                            .then(result => {
-                                // Show popup after successful insertion
-                                popup.classList.add('visible');
-                                overlay.classList.add('visible');
-                            });
+                        // Make the function asynchronous
+                        (async () => {
+                            let userlevel;
+                            let usernetworth;
+                    
+                            try {
+                                // Fetch data from the poängssystem endpoint
+                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                const poangssystemData = await poangssystemResponse.json();
+                    
+                                // Look for a match in the 'Namn' column
+                                const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
+                                
+                                if (matchedPoangssystemUser) {
+                                    userlevel = matchedPoangssystemUser.Levels;
+                                } else {
+                                    console.log("User not found in poängssystem.");
+                                }
+                    
+                                // Fetch data from the ekonomi endpoint
+                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                                const ekonomiData = await ekonomiResponse.json();
+                    
+                                // Look for a match in the 'username' column
+                                const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
+                                
+                                if (matchedEkonomiUser) {
+                                    usernetworth = matchedEkonomiUser.networth;
+                                } else {
+                                    console.log("User not found in ekonomi.");
+                                }
+                    
+                                // Prepare data for insertion
+                                const dataToInsert = {
+                                    username: username,
+                                    level: level,
+                                    userlevel: userlevel,
+                                    usernetworth: usernetworth,
+                                    pengar_tjanat: level * 10,
+                                    exp_tjanat: level * 10,
+                                    tid: totalTimeElapsed / level,
+                                    netvarde: usernetworth, // Use the networth from ekonomi table
+                                };
+                    
+                                // Send the data to the backend to insert into the Spel database
+                                const insertResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(dataToInsert),
+                                });
+                    
+                                const insertResult = await insertResponse.json();
+                    
+                                if (insertResult.success) {
+                                    popup.classList.add('visible');
+                                    overlay.classList.add('visible');
+                                } else {
+                                    
+                                }
+                    
+                                // Log the final data (for debugging purposes)
+                            } catch (error) {
+                                console.error('Error fetching data:', error);
+                            }
+                        })(); // Invoke the async function immediately
                     }
+                    
                 })
                 .catch(error => console.error('Error:', error));
         } else {
@@ -1079,10 +1168,6 @@ if (currentPhpFile === "game_display.php") {
             overlay.classList.add('visible');
         }
     }
-    
-    
-    
-    
     
     
     function closePopup() {
@@ -2394,6 +2479,7 @@ Events.on(engine, 'collisionEnd', (event) => {
         const rightButton = document.getElementById("right-button");
         const leaderboardText = document.getElementById("leaderboard-text");
         const tiles = document.querySelectorAll(".leaderboard-tile");
+        
     
         function updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData) {
             leaderboardText.textContent = modes[currentMode].text;
@@ -2440,22 +2526,100 @@ Events.on(engine, 'collisionEnd', (event) => {
                         div.style.padding = "10px";
                         div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
                         div.style.borderRadius = "3px";
-    
+                
                         const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
                         leftSpan.style.flex = "1";
                         leftSpan.style.textAlign = "left";
-    
+                
                         const rightSpan = document.createElement("span");
                         rightSpan.textContent = `${row.nivå}`;
                         rightSpan.style.flex = "0";
                         rightSpan.style.textAlign = "right";
-    
-                        div.appendChild(leftSpan);
-                        div.appendChild(rightSpan);
-                        innerTile.appendChild(div);
+                
+                        // Fetch all users' data once for matching usernames and their profile pictures
+                        fetch("http://samet-desktop.adm.huddinge.se:3000/anvandare")
+                            .then((response) => {
+                                if (!response.ok) throw new Error("Failed to fetch all user data");
+                                return response.json();
+                            })
+                            .then((allUserData) => {
+                                // Find the user from allUserData where 'Namn' matches the row.username
+                                const matchedUser = allUserData.find((user) => user.Namn === row.username);
+                
+                                // Log the matched user to verify the data
+                                console.log("Matched User:", matchedUser);
+                
+                                let profileImgSrc = "../pfp/default.png"; // Default to the default image
+                
+                                // If we find a matching user and their 'Profil_bild' is not null or empty
+                                if (matchedUser && matchedUser.Profil_bild && matchedUser.Profil_bild.trim() !== "") {
+                                    // If the Profil_bild is base64-encoded, use it directly
+                                    const base64Pattern = /^([A-Za-z0-9+\/=]|\r|\n)+$/;
+                                    if (base64Pattern.test(matchedUser.Profil_bild)) {
+                                        profileImgSrc = `data:image/png;base64,${matchedUser.Profil_bild}`;
+                                    } else {
+                                        // If the Profil_bild is a valid URL, use that instead
+                                        profileImgSrc = matchedUser.Profil_bild;
+                                    }
+                                }
+                
+                                const profileImg = document.createElement("img");
+                                profileImg.src = profileImgSrc;
+                                profileImg.alt = `${row.username}'s profile picture`;
+                
+                                // Log the profile image alt text for debugging
+                                console.log(profileImg.alt);
+                
+                                profileImg.style.width = "40px";
+                                profileImg.style.height = "40px";
+                                profileImg.style.borderRadius = "50%";
+                                profileImg.style.marginRight = "10px";
+                
+                                const profileContainer = document.createElement("div");
+                                profileContainer.style.display = "flex";
+                                profileContainer.style.alignItems = "center";
+                
+                                // Append the image and the username in the correct order
+                                profileContainer.appendChild(profileImg);
+                                profileContainer.appendChild(leftSpan);
+                
+                                div.insertBefore(profileContainer, div.firstChild);
+                
+                                // Add rightSpan and the div to the innerTile
+                                div.appendChild(rightSpan);
+                                innerTile.appendChild(div);
+                            })
+                            .catch((error) => {
+                                console.error("Error fetching user data:", error);
+                
+                                // Use default image if error occurs
+                                const profileImg = document.createElement("img");
+                                profileImg.src = "../pfp/default.png"; // Use default image in case of error
+                                profileImg.alt = `${row.username}'s profile picture`;
+                                profileImg.style.width = "40px";
+                                profileImg.style.height = "40px";
+                                profileImg.style.borderRadius = "50%";
+                                profileImg.style.marginRight = "10px";
+                
+                                const profileContainer = document.createElement("div");
+                                profileContainer.style.display = "flex";
+                                profileContainer.style.alignItems = "center";
+                
+                                // Append the image and the username in the correct order
+                                profileContainer.appendChild(profileImg);
+                                profileContainer.appendChild(leftSpan);
+                
+                                div.insertBefore(profileContainer, div.firstChild);
+                
+                                // Add rightSpan and the div to the innerTile
+                                div.appendChild(rightSpan);
+                                innerTile.appendChild(div);
+                            });
                     });
-                } else if (index === 1 && modes[currentMode].text === "Memory - Topplista") {
+                }
+                
+                  else if (index === 1 && modes[currentMode].text === "Memory - Topplista") {
                     // Display Memory levels in the second tile (levelsData)
                     innerTile.innerHTML = "";
                     levelsData.sort((a, b) => b.level - a.level).forEach((row, rank) => {
@@ -2468,7 +2632,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                         div.style.borderRadius = "3px";
     
                         const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
                         leftSpan.style.flex = "1";
                         leftSpan.style.textAlign = "left";
     
@@ -2484,7 +2648,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                 } else if (index === 2 && modes[currentMode].text === "Memory - Topplista") {
                     // Display Memory time (Tid) in the third tile (tidData)
                     innerTile.innerHTML = "";
-                    tidData.sort((a, b) => b.tid - a.tid).forEach((row, rank) => {
+                    tidData.sort((a, b) => a.tid - b.tid).forEach((row, rank) => {
                         const div = document.createElement("div");
                         div.style.display = "flex";
                         div.style.justifyContent = "space-between";
@@ -2494,7 +2658,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                         div.style.borderRadius = "3px";
     
                         const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
                         leftSpan.style.flex = "1";
                         leftSpan.style.textAlign = "left";
     
@@ -2520,7 +2684,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                         div.style.borderRadius = "3px";
     
                         const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
                         leftSpan.style.flex = "1";
                         leftSpan.style.textAlign = "left";
     
@@ -2546,7 +2710,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                         div.style.borderRadius = "3px";
     
                         const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1} ${row.username}`;
+                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
                         leftSpan.style.flex = "1";
                         leftSpan.style.textAlign = "left";
     

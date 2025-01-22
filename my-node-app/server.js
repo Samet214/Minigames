@@ -13,7 +13,7 @@ app.use(express.json());
 
 // Create a MySQL database connection for the "Spel" database
 const spelDb = mysql.createConnection({
-  host: 'samet-desktop.adm.huddinge.se',
+  host: 'localhost',
   user: 'samet',
   password: 'samet', // Replace with your MySQL password
   database: 'Spel', // "Spel" database name
@@ -21,7 +21,7 @@ const spelDb = mysql.createConnection({
 
 // Create a MySQL database connection for the "ekonomi" database
 const ekonomiDb = mysql.createConnection({
-  host: 'samet-desktop.adm.huddinge.se',
+  host: 'localhost',
   user: 'samet',
   password: 'samet', // Replace with your MySQL password
   database: 'ekonomi', // "ekonomi" database name
@@ -140,10 +140,10 @@ app.post('/add-memory', (req, res) => {
 });
 
 const db = mysql.createConnection({
-  host: 'samet-desktop.adm.huddinge.se', // or your DB host
+  host: 'localhost', // or your DB host
   user: 'samet', // username
   password: 'samet', // password
-  database: 'spel', // database name
+  database: 'Spel', // database name
 });
 
 db.connect(err => {
@@ -359,6 +359,92 @@ app.get('/memory/netvarde', (req, res) => {
     res.json(results); // Send the sorted results as JSON
   });
 });
+
+const anvandarDb = mysql.createConnection({
+  host: 'localhost',
+  user: 'samet',
+  password: 'samet', // Replace with your MySQL password
+  database: 'användarinformation', // "Spel" database name
+});
+
+app.get('/poangssystem', (req, res) => {
+  const query = `SELECT * FROM poängssystem;`;
+
+  anvandarDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching data from användarinformation and poängssystem:', err);
+      return res.status(500).send('Error fetching data from the tables.');
+    }
+
+    res.json(results); // Send the combined results as JSON
+  });
+});
+
+
+app.get('/ekonomi', (req, res) => {
+  const query = `SELECT * FROM ekonomi;`;
+
+  ekonomiDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching data from användarinformation and poängssystem:', err);
+      return res.status(500).send('Error fetching data from the tables.');
+    }
+
+    res.json(results); // Send the combined results as JSON
+  });
+});
+
+app.post('/insert-memory', (req, res) => {
+  const { username, level, userlevel, pengar_tjanat, exp_tjanat, tid, netvarde } = req.body;
+
+  const query = `
+      INSERT INTO memory (username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  spelDb.query(query, [username, level, userlevel, pengar_tjanat, exp_tjanat, tid, netvarde], (err, results) => {
+      if (err) {
+          console.error('Error inserting data into memory table:', err);
+          return res.status(500).json({ success: false, message: 'Failed to insert data.' });
+      }
+      res.json({ success: true });
+  });
+});
+
+app.post('/update-ekonomi', (req, res) => {
+  const { username, value, networth } = req.body;
+
+  const query = `
+      UPDATE ekonomi
+      SET value = ?, networth = ?
+      WHERE username = ?
+  `;
+
+  ekonomiDb.query(query, [value, networth, username], (err, results) => {
+      if (err) {
+          console.error('Error updating ekonomi table:', err);
+          return res.status(500).json({ success: false, message: 'Failed to update ekonomi data.' });
+      }
+      res.json({ success: true });
+  });
+});
+
+app.get('/anvandare', (req, res) => {
+  const query = `SELECT * FROM användare;`;
+
+  anvandarDb.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching data from användarinformation and poängssystem:', err);
+      return res.status(500).send('Error fetching data from the tables.');
+    }
+
+    res.json(results); // Send the combined results as JSON
+  });
+});
+
+
+
+
 
 // Start the server on a specific port
 const PORT = 3000;
