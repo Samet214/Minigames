@@ -96,7 +96,7 @@ app.post('/add-memory', (req, res) => {
 
       const updateQuery = 
         `UPDATE memory 
-        SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, position = ?, netvarde = ?
+        SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ?
         WHERE username = ?
       `;
       spelDb.query(
