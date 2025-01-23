@@ -110,6 +110,14 @@ body {
     height: auto;
     border: 1px solid black;
   }
+
+  #date {
+    display: none;
+  }
+
+  #yesterday {
+    display: none;
+  }
 </style>
 
 </head>
@@ -136,11 +144,6 @@ body {
 
       <div id="tutorial">
 
-        <video class="vid" autoplay loop muted playsinline src="./howto.mov" onclick="this.play()"></video>
-        <br />
-        <br />
-        <br />
-        <br />
         <svg viewBox="0 0 420 30">
           <text x="0" y="15">1. Click and drag to aim</text>
         </svg>
@@ -167,12 +170,10 @@ body {
 
   <div id="date"></div>
   <br>
-  <div>Welcome to Squiggle Golf! (work in progress)</div>
   <br>
-  <div>A brand new course is generated daily. <br> Made with Matter.js, Rough.js, ❤️ + ☕.<br><br> By <a href="https://www.natedonato.com">Nate Donato</a>.</div>
-  <br><a id="yesterday">Play yesterday's course</a>
+  <br><a id="yesterday">Spela igårs bana!</a>
   <br>
-  <button class="add-button">Add Squiggle Golf PWA to homescreen!</button>
+  <button class="add-button">Lägg till Squigglegolf på din hemskärm!</button>
 
 </body>
 
@@ -180,8 +181,9 @@ body {
 
 // register PWA
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(() => { console.log('Service Worker Registered'); });;
+    navigator.serviceWorker.register('./sw.js').then(() => {});;
   }
+  
 
 
   // Add to homescreen button
@@ -205,9 +207,9 @@ body {
       // Wait for the user to respond to the prompt
       deferredPrompt.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt');
+          
         } else {
-          console.log('User dismissed the A2HS prompt');
+          
         }
         deferredPrompt = null;
       });
@@ -509,6 +511,7 @@ body {
         Body.setVelocity(ball, { x: 0, y: 0 })
         Body.setPosition(ball, { x: Cx, y: Cy })
       }
+      
     }
   }
 
@@ -1161,7 +1164,6 @@ body {
         let d = clamp(pair.collision.depth, 0,7);
 
         d = range(0, 7, 0.5, 1, d);
-        console.log(d)
 
         // if(pair.collision.depth > 1){
         //   console.log('bounce2');
@@ -1258,6 +1260,11 @@ body {
 
       
       ctx.putImageData(s_ctx.getImageData(0,0,s_canvas.width, s_canvas.height),0,0)
+      const img = new Image();
+      img.src = '../bilder/mynt.png'; // Replace with your image path
+      img.onload = () => {
+          ctx.drawImage(img, 100, 100, 200, 150); // x, y, width, height
+      };
       currentHole += 2
       
       alert(`you finished the entire course in ${totalStrokes} strokes, congrats!`);
@@ -1313,6 +1320,7 @@ body {
 
     // let mousePos = getMousePos(canvas, e);
     let ballPos = ball.position;
+    
     let dist = Math.sqrt((clickPos.x - mousePos.x) ** 2 + (clickPos.y - mousePos.y) ** 2);
     let max = 400
 
@@ -1376,6 +1384,8 @@ body {
       y: ((evt.clientY || evt.targetTouches[0].pageY) - rect.top) / (rect.bottom - rect.top) * canvas.height
     };
   }
+
+  
 
 </script>
 

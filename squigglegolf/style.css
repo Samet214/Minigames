@@ -491,6 +491,10 @@ h1 {
   display: inline-block;
 }
 
+#date {
+  color: transparent;
+}
+
 .vid{
   display: block;
   margin: 0 auto 35px;

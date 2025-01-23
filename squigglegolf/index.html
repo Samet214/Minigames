@@ -15,7 +15,7 @@
 
     <img id="icon" src="./img/hole1.jpeg" alt="Squiggle Golf">
     <h1>Squiggle Golf</h1>
-    <a class="playbutton" href="./game">
+    <a class="playbutton" href="spel.html">
       <span class="playbutton__shadow"></span>
       <span class="edge"></span>
       <span class="playbutton__face">
@@ -25,20 +25,8 @@
     <p>Squiggle Golf är ett gratis 2D minigolfspel med en handritad, skissartad grafisk stil som du kan spela här i ditt webbläsare.</p>
     
     <p>Med en slumpmässigt genererad daglig kurs, en uppsättning förgjorda kurser (kommer snart) och en anpassad nivåredigerare (kommer snart) finns det alltid enny utmaning väntar på dig i Squiggle Golf!</p>
-      <video class="vid" autoplay="" loop="" muted="" playsinline="" src="./howto.mov" onclick="this.play()"></video>
     </main>
 
-  <script>
-    let icon = document.getElementById('icon')
-    setInterval(changeImg, 1500);
-    let i = 1
-    function changeImg() {
-      i += 1;
-      i %= 19;
-      if (i === 0) { i = 1 }
-      icon.src = './img/hole' + i + '.jpeg'
-    }
-  </script>
 </body>
 
 </html>
