@@ -6,6 +6,73 @@ $current_exp = 0;
 $next_level_exp = 100;
 ?>
 
+<?php
+session_start();
+
+ini_set('display_errors', 0);
+
+include 'db.php';
+
+// Redirect if already logged in
+if (isset($_SESSION['username'])) {
+    header("Location: sida.php");
+    exit();
+}
+
+// Define status messages
+$status = '';
+if (isset($_GET['status'])) {
+    $status = $_GET['status'];
+}
+
+// Handle form submission
+if (isset($_POST['submit'])) {
+    // Establish connection
+    $conn = Användarinformation();
+
+    // Lowercase username and password
+    $username = strtolower($_POST['username']);
+    $password = strtolower($_POST['password']);
+
+    // Check if username already exists
+    $sql_check = "SELECT Namn FROM användare WHERE Namn = ?";
+    if ($stmt = $conn->prepare($sql_check)) {
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $stmt->store_result();
+
+        if ($stmt->num_rows > 0) {
+            // Redirect with status: user already exists
+            header("Location: " . $_SERVER['PHP_SELF'] . "?status=exists");
+            exit();
+        } else {
+            // Hash the password
+            function hashString($input) {
+                return hash('sha256', $input, false);
+            }
+
+            $hashedCode = hashString($password);
+
+            // Insert new user
+            $sql = "INSERT INTO användare (Namn, Lösenord, time) VALUES (?, ?, NOW())";
+            if ($stmt = $conn->prepare($sql)) {
+                $stmt->bind_param("ss", $username, $hashedCode);
+                if ($stmt->execute()) {
+                    // Redirect with status: account created
+                    header("Location: " . $_SERVER['PHP_SELF'] . "?status=created");
+                    exit();
+                }
+                $stmt->close();
+            }
+        }
+        $stmt->close();
+    }
+
+    // Close connection
+    $conn->close();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="sv" data-page="signup">
 <head>
@@ -17,8 +84,8 @@ $next_level_exp = 100;
     <header id="header">
         <?php include 'sidebar.php'; ?>
         <div id="circle-container" style="position: relative; display: inline-block;">
-            <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;"> <!-- Replace with your logo image -->
-            <div id="hover-circle"></div> <!-- This will be the neon circle -->
+            <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;">
+            <div id="hover-circle"></div>
         </div>
         <div id="container1">
             <div id="logo-title">
@@ -49,8 +116,11 @@ $next_level_exp = 100;
         <input type="submit" name="submit" value="Registrera" />
     </form>
 
-    <p id="success-message" style="display: none;">Användarkonto skapat!</p>
-    <p id="error-message" style="display: none;">Användarkontot har redan skapats</p>
+    <?php if ($status === 'created'): ?>
+        <p id="success-message" style="display: block;">Användarkonto skapat!</p>
+    <?php elseif ($status === 'exists'): ?>
+        <p id="error-message" style="display: block;">Användarnamnet finns redan!</p>
+    <?php endif; ?>
 
     <div id="signup-info">
         <h3>Välkommen till Arcade Point!</h3>
@@ -61,79 +131,7 @@ $next_level_exp = 100;
             Är du redo för ditt nästa äventyr? Skapa ett konto och lås upp spelets alla hemligheter!
         </p>
     </div>
-
-    <?php
-    session_start();
-
-    ini_set('display_errors', 0);
-
-    include 'db.php';
-
-
-    if (isset($_SESSION['username'])) {
-        header("Location: sida.php");
-        exit();
-    }
-
-    if (isset($_POST['submit'])) {
-
-        // Establish connection
-        $conn = Användarinformation();
-
-        // Lowercase username and password
-        $username = strtolower($_POST['username']);
-        $password = strtolower($_POST['password']);
-
-        $sql_check = "SELECT Namn FROM användare WHERE Namn = ?";
-        if ($stmt = $conn->prepare($sql_check)) {
-            $stmt->bind_param("s", $username);
-            // Binder inmatade användarnamn och e-post för att kolla
-            $stmt->execute();
-            $stmt->store_result();
-
-            if ($stmt->num_rows > 0) {
-                // Om något resultat hittades
-                $stmt->bind_result($existing_username);
-                $stmt->fetch();
-
-                if (!empty($existing_username)) {
-                    echo '<p id="error-message" style="display: block;">Användarkonto finns redan';
-                }
-            }
-        }
-
-        
-
-        // Hash the password
-        function hashString($input) {
-            return hash('sha256', $input, false);
-        }
-
-        $hashedCode = hashString($password);
-
-        // Prepare SQL statement (including the time column)
-        $sql = "INSERT INTO användare (Namn, Lösenord, time) VALUES (?, ?, NOW())";
-        if ($stmt = $conn->prepare($sql)) {
-            $stmt->bind_param("ss", $username, $hashedCode);
-
-            // Execute the prepared statement
-            if ($stmt->execute()) {
-                echo '<p id="success-message" style="display: block;">Användarkonto skapat!';
-            } else {
-                
-            }
-
-            // Close statement
-            $stmt->close();
-        } else {
-            
-        }
-
-        // Close connection
-        $conn->close();
-    }
-    ?>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+    <script src="../script.js"></script>
 </body>
-<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
-<script src="../script.js"></script>
 </html>
