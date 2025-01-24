@@ -1004,9 +1004,9 @@ if (currentPhpFile === "game_display.php") {
         clearInterval(timer); // Stop the timer
         endTime = Date.now(); // Record end time
         const totalTimeElapsed = Math.floor((endTime - startTime) / 1000); // Calculate elapsed time in seconds
-    
-        gainCurrency(level * 10);
-        gainExp(level * 10);
+
+        finalLevel.textContent = level;
+        totalTime.textContent = totalTimeElapsed; // Display total time
         
     
         if (username !== 'guest') {

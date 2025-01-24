@@ -1261,13 +1261,6 @@ body {
       finalScoreDiv.innerText = `Course total: ${totalStrokes} strokes`
       document.body.appendChild(finalScoreDiv);
 
-      
-      ctx.putImageData(s_ctx.getImageData(0,0,s_canvas.width, s_canvas.height),0,0)
-      const img = new Image();
-      img.src = '../bilder/mynt.png'; // Replace with your image path
-      img.onload = () => {
-          ctx.drawImage(img, 100, 100, 200, 150); // x, y, width, height
-      };
       currentHole += 2
       
       alert(`you finished the entire course in ${totalStrokes} strokes, congrats!`);
