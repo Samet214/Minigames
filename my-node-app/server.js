@@ -214,6 +214,88 @@ app.post('/update-memory', (req, res) => {
   });
 });
 
+app.get('/squigglegolf', (req, res) => {
+  const query = 'SELECT * FROM squigglegolf';
+
+  spelDb.query(query, (err, results) => {
+      if (err) {
+          console.error('Error fetching data from squigglegolf table:', err);
+          res.status(500).send('Internal Server Error');
+          return;
+      }
+
+      res.json(results);
+  });
+});
+
+app.post('/update-squigglegolf', (req, res) => {
+  const { username, totalStrokes, levels, pengar_tjanat, exp_tjanat, timeTaken, networth } = req.body;
+
+  if (!username || totalStrokes == null || levels == null || pengar_tjanat == null || exp_tjanat == null || timeTaken == null || networth == null) {
+      return res.status(400).json({ error: 'Invalid request body' });
+  }
+
+  const checkQuery = 'SELECT * FROM squigglegolf WHERE username = ?';
+  db.query(checkQuery, [username], (err, results) => {
+      if (err) {
+          console.error('Database query error:', err);
+          return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (results.length === 0) {
+          // User doesn't exist, insert them
+          const insertQuery = `
+              INSERT INTO squigglegolf (username, slag, level, pengar_tjanat, exp_tjanat, tid, netvarde)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+          `;
+          db.query(insertQuery, [username, totalStrokes, levels, pengar_tjanat, exp_tjanat, timeTaken, networth], (err) => {
+              if (err) {
+                  console.error('Error inserting user:', err);
+                  return res.status(500).json({ error: 'Failed to insert user' });
+              }
+              res.json({ message: 'User inserted successfully' });
+          });
+      } else {
+          // User exists, update them if necessary
+          const user = results[0];
+
+          const updatedUser = {
+              slag: Math.min(user.slag, totalStrokes),
+              level: Math.max(user.level, levels),
+              pengar_tjanat: Math.max(user.pengar_tjanat, pengar_tjanat),
+              exp_tjanat: Math.max(user.exp_tjanat, exp_tjanat),
+              tid: Math.min(user.tid, timeTaken),
+              netvarde: Math.max(user.netvarde, networth),
+          };
+
+          const updateQuery = `
+              UPDATE squigglegolf
+              SET slag = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ?
+              WHERE username = ?
+          `;
+          db.query(
+              updateQuery,
+              [
+                  updatedUser.slag,
+                  updatedUser.level,
+                  updatedUser.pengar_tjanat,
+                  updatedUser.exp_tjanat,
+                  updatedUser.tid,
+                  updatedUser.netvarde,
+                  username,
+              ],
+              (err) => {
+                  if (err) {
+                      console.error('Error updating user:', err);
+                      return res.status(500).json({ error: 'Failed to update user' });
+                  }
+                  res.json({ message: 'User updated successfully', user: updatedUser });
+              }
+          );
+      }
+  });
+});
+
 
 
 // Route to fetch and log the total number of users in the "memory" table
@@ -442,7 +524,66 @@ app.get('/anvandare', (req, res) => {
   });
 });
 
+async function updateSquiggleGolfTable(username, totalStrokes, timeTaken, levels, networth, pengar_tjanat, exp_tjanat) {
+    const connection = await mysql.createConnection({
+        host: 'localhost',
+        user: 'samet',
+        password: 'samet',
+        database: 'Spel'
+    });
 
+    try {
+        // Check if user exists
+        const [rows] = await connection.execute('SELECT * FROM squigglegolf WHERE username = ?', [username]);
+
+        if (rows.length > 0) {
+            // User exists, check and update columns if necessary
+            const user = rows[0];
+
+            const updates = [];
+            if (totalStrokes < user.slag) {
+                updates.push({ column: 'slag', value: totalStrokes });
+            }
+
+            if (timeTaken < user.tid) {
+                updates.push({ column: 'tid', value: timeTaken });
+            }
+
+            if (levels > user.level) {
+                updates.push({ column: 'level', value: levels });
+            }
+
+            if (networth > user.netvarde) {
+                updates.push({ column: 'netvarde', value: networth });
+            }
+
+            if (pengar_tjanat > user.pengar_tjanat) {
+                updates.push({ column: 'pengar_tjanat', value: pengar_tjanat });
+            }
+
+            if (exp_tjanat > user.exp_tjanat) {
+                updates.push({ column: 'exp_tjanat', value: exp_tjanat });
+            }
+
+            // Perform updates if necessary
+            for (const update of updates) {
+                await connection.execute(`UPDATE squigglegolf SET ${update.column} = ? WHERE username = ?`, [update.value, username]);
+            }
+
+        } else {
+            // User does not exist, insert new record
+            await connection.execute(
+                'INSERT INTO squigglegolf (username, slag, tid, level, netvarde, pengar_tjanat, exp_tjanat) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [username, totalStrokes, timeTaken, levels, networth, pengar_tjanat, exp_tjanat]
+            );
+        }
+
+    } catch (error) {
+        console.error('Database error:', error);
+    } finally {
+        await connection.end();
+    }
+}
 
 
 

@@ -1157,7 +1157,6 @@ if (!username) { // This checks for empty string, null, undefined, 0, or false
       Engine.update(engine, physicsStep);
       physicsBuffer -= physicsStep;
       // t += physicsStep;
-      // console.log(steps)
     }
 
     // Engine.update(engine, 1000 / 60);
@@ -1177,16 +1176,12 @@ if (!username) { // This checks for empty string, null, undefined, 0, or false
     let pairs = e.pairs;
     for (i = 0; i < pairs.length; i++) {
       pair = pairs[i];
-      // console.log(pair)
+
       if(pair.bodyA.render?.type === 'ball' || pair.bodyB.render?.type === 'ball'){
-        // console.log(pair.collision.depth);
+
         let d = clamp(pair.collision.depth, 0,7);
 
         d = range(0, 7, 0.5, 1, d);
-
-        // if(pair.collision.depth > 1){
-        //   console.log('bounce2');
-        // }
       }
       if (!pair.isActive){continue};
 
@@ -1199,7 +1194,6 @@ if (!username) { // This checks for empty string, null, undefined, 0, or false
 
   Events.on(engine, "collisionActive", (e) => {
     let pairs = e.pairs;
-    // console.log(pairs)
 
     for(let i = 0; i < pairs.length; i++){
       if(bombCount < 2 && ball.velocity.x ** 2 < 0.001 && ball.velocity.y ** 2 < 0.0001 && (pairs[i].bodyA.render?.type === 'ball' ||  pairs[i].bodyB.render?.type === 'ball')){
@@ -1294,72 +1288,37 @@ async function handleEnd(reason) {
 
         let username = "<?php echo $username;?>";
 
+        // Declare levels and networth in a higher scope
+        let levels = 0;
+        let networth = 0;
+
         if (username) {
             document.getElementById("playbtn").addEventListener("click", startTimer);
 
             // Fetch from poangssystem
-            fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+            await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
                 .then(res => res.json())
                 .then(memoryResponse => {
-                    // Find the match in 'Namn' column
                     const poangMatch = memoryResponse.find(entry => entry.Namn === username);
                     if (poangMatch) {
-                        const levels = poangMatch.Levels; // Get 'Levels' column value
-                        console.log(levels);
+                        levels = poangMatch.Levels; // Assign 'Levels' to the outer variable
 
                         // Fetch from ekonomi
-                        fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
-                            .then(res => res.json())
-                            .then(ekonomiResponse => {
-                                // Find the match in 'Namn' column
-                                const ekonomiMatch = ekonomiResponse.find(entry => entry.username === username);
-                                if (ekonomiMatch) {
-                                    const networth = ekonomiMatch.networth; // Get 'networth' column value
-                                    console.log(networth);
-
-                                    // Additional logic can go here if needed
-                                } else {
-                                    console.log(`No match found in ekonomi for username ${username}`);
-                                }
-                            })
-                            .catch(err => console.error('Error fetching ekonomi:', err));
+                        return fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
                     } else {
-                        console.log(`No match found in poangssystem for username ${username}`);
+      
                     }
                 })
-                .catch(err => console.error('Error fetching poangssystem:', err));
-
-            // Log other variables
-            console.log(username);
-
-            fetch("http://samet-desktop.adm.huddinge.se:3000/poangssystem")
-                .then((res) => res.json())
-                .then((memoryResponse) => {
-                    // Find the match in 'Namn' column
-                    const poangMatch = memoryResponse.find((entry) => entry.Namn === username);
-                    if (poangMatch) {
-                        const levels = poangMatch.Levels; // Get 'Levels' column value
-
-                        // Fetch from ekonomi
-                        fetch("http://samet-desktop.adm.huddinge.se:3000/ekonomi")
-                            .then((res) => res.json())
-                            .then((ekonomiResponse) => {
-                                // Find the match in 'Namn' column
-                                const ekonomiMatch = ekonomiResponse.find((entry) => entry.username === username);
-                                if (ekonomiMatch) {
-                                    const networth = ekonomiMatch.networth; // Get 'networth' column value
-
-                                    // Additional logic can go here if needed
-                                } else {
-                                    console.log(`No match found in ekonomi for username ${username}`);
-                                }
-                            })
-                            .catch((err) => console.error("Error fetching ekonomi:", err));
+                .then(res => res.json())
+                .then(ekonomiResponse => {
+                    const ekonomiMatch = ekonomiResponse.find(entry => entry.username === username);
+                    if (ekonomiMatch) {
+                        networth = ekonomiMatch.networth; // Assign 'networth' to the outer variable
                     } else {
-                        console.log(`No match found in poangssystem for username ${username}`);
+                       
                     }
                 })
-                .catch((err) => console.error("Error fetching poangssystem:", err));
+                .catch(err => console.error('Error:', err));
         }
 
         let finalScoreDiv = document.createElement("div");
@@ -1371,9 +1330,41 @@ async function handleEnd(reason) {
         // Stop the timer and display the total time taken
         const timeTaken = stopTimer(); // Stop the timer and get the elapsed time
         alert(`You finished the entire course in ${timeTaken} seconds, congrats!`);
-        console.log(timeTaken);
-        console.log(totalStrokes);
+        let pengar_tjanat = Math.round(10000 * (levels/(totalStrokes * timeTaken)));
+        let exp_tjanat = Math.round(10000 * (levels/(totalStrokes * timeTaken)));
+        
+        if (currentHole >= 9) {
+        const timeTaken = stopTimer();
+        const pengar_tjanat = Math.round(10000 * (levels / (totalStrokes * timeTaken)));
+        const exp_tjanat = Math.round(10000 * (levels / (totalStrokes * timeTaken)));
+
+        // Send data to the server
+        const response = await fetch('http://samet-desktop.adm.huddinge.se:3000/update-squigglegolf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: "<?php echo $username; ?>",
+                totalStrokes,
+                levels,
+                pengar_tjanat,
+                exp_tjanat,
+                timeTaken,
+                networth,
+            }),
+        });
+
+        if (response.ok) {
+            
+        } else {
+            console.error('Failed to update data', await response.json());
+        }
+
+        alert(`You finished the entire course in ${timeTaken} seconds, congrats!`);
     }
+    }
+    
 }
 
 // Call startTimer() when the game starts
@@ -1392,7 +1383,6 @@ document.getElementById("playbtn").addEventListener("click", startTimer);
   canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     clickPos = getMousePos(canvas, e);
-    // console.log("mouseDown", clickPos)
 
     canvas.style.cursor = "pointer";
   });
@@ -1400,7 +1390,7 @@ document.getElementById("playbtn").addEventListener("click", startTimer);
   canvas.addEventListener("touchstart", (e) => {
       e.preventDefault();
       clickPos = getMousePos(canvas, e);
-    // console.log("mouseDown", clickPos)
+
   }, { passive: false });
 
   document.addEventListener("mousemove",e=>{
