@@ -1,3 +1,10 @@
+<?php
+session_start();
+
+$username = $_SESSION['username'];
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,7 +13,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css?family=Gloria+Hallelujah&display=block" rel="stylesheet" />
-  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="manifest" href="./manifest.webm$username = $_SESSIONanifest" />
   <script src="./matter.js"></script>
   <script src="./rough.js"></script>
   <script src="./decomp.js"></script>
@@ -178,7 +185,6 @@ body {
   <br>
   <button class="add-button">Lägg till Squigglegolf på din hemskärm!</button>
 
-</body>
 
 <script>
 
@@ -1257,6 +1263,13 @@ body {
     }else{
       document.body.appendChild(document.createElement('br'))
 
+      let username = "<?php echo $username;?>";
+      if (!username) { // This checks for empty string, null, undefined, 0, or false
+          console.log('You are a guest');
+      } else {
+          console.log(username);
+      }
+
       let finalScoreDiv = document.createElement('div')
       finalScoreDiv.innerText = `Course total: ${totalStrokes} strokes`
       document.body.appendChild(finalScoreDiv);
@@ -1384,6 +1397,6 @@ body {
   
 
 </script>
-
+</body>
 
 </html>

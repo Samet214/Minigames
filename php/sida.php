@@ -92,9 +92,8 @@ if ($result->num_rows === 1) {
     $level = 1;
     $current_exp = 0;
     $next_level_exp = 50;
-    $avi = 0;
-    $insert = $conn->prepare("INSERT INTO poängssystem (Namn, Levels, EXP, EXP_GRÄNS, AVI) VALUES (?, ?, ?, ?, ?)");
-    $insert->bind_param("siiii", $username, $level, $current_exp, $next_level_exp, $avi);
+    $insert = $conn->prepare("INSERT INTO poängssystem (Namn, Levels, EXP, EXP_GRÄNS) VALUES (?, ?, ?, ?)");
+    $insert->bind_param("siii", $username, $level, $current_exp, $next_level_exp);
     $insert->execute();
     $_SESSION['Namn'] = $username;
     $_SESSION['Levels'] = 1;

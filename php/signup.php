@@ -58,6 +58,15 @@ if (isset($_POST['submit'])) {
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("ss", $username, $hashedCode);
                 if ($stmt->execute()) {
+                    // Add user to ekonomi table
+                    $sql_ekonomi = "INSERT INTO ekonomi.ekonomi (username, value, spent, networth) VALUES (?, 0, 0, 0)";
+                    if ($stmt_ekonomi = $conn->prepare($sql_ekonomi)) {
+                        $stmt_ekonomi->bind_param("s", $username);
+                        $stmt_ekonomi->execute();
+                        $stmt_ekonomi->close();
+                    }
+
+
                     // Redirect with status: account created
                     header("Location: " . $_SERVER['PHP_SELF'] . "?status=created");
                     exit();
@@ -72,6 +81,7 @@ if (isset($_POST['submit'])) {
     $conn->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="sv" data-page="signup">

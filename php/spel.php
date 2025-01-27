@@ -87,7 +87,6 @@ if ($result->num_rows === 1) {
     $level = 1;
     $current_exp = 0;
     $next_level_exp = 50;
-    $avi = 0;
     $username = 'Guest';
     $_SESSION['Namn'] = $username;
     $_SESSION['Levels'] = 1;
