@@ -188,6 +188,16 @@ body {
 
 <script>
 
+document.body.appendChild(document.createElement('br'))
+
+let username = "<?php echo $username;?>";
+if (!username) { // This checks for empty string, null, undefined, 0, or false
+    
+} else {
+  
+}
+  
+
 // register PWA
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').then(() => {});;
@@ -1214,72 +1224,164 @@ body {
     }
   })
 
-  async function handleEnd(reason){
+  let timer = 0; // Global variable to track time
+let timerInterval = null; // Global variable for the timer interval
 
+// Function to start the timer
+function startTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval); // Clear any existing timer
+    }
 
-    // if not finished
-      if(reason === "death"){
-        alert("💀 You died too many times 💀 - score of 12")
+    timer = 0; // Reset timer
+    timerInterval = setInterval(() => {
+        timer++; // Increment timer every second
+    }, 1000); // Interval is 1 second
+}
+
+// Function to stop the timer
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval); // Stop the timer
+        timerInterval = null; // Clear the interval
+    }
+    return timer; // Return the total time elapsed
+}
+
+async function handleEnd(reason) {
+    // Check the reason for ending the game
+    if (reason === "death") {
+        alert("💀 You died too many times 💀 - score of 12");
         strokes = 12;
-      }else{
-        if(strokes === 1){
-          alert("⛳ You scored a hole in one!! ⛳")
-        }else{
-          alert(`You finished the hole in ${strokes} strokes!`);
+    } else {
+        if (strokes === 1) {
+            alert("⛳ You scored a hole in one!! ⛳");
+        } else {
+            alert(`You finished the hole in ${strokes} strokes!`);
         }
-      }
+    }
 
-    clickPos = { x: null, y: null }
-    mousePos = { x: null, y: null }
+    clickPos = { x: null, y: null };
+    mousePos = { x: null, y: null };
 
     totalStrokes += strokes;
 
-
-    // record hole score
-    let scoreDiv = document.createElement('div')
-    document.body.appendChild(document.createElement('br'))
-    scoreDiv.innerText = `Hole ${currentHole} score: ${strokes}`
+    // Record hole score
+    let scoreDiv = document.createElement("div");
+    document.body.appendChild(document.createElement("br"));
+    scoreDiv.innerText = `Hole ${currentHole} score: ${strokes}`;
     document.body.appendChild(scoreDiv);
     playing = false;
 
     let url = canvas.toDataURL();
     let img = new Image();
-    await new Promise(r => img.onload = r, img.src = url);
-    // let gutter =(s_canvas.width - (s_canvas.width / 4) * 3) / 4;
-    // s_ctx.drawImage(img,
-    // ((currentHole-1) % 3) * ((s_canvas.width / 4) + gutter) + gutter, 
-    // Math.floor((currentHole - 1) /3 ) * (s_canvas.height / 4 + gutter) + gutter,
-    // s_canvas.width/4,s_canvas.height/4);
-    s_ctx.drawImage(img,
-    ((currentHole-1) % 3) * ((s_canvas.width / 3)), 
-    Math.floor((currentHole - 1) /3 ) * (s_canvas.height / 3),
-    s_canvas.width/3,
-    s_canvas.height/3);
-    
-    if(currentHole < 9){
-      resetLevel();
-      redrawBg();
-      playing = true;
-    }else{
-      document.body.appendChild(document.createElement('br'))
+    await new Promise((r) => (img.onload = r, (img.src = url)));
 
-      let username = "<?php echo $username;?>";
-      if (!username) { // This checks for empty string, null, undefined, 0, or false
-          console.log('You are a guest');
-      } else {
-          console.log(username);
-      }
+    s_ctx.drawImage(
+        img,
+        ((currentHole - 1) % 3) * (s_canvas.width / 3),
+        Math.floor((currentHole - 1) / 3) * (s_canvas.height / 3),
+        s_canvas.width / 3,
+        s_canvas.height / 3
+    );
 
-      let finalScoreDiv = document.createElement('div')
-      finalScoreDiv.innerText = `Course total: ${totalStrokes} strokes`
-      document.body.appendChild(finalScoreDiv);
+    if (currentHole < 9) {
+        resetLevel();
+        redrawBg();
+        playing = true;
+    } else {
+        document.body.appendChild(document.createElement("br"));
 
-      currentHole += 2
-      
-      alert(`you finished the entire course in ${totalStrokes} strokes, congrats!`);
+        let username = "<?php echo $username;?>";
+
+        if (username) {
+            document.getElementById("playbtn").addEventListener("click", startTimer);
+
+            // Fetch from poangssystem
+            fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+                .then(res => res.json())
+                .then(memoryResponse => {
+                    // Find the match in 'Namn' column
+                    const poangMatch = memoryResponse.find(entry => entry.Namn === username);
+                    if (poangMatch) {
+                        const levels = poangMatch.Levels; // Get 'Levels' column value
+                        console.log(levels);
+
+                        // Fetch from ekonomi
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+                            .then(res => res.json())
+                            .then(ekonomiResponse => {
+                                // Find the match in 'Namn' column
+                                const ekonomiMatch = ekonomiResponse.find(entry => entry.username === username);
+                                if (ekonomiMatch) {
+                                    const networth = ekonomiMatch.networth; // Get 'networth' column value
+                                    console.log(networth);
+
+                                    // Additional logic can go here if needed
+                                } else {
+                                    console.log(`No match found in ekonomi for username ${username}`);
+                                }
+                            })
+                            .catch(err => console.error('Error fetching ekonomi:', err));
+                    } else {
+                        console.log(`No match found in poangssystem for username ${username}`);
+                    }
+                })
+                .catch(err => console.error('Error fetching poangssystem:', err));
+
+            // Log other variables
+            console.log(username);
+
+            fetch("http://samet-desktop.adm.huddinge.se:3000/poangssystem")
+                .then((res) => res.json())
+                .then((memoryResponse) => {
+                    // Find the match in 'Namn' column
+                    const poangMatch = memoryResponse.find((entry) => entry.Namn === username);
+                    if (poangMatch) {
+                        const levels = poangMatch.Levels; // Get 'Levels' column value
+
+                        // Fetch from ekonomi
+                        fetch("http://samet-desktop.adm.huddinge.se:3000/ekonomi")
+                            .then((res) => res.json())
+                            .then((ekonomiResponse) => {
+                                // Find the match in 'Namn' column
+                                const ekonomiMatch = ekonomiResponse.find((entry) => entry.username === username);
+                                if (ekonomiMatch) {
+                                    const networth = ekonomiMatch.networth; // Get 'networth' column value
+
+                                    // Additional logic can go here if needed
+                                } else {
+                                    console.log(`No match found in ekonomi for username ${username}`);
+                                }
+                            })
+                            .catch((err) => console.error("Error fetching ekonomi:", err));
+                    } else {
+                        console.log(`No match found in poangssystem for username ${username}`);
+                    }
+                })
+                .catch((err) => console.error("Error fetching poangssystem:", err));
+        }
+
+        let finalScoreDiv = document.createElement("div");
+        finalScoreDiv.innerText = `Course total: ${totalStrokes} strokes`;
+        document.body.appendChild(finalScoreDiv);
+
+        currentHole += 2;
+
+        // Stop the timer and display the total time taken
+        const timeTaken = stopTimer(); // Stop the timer and get the elapsed time
+        alert(`You finished the entire course in ${timeTaken} seconds, congrats!`);
+        console.log(timeTaken);
+        console.log(totalStrokes);
     }
+}
 
-  }
+// Call startTimer() when the game starts
+document.getElementById("playbtn").addEventListener("click", startTimer);
+
+// Ensure stopTimer() is called when the game ends
+
+
 
   handleEnd = handleEnd.bind(this);
 
