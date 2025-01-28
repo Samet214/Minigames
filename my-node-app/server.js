@@ -502,6 +502,8 @@ app.post('/update-ekonomi', (req, res) => {
       WHERE username = ?
   `;
 
+  
+
   ekonomiDb.query(query, [pengar_tjanat, pengar_tjanat, username], (err, results) => {
       if (err) {
           console.error('Error updating ekonomi table:', err);
@@ -542,6 +544,60 @@ app.get('/anvandare', (req, res) => {
     }
 
     res.json(results); // Send the combined results as JSON
+  });
+});
+
+app.post('/updateUserStats', (req, res) => {
+  const { username, level, userlevel, averagetime, money, experience, userNetWorth } = req.body;
+
+  const checkUserQuery = 'SELECT * FROM colourvision WHERE username = ?';
+
+  spelDb.query(checkUserQuery, [username], (err, results) => {
+      if (err) {
+          console.error('Error checking user:', err);
+          return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (results.length > 0) {
+          // User exists, update based on conditions
+          const existingUser = results[0];
+
+          const newLevel = level > existingUser.nivå ? level : existingUser.nivå;
+          const newUserLevel = userlevel > existingUser.level ? userlevel : existingUser.level;
+          const newTime = averagetime < existingUser.tid ? averagetime : existingUser.tid;
+          const newMoney = money > existingUser.pengar_tjanat ? money : existingUser.pengar_tjanat;
+          const newExperience = experience > existingUser.exp_tjanat ? experience : existingUser.exp_tjanat;
+          const newNetworth = userNetWorth > existingUser.netvarde ? userNetWorth : existingUser.netvarde;
+
+          const updateQuery = `
+              UPDATE colourvision 
+              SET nivå = ?, level = ?, tid = ?, pengar_tjanat = ?, exp_tjanat = ?, netvarde = ?
+              WHERE username = ?
+          `;
+
+          spelDb.query(updateQuery, [newLevel, newUserLevel, newTime, newMoney, newExperience, newNetworth, username], (updateErr) => {
+              if (updateErr) {
+                  console.error('Error updating user:', updateErr);
+                  return res.status(500).json({ error: 'Failed to update user' });
+              }
+              res.json({ message: 'User stats updated successfully' });
+          });
+
+      } else {
+          // User does not exist, insert new record
+          const insertQuery = `
+              INSERT INTO colourvision (username, nivå, level, tid, pengar_tjanat, exp_tjanat, netvarde)
+              VALUES (?, ?, ?, ?, ?, ?, ?)
+          `;
+
+          spelDb.query(insertQuery, [username, level, userlevel, averagetime, money, experience, userNetWorth], (insertErr) => {
+              if (insertErr) {
+                  console.error('Error inserting user:', insertErr);
+                  return res.status(500).json({ error: 'Failed to insert user' });
+              }
+              res.json({ message: 'User inserted successfully' });
+          });
+      }
   });
 });
 
@@ -605,6 +661,140 @@ async function updateSquiggleGolfTable(username, totalStrokes, timeTaken, levels
         await connection.end();
     }
 }
+
+app.get("/colourvision", (req, res) => {
+  const query = "SELECT username, nivå, level, tid, pengar_tjanat, exp_tjanat, netvarde FROM colourvision";
+  spelDb.query(query, (error, results) => {
+      if (error) {
+          console.error("Error fetching Colourvision data: ", error);
+          res.status(500).send("Internal Server Error");
+      } else {
+          res.json(results);
+      }
+  });
+});
+
+app.post('/updateEkonomi', (req, res) => {
+  const { username, moneyToAdd, netWorthToAdd } = req.body;
+
+  console.log('Received data:', { username, moneyToAdd, netWorthToAdd }); // Debugging
+
+  if (!username || isNaN(moneyToAdd) || isNaN(netWorthToAdd)) {
+      return res.status(400).json({ success: false, message: 'Invalid request data.' });
+  }
+
+  const query = `
+      UPDATE ekonomi
+      SET value = value + ?, networth = networth + ?
+      WHERE username = ?;
+  `;
+
+  ekonomiDb.query(query, [moneyToAdd, netWorthToAdd, username], (err, result) => {
+      if (err) {
+          console.error('Database Error:', err);
+          res.status(500).json({ success: false, message: 'Error updating ekonomi' });
+      } else if (result.affectedRows > 0) {
+          res.status(200).json({ success: true, message: 'Ekonomi updated successfully' });
+      } else {
+          res.status(404).json({ success: false, message: 'User not found in ekonomi table.' });
+      }
+  });
+});
+
+
+// Update användarinformation
+app.post('/updateAnvandarinformation', (req, res) => {
+  const { username, expToAdd } = req.body;
+
+  console.log('Received data:', { username, expToAdd }); // Debugging
+
+  if (!username || isNaN(expToAdd)) {
+      return res.status(400).json({ success: false, message: 'Invalid request data.' });
+  }
+
+  const query = `
+      UPDATE poängssystem
+      SET EXP = EXP + ?
+      WHERE Namn = ?;
+  `;
+
+  anvandarDb.query(query, [expToAdd, username], (err, result) => {
+      if (err) {
+          console.error('Database Error:', err);
+          res.status(500).json({ success: false, message: 'Error updating experience' });
+      } else if (result.affectedRows > 0) {
+          res.status(200).json({ success: true, message: 'Experience updated successfully' });
+      } else {
+          res.status(404).json({ success: false, message: 'User not found in poängssystem table.' });
+      }
+  });
+});
+
+app.post('/updateUserStats', (req, res) => {
+  const { username, level, userlevel } = req.body;
+
+  if (!username || isNaN(level) || isNaN(userlevel)) {
+      return res.status(400).json({ success: false, message: 'Invalid input data.' });
+  }
+
+  // Calculate the new values
+  const updatedValue = 2 * level * userlevel;
+  const updatedNetworth = 2 * level * userlevel;
+
+  // Begin a transaction to ensure both updates succeed together
+  ekonomiDb.beginTransaction(err => {
+      if (err) {
+          return res.status(500).json({ success: false, message: 'Error starting transaction.' });
+      }
+
+      // Update the ekonomi table
+      const ekonomiQuery = `
+          UPDATE ekonomi
+          SET value = value + ?, networth = networth + ?
+          WHERE username = ?;
+      `;
+      ekonomiDb.query(ekonomiQuery, [updatedValue, updatedNetworth, username], (err, ekonomiResult) => {
+          if (err) {
+              return ekonomiDb.rollback(() => {
+                  console.error('Error updating ekonomi:', err);
+                  res.status(500).json({ success: false, message: 'Error updating ekonomi.' });
+              });
+          }
+
+          // Update the poängssystem table
+          const poangQuery = `
+              UPDATE poängssystem
+              SET EXP = EXP + ?
+              WHERE Namn = ?;
+          `;
+          ekonomiDb.query(poangQuery, [updatedValue, username], (err, poangResult) => {
+              if (err) {
+                  return ekonomiDb.rollback(() => {
+                      console.error('Error updating poängssystem:', err);
+                      res.status(500).json({ success: false, message: 'Error updating poängssystem.' });
+                  });
+              }
+
+              // Commit the transaction
+              ekonomiDb.commit(err => {
+                  if (err) {
+                      return ekonomiDb.rollback(() => {
+                          console.error('Error committing transaction:', err);
+                          res.status(500).json({ success: false, message: 'Error committing transaction.' });
+                      });
+                  }
+
+                  res.status(200).json({
+                      success: true,
+                      message: 'User stats updated successfully!',
+                      ekonomiResult,
+                      poangResult
+                  });
+              });
+          });
+      });
+  });
+});
 
 
 

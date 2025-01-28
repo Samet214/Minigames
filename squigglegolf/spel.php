@@ -1414,7 +1414,6 @@ async function handleEnd(reason) {
             console.error('Failed to update data', await response.json());
         }
 
-        alert(`You finished the entire course in ${timeTaken} seconds, congrats!`);
     }
     }
 

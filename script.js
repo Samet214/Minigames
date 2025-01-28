@@ -918,8 +918,7 @@ if (currentPhpFile === "game_display.php") {
         }
 
         displaySequence(() => {
-            // Start the timer only after the sequence is displayed
-            startTimer();
+
         });
     }
 
@@ -1061,12 +1060,15 @@ if (currentPhpFile === "game_display.php") {
                                         const updatedValue = matchedUser.value + (2 * level * userlevel);
                                         const updatedNetworth = matchedUser.networth + (2 * level * userlevel);
 
+
                                         // Prepare data to send to the backend to update the user's values
                                         const updateData = {
                                             username: username,
                                             value: updatedValue,
                                             networth: updatedNetworth
                                         };
+
+                                        
 
                                         // Send the updated data to the backend
                                         fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
@@ -1086,6 +1088,8 @@ if (currentPhpFile === "game_display.php") {
                                     } else {
                                         
                                     }
+
+                                    
                                 })
 
                                 record.netvarde += 2 * level * userlevel;
@@ -1164,6 +1168,7 @@ if (currentPhpFile === "game_display.php") {
                                 totalTime.textContent = totalTimeElapsed; // Display total time
 
                                 usernetworth += 2 * level * userlevel;
+
                     
                                 // Prepare data for insertion
                                 const dataToInsert = {
@@ -1853,260 +1858,303 @@ Events.on(engine, 'collisionEnd', (event) => {
 });
 } else if (currentPhpFile === "spel3.php") {
     const gridContainer = document.getElementById('grid-container');
-    const levelInfo = document.getElementById('level-info');
-    const timerDisplay = document.getElementById('timer');
-    const attemptsDisplay = document.getElementById('attempts');
-    const startButton = document.getElementById('start-button');
-    const gameOverPopup = document.getElementById('game-over-popup');
-    const popupCloseButton = document.getElementById('popup-close');
-    const popupOverlay = document.getElementById('popup-overlay');
-    const username = phpFileInfoElement.dataset.username;
+const levelInfo = document.getElementById('level-info');
+const timerDisplay = document.getElementById('timer');
+const attemptsDisplay = document.getElementById('attempts');
+const startButton = document.getElementById('start-button');
+const gameOverPopup = document.getElementById('game-over-popup');
+const popupCloseButton = document.getElementById('popup-close');
+const popupOverlay = document.getElementById('popup-overlay');
+const username = phpFileInfoElement.dataset.username;
 
-    let level = 1;
-    let attempts = 3;
-    let timer = 10;
-    let timerInterval;
-    let startTime; // To track time played
-    let timePlayed = 0; // Total time played in seconds
-    let targetBoxIndex = null;
-    let colorDifference = 50; // Starting difference in RGB values
-    let originalColors = []; // Store original colors of boxes
-    let gameStarted = false; // Flag to check if the game has started
+let level = 1;
+let attempts = 3;
+let timer = 10;
+let timerInterval;
+let startTime; // To track time played for the current level
+let totalTimePlayed = 0; // Total time played across all levels
+let targetBoxIndex = null;
+let colorDifference = 50; // Starting difference in RGB values
+let originalColors = []; // Store original colors of boxes
+let gameStarted = false; // Flag to check if the game has started
 
-    function generateRandomColor() {
-        return {
-            r: Math.floor(Math.random() * 256),
-            g: Math.floor(Math.random() * 256),
-            b: Math.floor(Math.random() * 256),
-        };
+function generateRandomColor() {
+    return {
+        r: Math.floor(Math.random() * 256),
+        g: Math.floor(Math.random() * 256),
+        b: Math.floor(Math.random() * 256),
+    };
+}
+
+function adjustColor(color, adjustment) {
+    return {
+        r: Math.max(0, Math.min(255, color.r + adjustment)),
+        g: Math.max(0, Math.min(255, color.g + adjustment)),
+        b: Math.max(0, Math.min(255, color.b + adjustment)),
+    };
+}
+
+function rgbToCss(rgb) {
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+}
+
+function createGrid() {
+    gridContainer.innerHTML = '';
+    originalColors = []; // Clear colors each time grid is created
+
+    for (let i = 0; i < 16; i++) {
+        const box = document.createElement('div');
+        box.className = 'grid-box';
+        box.style.pointerEvents = ''; // Reset interaction
+        box.classList.remove('disabled'); // Reset disabled state
+        box.addEventListener('click', () => handleBoxClick(box, i));
+        gridContainer.appendChild(box);
     }
+}
 
-    function adjustColor(color, adjustment) {
-        return {
-            r: Math.max(0, Math.min(255, color.r + adjustment)),
-            g: Math.max(0, Math.min(255, color.g + adjustment)),
-            b: Math.max(0, Math.min(255, color.b + adjustment)),
-        };
-    }
+function startGame() {
+    gameStarted = true; // Game starts
+    levelInfo.style.display = 'block';
+    document.getElementById('info-container').style.display = 'block';
+    startButton.style.display = 'none';
 
-    function rgbToCss(rgb) {
-        return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-    }
+    levelInfo.textContent = `Level: ${level}`;
+    attempts = 3;
+    attemptsDisplay.textContent = `Attempts: ${attempts}`;
+    timer = 10 + (level - 1) * 5;
+    timerDisplay.textContent = `Time Left: ${timer}s`;
 
-    function createGrid() {
-        gridContainer.innerHTML = '';
-        originalColors = []; // Clear colors each time grid is created
-    
-        for (let i = 0; i < 16; i++) {
-            const box = document.createElement('div');
-            box.className = 'grid-box';
-            box.style.pointerEvents = ''; // Reset interaction
-            box.classList.remove('disabled'); // Reset disabled state
-            box.addEventListener('click', () => handleBoxClick(box, i));
-            gridContainer.appendChild(box);
-        }
-    }
-    
-    
+    startTime = Date.now(); // Reset start time for the current level
 
-    function startGame() {
-        gameStarted = true; // Game starts
-        levelInfo.style.display = 'block';
-        document.getElementById('info-container').style.display = 'block';
-        startButton.style.display = 'none';
+    const baseColor = generateRandomColor();
+    const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
+    const targetColor = adjustColor(baseColor, adjustment);
 
-        levelInfo.textContent = `Level: ${level}`;
-        attempts = 3;
-        attemptsDisplay.textContent = `Attempts: ${attempts}`;
-        timer = 10 + (level - 1) * 5;
+    targetBoxIndex = Math.floor(Math.random() * 16);
+
+    const boxes = document.querySelectorAll('.grid-box');
+    boxes.forEach((box, index) => {
+        const color = index === targetBoxIndex ? targetColor : baseColor;
+        box.style.backgroundColor = rgbToCss(color);
+        originalColors[index] = rgbToCss(color); // Store each box's color
+    });
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer--;
         timerDisplay.textContent = `Time Left: ${timer}s`;
+        if (timer <= 0) {
+            handleGameOver();
+        }
+    }, 1000);
+}
 
-        startTime = Date.now(); // Start time of the game
+function handleBoxClick(box, index) {
+    if (!gameStarted || box.classList.contains('clicked')) return; // Ignore clicks if game hasn't started or box is already clicked
 
-        const baseColor = generateRandomColor();
-        const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
-        const targetColor = adjustColor(baseColor, adjustment);
+    if (index === targetBoxIndex) {
+        box.style.backgroundColor = 'green';
+        box.style.transform = 'scale(1.2)';
+        box.classList.add('clicked'); // Mark the box as clicked
+        clearInterval(timerInterval);
 
-        targetBoxIndex = Math.floor(Math.random() * 16);
-
+        // Disable all other boxes immediately
         const boxes = document.querySelectorAll('.grid-box');
-        boxes.forEach((box, index) => {
-            const color = index === targetBoxIndex ? targetColor : baseColor;
-            box.style.backgroundColor = rgbToCss(color);
-            originalColors[index] = rgbToCss(color); // Store each box's color
+        boxes.forEach((b) => {
+            b.classList.add('disabled');
+            b.style.pointerEvents = 'none'; // Disable interaction
         });
 
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timer--;
-            timerDisplay.textContent = `Time Left: ${timer}s`;
-            if (timer <= 0) {
-                handleGameOver();
-            }
+        // Add the time played in the current level to totalTimePlayed
+        totalTimePlayed += (Date.now() - startTime) / 1000;
+
+        setTimeout(() => {
+            level++;
+            colorDifference = Math.max(5, colorDifference - 5);
+            createGrid();
+            startGame();
         }, 1000);
-    }
+    } else {
+        box.style.backgroundColor = 'red';
+        box.style.transform = 'scale(1.2)';
+        box.classList.add('clicked'); // Mark the box as clicked
+        attempts--;
+        attemptsDisplay.textContent = `Attempts: ${attempts}`;
 
-    function handleBoxClick(box, index) {
-        if (!gameStarted || box.classList.contains('clicked')) return; // Ignore clicks if game hasn't started or box is already clicked
-    
-        if (index === targetBoxIndex) {
-            box.style.backgroundColor = 'green';
-            box.style.transform = 'scale(1.2)';
-            box.classList.add('clicked'); // Mark the box as clicked
-            clearInterval(timerInterval);
-    
-            // Disable all other boxes immediately
-            const boxes = document.querySelectorAll('.grid-box');
-            boxes.forEach((b) => {
-                b.classList.add('disabled');
-                b.style.pointerEvents = 'none'; // Disable interaction
-            });
-    
-            setTimeout(() => {
-                level++;
-                colorDifference = Math.max(5, colorDifference - 5);
-                createGrid();
-                startGame();
-            }, 1000);
-        } else {
-            box.style.backgroundColor = 'red';
-            box.style.transform = 'scale(1.2)';
-            box.classList.add('clicked'); // Mark the box as clicked
-            attempts--;
-            attemptsDisplay.textContent = `Attempts: ${attempts}`;
-    
-            setTimeout(() => {
-                box.style.transform = 'scale(1)';
-                box.style.backgroundColor = originalColors[index]; // Revert to original color
-                box.classList.remove('clicked'); // Allow the box to be clicked again if the game continues
-            }, 500);
-    
-            if (attempts <= 0) {
-                handleGameOver();
-            }
+        setTimeout(() => {
+            box.style.transform = 'scale(1)';
+            box.style.backgroundColor = originalColors[index]; // Revert to original color
+            box.classList.remove('clicked'); // Allow the box to be clicked again if the game continues
+        }, 500);
+
+        if (attempts <= 0) {
+            handleGameOver();
         }
     }
-    
-    
+}
 
-    function handleGameOver() {
-        if (username != "guest") {
-            gameStarted = false; // Stop the game
-            clearInterval(timerInterval);
+function handleGameOver() {
+    if (username != "guest") {
+        gameStarted = false; // Stop the game
+        clearInterval(timerInterval);
         
-            // Calculate total time played
-            timePlayed = Math.floor((Date.now() - startTime) / 1000);
 
-            function getUserLevel(username) {
-                return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem') // Ensure the correct URL
-                    .then(response => response.json()) // Convert the response to JSON
-                    .then(data => {
-                        // Loop through the data and find the match for level
-                        for (const user of data) {
-                            if (user.Namn === username) {
-                                return user.Levels; // Return the level when found
-                            }
+        // Add the time played in the current level to totalTimePlayed
+        totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
+
+        function getUserLevel(username) {
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem') // Ensure the correct URL
+                .then(response => response.json()) // Convert the response to JSON
+                .then(data => {
+                    // Loop through the data and find the match for level
+                    for (const user of data) {
+                        if (user.Namn === username) {
+                            return user.Levels; // Return the level when found
                         }
-                        // If no match is found
-                        return 'User not found';
-                    })
-                    .catch(error => {
-                        console.error('Error fetching level data:', error); // Handle any errors
-                        return null; // Return null in case of error
-                    });
-            }
-            
-            function getUserNetWorth(username) {
-                return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde') // Ensure the correct URL
-                    .then(response => response.json()) // Convert the response to JSON
-                    .then(data => {
-                        // Loop through the data and find the match for networth
-                        for (const user of data) {
-                            if (user.username === username) { // Match with 'username' column
-                                return user.networth; // Return the networth when found
-                            }
-                        }
-                        // If no match is found
-                        return 'Networth not found';
-                    })
-                    .catch(error => {
-                        console.error('Error fetching networth data:', error); // Handle any errors
-                        return null; // Return null in case of error
-                    });
-            }
-            
-            // Function to get both user level and networth in parallel
-            function getUserData(username) {
-                // Fetch level and networth in parallel using Promise.all
-                Promise.all([getUserLevel(username), getUserNetWorth(username)])
-                    .then(([userlevel, userNetWorth]) => {
-                        if (userlevel && userNetWorth) {
-                            const experience = 2 * level * userlevel;
-                            const money = 2 * level * userlevel;
-                            let averagetime = timePlayed / level;
-
-
-                            document.getElementById('popup-level').textContent = `Level: ${userlevel}`;
-                            document.getElementById('popup-time').textContent = `Time Played: ${timePlayed}s`;
-                            document.getElementById('popup-exp').textContent = `Experience Gained: ${experience}`;
-                            document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
-                            document.getElementById('popup-networth').textContent = `Networth: ${userNetWorth}`; // Display networth
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error getting user data:', error);
-                    });
-            }
-            
-            // Example usage
-            getUserData(username);
-                        
-        
-            // Show the popup
-            popupOverlay.style.display = 'block';
-        
-            // Add a slight delay before setting the animation state for smoothness
-            setTimeout(() => {
-                gameOverPopup.style.opacity = '1';
-                gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-            }, 100);
-        } else if (username == "guest") {
-            gameStarted = false; // Stop the game
-            clearInterval(timerInterval);
-        
-            // Calculate total time played
-            timePlayed = Math.floor((Date.now() - startTime) / 1000);
-        
-            // Update popup content
-            document.getElementById('popup-level').textContent = `Level: ${level}`;
-            document.getElementById('popup-time').textContent = `Time Played: ${timePlayed}s`;
-        
-            // Show the popup
-            popupOverlay.style.display = 'block';
-        
-            // Add a slight delay before setting the animation state for smoothness
-            setTimeout(() => {
-                gameOverPopup.style.opacity = '1';
-                gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-            }, 100);
+                    }
+                    // If no match is found
+                    return 'User not found';
+                })
+                .catch(error => {
+                    console.error('Error fetching level data:', error); // Handle any errors
+                    return null; // Return null in case of error
+                });
         }
 
-    }
-    
+        function getUserNetWorth(username) {
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde') // Ensure the correct URL
+                .then(response => response.json()) // Convert the response to JSON
+                .then(data => {
+                    // Loop through the data and find the match for networth
+                    for (const user of data) {
+                        if (user.username === username) { // Match with 'username' column
+                            return user.networth; // Return the networth when found
+                        }
+                    }
+                    // If no match is found
+                    return 'Networth not found';
+                })
+                .catch(error => {
+                    console.error('Error fetching networth data:', error); // Handle any errors
+                    return null; // Return null in case of error
+                });
+        }
 
-    // Close the popup
-    function closePopup() {
-        popupOverlay.style.display = 'none';
-        location.reload(); // Refresh the page to restart the game
-    }
+        // Function to get both user level and networth in parallel
+        function getUserData(username) {
+            // Fetch level and net worth in parallel using Promise.all
+            Promise.all([getUserLevel(username), getUserNetWorth(username)])
+                .then(([userlevel, userNetWorth]) => {
+                    if (userlevel !== null && userlevel !== undefined && userNetWorth !== null && userNetWorth !== undefined) {
+                        const experience = 2 * level * userlevel;
+                        const money = 2 * level * userlevel;
+                        let averagetime = totalTimePlayed / level; // Use totalTimePlayed for average time calculation
+        
+                        document.getElementById('popup-level').textContent = `Level: ${level}`;
+                        document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`; // Display total time played
+                        document.getElementById('popup-exp').textContent = `Experience Gained: ${experience}`;
+                        document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
+                        document.getElementById('popup-networth').textContent = `Networth: ${userNetWorth}`; // Display net worth
+        
+                        // Update user stats in the API
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateUserStats', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username,
+                                level,
+                                userlevel,
+                                averagetime,
+                                money,
+                                experience,
+                                userNetWorth
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => console.log('User stats updated:', data))
+                            .catch(error => console.error('Error updating user stats:', error));
+        
+                        // Update ekonomi database
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateEkonomi', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username,
+                                moneyToAdd: money,
+                                netWorthToAdd: money // Assuming net worth increases by the same money value
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => console.log('Ekonomi updated:', data))
+                            .catch(error => console.error('Error updating ekonomi:', error));
+        
+                        // Update användarinformation database
+                        console.log(experience);
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateAnvandarinformation', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username,
+                                expToAdd: experience
+                            })
+                        })
+                            .then(response => response.json())
+                            .then(data => console.log('Experience updated:', data))
+                            .catch(error => console.error('Error updating experience:', error));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting user data:', error);
+                });
+        }
+        
 
-    // Initialize grid and attach event listeners
-    createGrid();
-    startButton.addEventListener('click', startGame);
-    popupCloseButton.addEventListener('click', closePopup);
-    popupOverlay.addEventListener('click', (e) => {
-        if (e.target === popupOverlay) closePopup(); // Close popup on outside click
-    });
+        // Example usage
+        getUserData(username);
+
+        // Show the popup
+        popupOverlay.style.display = 'block';
+
+        // Add a slight delay before setting the animation state for smoothness
+        setTimeout(() => {
+            gameOverPopup.style.opacity = '1';
+            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+        }, 100);
+    } else if (username == "guest") {
+        gameStarted = false; // Stop the game
+        clearInterval(timerInterval);
+
+        // Add the time played in the current level to totalTimePlayed
+        totalTimePlayed += Math.floor((Date.now() - startTime) / 1000);
+
+        // Update popup content
+        document.getElementById('popup-level').textContent = `Level: ${level}`;
+        document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`; // Display total time played
+
+        // Show the popup
+        popupOverlay.style.display = 'block';
+
+        // Add a slight delay before setting the animation state for smoothness
+        setTimeout(() => {
+            gameOverPopup.style.opacity = '1';
+            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+        }, 100);
+    }
+}
+
+// Close the popup
+function closePopup() {
+    popupOverlay.style.display = 'none';
+    location.reload(); // Refresh the page to restart the game
+}
+
+// Initialize grid and attach event listeners
+createGrid();
+startButton.addEventListener('click', startGame);
+popupCloseButton.addEventListener('click', closePopup);
+popupOverlay.addEventListener('click', (e) => {
+    if (e.target === popupOverlay) closePopup(); // Close popup on outside click
+});
 
 
     } else if (currentPhpFile === "spel4.php") {
@@ -2601,7 +2649,7 @@ Events.on(engine, 'collisionEnd', (event) => {
         const startPage = document.getElementById("start_page");
         const mazeContainer = document.getElementById("maze_container");
 
-        // Restore state from localStorage
+        // Restore state from localStoragez
         const currentState = localStorage.getItem("currentState");
 
         if (currentState === "maze") {
@@ -2927,6 +2975,91 @@ Events.on(engine, 'collisionEnd', (event) => {
                         })
                         .catch((error) => {
                             console.error("Error fetching Squigglegolf data:", error);
+                        });
+                } else if (modes[currentMode].text === "Colourvision - Topplista") {
+                    const endpoint = "http://samet-desktop.adm.huddinge.se:3000/colourvision";
+                
+                    fetch(endpoint)
+                        .then((response) => {
+                            if (!response.ok) {
+                                throw new Error("Failed to fetch Colourvision data");
+                            }
+                            return response.json();
+                        })
+                        .then((colourvisionData) => {
+                            tiles.forEach((tile, index) => {
+                                tile.innerHTML = ""; // Clear previous content
+                                
+                                const container = document.createElement("div");
+                                container.style.display = "flex";
+                                container.style.flexDirection = "column";
+                                container.style.alignItems = "center";
+                                container.style.height = "100%";
+                                container.style.width = "100%";
+                
+                                const outerText = document.createElement("div");
+                                outerText.textContent = modes[currentMode].tileTexts[index];
+                                outerText.style.textAlign = "center";
+                                outerText.style.marginBottom = "10px";
+                                outerText.style.fontWeight = "bold";
+                                container.appendChild(outerText);
+                
+                                const innerTile = document.createElement("div");
+                                innerTile.classList.add("inner-tile");
+                                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
+                                innerTile.style.color = "white";
+                                innerTile.style.padding = "10px";
+                                innerTile.style.height = "85%";
+                                innerTile.style.width = "90%";
+                                innerTile.style.overflowY = "auto";
+                                innerTile.style.maxHeight = "100%";
+                                innerTile.style.borderRadius = "5px";
+                                innerTile.style.display = "flex";
+                                innerTile.style.flexDirection = "column";
+                                innerTile.style.justifyContent = "flex-start";
+                
+                                // Sort and rank based on the current column
+                                const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
+                                const columnKey = columnKeys[index];
+                
+                                // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
+                                const isAscending = index === 2; // Ascending for "tid"
+                                colourvisionData
+                                    .sort((a, b) => {
+                                        return isAscending
+                                            ? a[columnKey] - b[columnKey] // Ascending order
+                                            : b[columnKey] - a[columnKey]; // Descending order
+                                    })
+                                    .forEach((row, rank) => {
+                                        const div = document.createElement("div");
+                                        div.style.display = "flex";
+                                        div.style.justifyContent = "space-between";
+                                        div.style.margin = "5px 0";
+                                        div.style.padding = "10px";
+                                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                                        div.style.borderRadius = "3px";
+                
+                                        const leftSpan = document.createElement("span");
+                                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
+                                        leftSpan.style.flex = "1";
+                                        leftSpan.style.textAlign = "left";
+                
+                                        const rightSpan = document.createElement("span");
+                                        rightSpan.textContent = `${row[columnKey]}`;
+                                        rightSpan.style.flex = "0";
+                                        rightSpan.style.textAlign = "right";
+                
+                                        div.appendChild(leftSpan);
+                                        div.appendChild(rightSpan);
+                                        innerTile.appendChild(div);
+                                    });
+                
+                                container.appendChild(innerTile);
+                                tile.appendChild(container);
+                            });
+                        })
+                        .catch((error) => {
+                            console.error("Error fetching Colourvision data:", error);
                         });
                 } else {
                     const numberOfDivs = userCounts[modes[currentMode].text.toLowerCase().split(" - ")[0]] || 0;

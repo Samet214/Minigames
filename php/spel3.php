@@ -39,6 +39,7 @@ if (isset($_SESSION['username'])) {
             <p id="popup-time"></p>
             <p id="popup-exp"></p>
             <p id="popup-money"></p>
+            <p id="popup-networth"></p>
         </div>
     </div>
 
