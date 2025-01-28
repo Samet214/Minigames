@@ -1010,7 +1010,7 @@ if (currentPhpFile === "game_display.php") {
         
     
         if (username !== 'guest') {
-            fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
+            fetch('http://localhost:3000/memory')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     let userExists = false;
@@ -1024,7 +1024,7 @@ if (currentPhpFile === "game_display.php") {
                             (async () => {
                                 try {
                                     // Fetch the response from the API
-                                    const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                    const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
                                     
                                     // Parse the response as JSON
                                     const poangssystemData = await poangssystemResponse.json();
@@ -1050,7 +1050,7 @@ if (currentPhpFile === "game_display.php") {
                                     netvarde: record.netvarde,
                                 };
 
-                                fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+                                fetch('http://localhost:3000/ekonomi')
                                 .then(res => res.json())
                                 .then(ekonomiResponse => {
                                     // Find the user in the ekonomi table based on username
@@ -1069,7 +1069,7 @@ if (currentPhpFile === "game_display.php") {
                                         };
 
                                         // Send the updated data to the backend
-                                        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                                        fetch('http://localhost:3000/update-ekonomi', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify(updateData),
@@ -1107,7 +1107,7 @@ if (currentPhpFile === "game_display.php") {
                                 };
         
                                 // Send updated data to the backend
-                                return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
+                                return fetch('http://localhost:3000/update-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(updatedData),
@@ -1133,7 +1133,7 @@ if (currentPhpFile === "game_display.php") {
                     
                             try {
                                 // Fetch data from the poängssystem endpoint
-                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
                                 const poangssystemData = await poangssystemResponse.json();
                     
                                 // Look for a match in the 'Namn' column
@@ -1146,7 +1146,7 @@ if (currentPhpFile === "game_display.php") {
                                 }
                     
                                 // Fetch data from the ekonomi endpoint
-                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi');
                                 const ekonomiData = await ekonomiResponse.json();
                     
                                 // Look for a match in the 'username' column
@@ -1177,7 +1177,7 @@ if (currentPhpFile === "game_display.php") {
                                     netvarde: usernetworth, // Use the networth from ekonomi table
                                 };
 
-                                fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+                                fetch('http://localhost:3000/ekonomi')
                                 .then(res => res.json())
                                 .then(ekonomiResponse => {
                                     // Find the user in the ekonomi table based on username
@@ -1196,7 +1196,7 @@ if (currentPhpFile === "game_display.php") {
                                         };
 
                                         // Send the updated data to the backend
-                                        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                                        fetch('http://localhost:3000/update-ekonomi', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify(updateData),
@@ -1216,7 +1216,7 @@ if (currentPhpFile === "game_display.php") {
                                 })
                     
                                 // Send the data to the backend to insert into the Spel database
-                                const insertResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
+                                const insertResponse = await fetch('http://localhost:3000/insert-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(dataToInsert),
@@ -1860,6 +1860,7 @@ Events.on(engine, 'collisionEnd', (event) => {
     const gameOverPopup = document.getElementById('game-over-popup');
     const popupCloseButton = document.getElementById('popup-close');
     const popupOverlay = document.getElementById('popup-overlay');
+    const username = phpFileInfoElement.dataset.username;
 
     let level = 1;
     let attempts = 3;
@@ -1895,14 +1896,18 @@ Events.on(engine, 'collisionEnd', (event) => {
     function createGrid() {
         gridContainer.innerHTML = '';
         originalColors = []; // Clear colors each time grid is created
-
+    
         for (let i = 0; i < 16; i++) {
             const box = document.createElement('div');
             box.className = 'grid-box';
+            box.style.pointerEvents = ''; // Reset interaction
+            box.classList.remove('disabled'); // Reset disabled state
             box.addEventListener('click', () => handleBoxClick(box, i));
             gridContainer.appendChild(box);
         }
     }
+    
+    
 
     function startGame() {
         gameStarted = true; // Game starts
@@ -1942,12 +1947,21 @@ Events.on(engine, 'collisionEnd', (event) => {
     }
 
     function handleBoxClick(box, index) {
-        if (!gameStarted) return; // Ignore clicks before the game starts
-
+        if (!gameStarted || box.classList.contains('clicked')) return; // Ignore clicks if game hasn't started or box is already clicked
+    
         if (index === targetBoxIndex) {
             box.style.backgroundColor = 'green';
             box.style.transform = 'scale(1.2)';
+            box.classList.add('clicked'); // Mark the box as clicked
             clearInterval(timerInterval);
+    
+            // Disable all other boxes immediately
+            const boxes = document.querySelectorAll('.grid-box');
+            boxes.forEach((b) => {
+                b.classList.add('disabled');
+                b.style.pointerEvents = 'none'; // Disable interaction
+            });
+    
             setTimeout(() => {
                 level++;
                 colorDifference = Math.max(5, colorDifference - 5);
@@ -1957,45 +1971,126 @@ Events.on(engine, 'collisionEnd', (event) => {
         } else {
             box.style.backgroundColor = 'red';
             box.style.transform = 'scale(1.2)';
+            box.classList.add('clicked'); // Mark the box as clicked
             attempts--;
             attemptsDisplay.textContent = `Attempts: ${attempts}`;
-
+    
             setTimeout(() => {
                 box.style.transform = 'scale(1)';
                 box.style.backgroundColor = originalColors[index]; // Revert to original color
+                box.classList.remove('clicked'); // Allow the box to be clicked again if the game continues
             }, 500);
-
+    
             if (attempts <= 0) {
                 handleGameOver();
             }
         }
     }
+    
+    
 
     function handleGameOver() {
-        gameStarted = false; // Stop the game
-        clearInterval(timerInterval);
-    
-        // Calculate total time played
-        timePlayed = Math.floor((Date.now() - startTime) / 1000);
-    
-        // Calculate experience and money earned
-        const experience = level * 10;
-        const money = level * 10;
-    
-        // Update popup content
-        document.getElementById('popup-level').textContent = `Level: ${level}`;
-        document.getElementById('popup-time').textContent = `Time Played: ${timePlayed}s`;
-        document.getElementById('popup-exp').textContent = `Experience Gained: ${experience}`;
-        document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
-    
-        // Show the popup
-        popupOverlay.style.display = 'block';
-    
-        // Add a slight delay before setting the animation state for smoothness
-        setTimeout(() => {
-            gameOverPopup.style.opacity = '1';
-            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-        }, 100);
+        if (username != "guest") {
+            gameStarted = false; // Stop the game
+            clearInterval(timerInterval);
+        
+            // Calculate total time played
+            timePlayed = Math.floor((Date.now() - startTime) / 1000);
+
+            function getUserLevel(username) {
+                return fetch('http://localhost:3000/poangssystem') // Ensure the correct URL
+                    .then(response => response.json()) // Convert the response to JSON
+                    .then(data => {
+                        // Loop through the data and find the match for level
+                        for (const user of data) {
+                            if (user.Namn === username) {
+                                return user.Levels; // Return the level when found
+                            }
+                        }
+                        // If no match is found
+                        return 'User not found';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching level data:', error); // Handle any errors
+                        return null; // Return null in case of error
+                    });
+            }
+            
+            function getUserNetWorth(username) {
+                return fetch('http://localhost:3000/netvarde') // Ensure the correct URL
+                    .then(response => response.json()) // Convert the response to JSON
+                    .then(data => {
+                        // Loop through the data and find the match for networth
+                        for (const user of data) {
+                            if (user.username === username) { // Match with 'username' column
+                                return user.networth; // Return the networth when found
+                            }
+                        }
+                        // If no match is found
+                        return 'Networth not found';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching networth data:', error); // Handle any errors
+                        return null; // Return null in case of error
+                    });
+            }
+            
+            // Function to get both user level and networth in parallel
+            function getUserData(username) {
+                // Fetch level and networth in parallel using Promise.all
+                Promise.all([getUserLevel(username), getUserNetWorth(username)])
+                    .then(([userlevel, userNetWorth]) => {
+                        if (userlevel && userNetWorth) {
+                            const experience = 2 * level * userlevel;
+                            const money = 2 * level * userlevel;
+                            let averagetime = timePlayed / level;
+
+                            
+                            document.getElementById('popup-level').textContent = `Level: ${userlevel}`;
+                            document.getElementById('popup-time').textContent = `Time Played: ${timePlayed}s`;
+                            document.getElementById('popup-exp').textContent = `Experience Gained: ${experience}`;
+                            document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
+                            document.getElementById('popup-networth').textContent = `Networth: ${userNetWorth}`; // Display networth
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error getting user data:', error);
+                    });
+            }
+            
+            // Example usage
+            getUserData(username);
+                        
+        
+            // Show the popup
+            popupOverlay.style.display = 'block';
+        
+            // Add a slight delay before setting the animation state for smoothness
+            setTimeout(() => {
+                gameOverPopup.style.opacity = '1';
+                gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+            }, 100);
+        } else if (username == "guest") {
+            gameStarted = false; // Stop the game
+            clearInterval(timerInterval);
+        
+            // Calculate total time played
+            timePlayed = Math.floor((Date.now() - startTime) / 1000);
+        
+            // Update popup content
+            document.getElementById('popup-level').textContent = `Level: ${level}`;
+            document.getElementById('popup-time').textContent = `Time Played: ${timePlayed}s`;
+        
+            // Show the popup
+            popupOverlay.style.display = 'block';
+        
+            // Add a slight delay before setting the animation state for smoothness
+            setTimeout(() => {
+                gameOverPopup.style.opacity = '1';
+                gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+            }, 100);
+        }
+
     }
     
 
@@ -2546,7 +2641,7 @@ Events.on(engine, 'collisionEnd', (event) => {
         const modes = [
             { text: "Memory - Topplista", tileTexts: ["Nivå", "Level", "Tid/Level", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
             { text: "Squigglegolf - Topplista", tileTexts: ["Mängden slag", "Level", "Total tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Colourvision - Topplista", tileTexts: ["Vision 1", "Vision 2", "Vision 3", "Vision 4", "Vision 5", "Vision 6"] },
+            { text: "Colourvision - Topplista", tileTexts: ["Nivå", "Level", "Tid/Level", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
             { text: "Maze Runner - Topplista", tileTexts: ["Maze 1", "Maze 2", "Maze 3", "Maze 4", "Maze 5", "Maze 6"] },
             { text: "Biljard - Topplista", tileTexts: ["Biljard 1", "Biljard 2", "Biljard 3", "Biljard 4", "Biljard 5", "Biljard 6"] },
         ];
@@ -2750,6 +2845,89 @@ Events.on(engine, 'collisionEnd', (event) => {
                         div.appendChild(rightSpan);
                         innerTile.appendChild(div);
                     });
+                } else if (modes[currentMode].text === "Squigglegolf - Topplista") {
+                    const endpoint = "http://localhost:3000/squigglegolf";
+                
+                    fetch(endpoint)
+                        .then((response) => {
+                            if (!response.ok) {
+                                throw new Error("Failed to fetch squigglegolf data");
+                            }
+                            return response.json();
+                        })
+                        .then((squigglegolfData) => {
+                            tiles.forEach((tile, index) => {
+                                tile.innerHTML = ""; // Clear previous content
+                                
+                                const container = document.createElement("div");
+                                container.style.display = "flex";
+                                container.style.flexDirection = "column";
+                                container.style.alignItems = "center";
+                                container.style.height = "100%";
+                                container.style.width = "100%";
+                
+                                const outerText = document.createElement("div");
+                                outerText.textContent = modes[currentMode].tileTexts[index];
+                                outerText.style.textAlign = "center";
+                                outerText.style.marginBottom = "10px";
+                                outerText.style.fontWeight = "bold";
+                                container.appendChild(outerText);
+                
+                                const innerTile = document.createElement("div");
+                                innerTile.classList.add("inner-tile");
+                                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
+                                innerTile.style.color = "white";
+                                innerTile.style.padding = "10px";
+                                innerTile.style.height = "85%";
+                                innerTile.style.width = "90%";
+                                innerTile.style.overflowY = "auto";
+                                innerTile.style.maxHeight = "100%";
+                                innerTile.style.borderRadius = "5px";
+                                innerTile.style.display = "flex";
+                                innerTile.style.flexDirection = "column";
+                                innerTile.style.justifyContent = "flex-start";
+                
+                                // Sort and rank based on the current column
+                                const columnKeys = ["slag", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
+                                const columnKey = columnKeys[index];
+                
+                                // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
+                                const isAscending = index === 0 || index === 2; // Ascending for index 0 and 2
+                                squigglegolfData.sort((a, b) => {
+                                    return isAscending
+                                        ? a[columnKey] - b[columnKey] // Ascending order
+                                        : b[columnKey] - a[columnKey]; // Descending order
+                                }).forEach((row, rank) => {
+                                    const div = document.createElement("div");
+                                    div.style.display = "flex";
+                                    div.style.justifyContent = "space-between";
+                                    div.style.margin = "5px 0";
+                                    div.style.padding = "10px";
+                                    div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                                    div.style.borderRadius = "3px";
+                
+                                    const leftSpan = document.createElement("span");
+                                    leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
+                                    leftSpan.style.flex = "1";
+                                    leftSpan.style.textAlign = "left";
+                
+                                    const rightSpan = document.createElement("span");
+                                    rightSpan.textContent = `${row[columnKey]}`;
+                                    rightSpan.style.flex = "0";
+                                    rightSpan.style.textAlign = "right";
+                
+                                    div.appendChild(leftSpan);
+                                    div.appendChild(rightSpan);
+                                    innerTile.appendChild(div);
+                                });
+                
+                                container.appendChild(innerTile);
+                                tile.appendChild(container);
+                            });
+                        })
+                        .catch((error) => {
+                            console.error("Error fetching Squigglegolf data:", error);
+                        });
                 } else {
                     const numberOfDivs = userCounts[modes[currentMode].text.toLowerCase().split(" - ")[0]] || 0;
                     for (let i = 1; i <= numberOfDivs; i++) {
@@ -2774,48 +2952,50 @@ Events.on(engine, 'collisionEnd', (event) => {
     
         function fetchLeaderboardData() {
             Promise.all([
-                fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then((response) => {
+                fetch("http://localhost:3000/user-counts").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch user counts");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/niva").then((response) => {
+                fetch("http://localhost:3000/memory/niva").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory levels");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/levels").then((response) => {
+                fetch("http://localhost:3000/memory/levels").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory levels");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/tid").then((response) => {
+                fetch("http://localhost:3000/memory/tid").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory time");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/pengar").then((response) => {
+                fetch("http://localhost:3000/memory/pengar").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory money data");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/exp").then((response) => {
+                fetch("http://localhost:3000/memory/exp").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory EXP data");
                     }
                     return response.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/netvarde").then((response) => {
+                
+                fetch("http://localhost:3000/memory/netvarde").then((response) => {
                     if (!response.ok) {
                         throw new Error("Failed to fetch memory net worth data");
                     }
                     return response.json();
                 })
+                
             ])
             .then(([userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData]) => {
                 updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData);

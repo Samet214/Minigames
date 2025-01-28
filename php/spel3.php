@@ -1,3 +1,14 @@
+<?php
+session_start();
+
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
+} else {
+    $username = 'guest';
+}
+
+?>
+
 <!DOCTYPE html>
 <html data-page="spel3">
 <head>
@@ -6,6 +17,7 @@
     <title>Color Game</title>
 </head>
 <body>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" data-username="<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>"></div>
     <!-- New wrapper div to keep level text above the game container -->
     <div id="game-wrapper">
         <h2 id="level-info" style="display: none;">Level: 1</h2>

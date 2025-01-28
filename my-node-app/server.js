@@ -494,22 +494,43 @@ app.post('/insert-memory', (req, res) => {
 });
 
 app.post('/update-ekonomi', (req, res) => {
-  const { username, value, networth } = req.body;
+  const { username, pengar_tjanat } = req.body;
 
   const query = `
       UPDATE ekonomi
-      SET value = ?, networth = ?
+      SET value = value + ?, networth = networth + ?
       WHERE username = ?
   `;
 
-  ekonomiDb.query(query, [value, networth, username], (err, results) => {
+  ekonomiDb.query(query, [pengar_tjanat, pengar_tjanat, username], (err, results) => {
       if (err) {
           console.error('Error updating ekonomi table:', err);
           return res.status(500).json({ success: false, message: 'Failed to update ekonomi data.' });
       }
-      res.json({ success: true });
+      res.json({ success: true, message: `Added ${pengar_tjanat} to value and networth.` });
   });
 });
+
+
+
+app.post('/update-netvarde', (req, res) => {
+  const { username, pengar_tjanat } = req.body;
+
+  const query = `
+      UPDATE poängssystem
+      SET EXP = EXP + ?
+      WHERE Namn = ?
+  `;
+
+  anvandarDb.query(query, [pengar_tjanat, username], (err, results) => {
+      if (err) {
+          console.error('Error updating anvandar table:', err);
+          return res.status(500).json({ success: false, message: 'Failed to update anvandar data.' });
+      }
+      res.json({ success: true, message: `Added ${pengar_tjanat} to value and networth.` });
+  });
+});
+
 
 app.get('/anvandare', (req, res) => {
   const query = `SELECT * FROM användare;`;

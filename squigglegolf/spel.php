@@ -1296,7 +1296,7 @@ async function handleEnd(reason) {
             document.getElementById("playbtn").addEventListener("click", startTimer);
 
             // Fetch from poangssystem
-            await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+            await fetch('http://localhost:3000/poangssystem')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     const poangMatch = memoryResponse.find(entry => entry.Namn === username);
@@ -1304,7 +1304,7 @@ async function handleEnd(reason) {
                         levels = poangMatch.Levels; // Assign 'Levels' to the outer variable
 
                         // Fetch from ekonomi
-                        return fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                        return fetch('http://localhost:3000/ekonomi');
                     } else {
       
                     }
@@ -1338,8 +1338,61 @@ async function handleEnd(reason) {
         const pengar_tjanat = Math.round(10000 * (levels / (totalStrokes * timeTaken)));
         const exp_tjanat = Math.round(10000 * (levels / (totalStrokes * timeTaken)));
 
+        networth += pengar_tjanat;
+
+        fetch('http://localhost:3000/update-ekonomi', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username, // Replace with the actual username variable
+                pengar_tjanat: pengar_tjanat,
+            }),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to update ekonomi');
+                }
+            })
+            .then((data) => {
+                console.log(data.message); // Log success message
+            })
+            .catch((error) => {
+                console.error('Error updating ekonomi:', error); // Log error
+            });
+
+        fetch('http://localhost:3000/update-netvarde', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username, // Replace with the actual username variable
+                pengar_tjanat: pengar_tjanat,
+            }),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to update ekonomi');
+                }
+            })
+            .then((data) => {
+                console.log(data.message); // Log success message
+            })
+            .catch((error) => {
+                console.error('Error updating ekonomi:', error); // Log error
+            });
+        
+    };
+
+
         // Send data to the server
-        const response = await fetch('http://samet-desktop.adm.huddinge.se:3000/update-squigglegolf', {
+        const response = await fetch('http://localhost:3000/update-squigglegolf', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1364,8 +1417,6 @@ async function handleEnd(reason) {
         alert(`You finished the entire course in ${timeTaken} seconds, congrats!`);
     }
     }
-    
-}
 
 // Call startTimer() when the game starts
 document.getElementById("playbtn").addEventListener("click", startTimer);
