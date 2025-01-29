@@ -154,7 +154,11 @@ db.connect(err => {
 });
 
 app.post('/update-memory', (req, res) => {
-  const { username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde } = req.body;
+  const { updatedData, currentGameData } = req.body;
+
+  const { username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde } = updatedData;
+
+  const { nivå: gameNivå, level: gameLevel, pengar_tjanat: gamePengar, exp_tjanat: gameExp, tid: gameTid, netvarde: gameNetvarde } = currentGameData;
 
   if (!username || nivå == null || level == null || pengar_tjanat == null || exp_tjanat == null || tid == null || netvarde == null) {
       return res.status(400).json({ error: 'Invalid request body' });
@@ -189,7 +193,6 @@ app.post('/update-memory', (req, res) => {
           SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ?
           WHERE username = ?
       `;
-
       db.query(
           updateQuery,
           [
@@ -211,6 +214,42 @@ app.post('/update-memory', (req, res) => {
               res.json({ message: 'User updated successfully', user: updatedUser });
           }
       );
+
+      const updateQuery2 = `UPDATE ekonomi SET value = value + ?, networth = networth + ? WHERE username = ?`;
+
+      ekonomiDb.query(
+        updateQuery2,
+        [
+          gamePengar,
+          gamePengar,
+          username,
+        ],
+        (err, updateResults) => {
+          if (err) {
+              console.error('Error updating user:', err);
+              return res.status(500).json({ error: 'Failed to update user' });
+          }
+
+          console.log('User updated successfully:', updatedUser);
+      }
+      )
+      const updateQuery3 = `UPDATE poängssystem SET EXP = EXP + ? WHERE Namn = ?`;
+
+      anvandarDb.query(
+        updateQuery3,
+        [
+          gameExp,
+          username,
+        ],
+        (err, updateResults) => {
+          if (err) {
+              console.error('Error updating user:', err);
+              return res.status(500).json({ error: 'Failed to update user' });
+          }
+
+          console.log('User updated successfully:', updatedUser);
+      }
+      )
   });
 });
 
