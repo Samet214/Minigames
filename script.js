@@ -2401,6 +2401,7 @@ popupOverlay.addEventListener('click', (e) => {
         
         }
         
+        
         class Player {
             constructor(maze) {
                 this.maze = maze;
@@ -2441,31 +2442,42 @@ popupOverlay.addEventListener('click', (e) => {
             }
         
             canMoveTo(row, col) {
-                return (
-                    row >= 0 &&
-                    row < this.maze.rows &&
-                    col >= 0 &&
-                    col < this.maze.cols &&
-                    !this.maze.maze[row][col].includes("wall")
-                );
+                if (
+                    row < 0 ||
+                    row >= this.maze.rows ||
+                    col < 0 ||
+                    col >= this.maze.cols
+                ) {
+                    console.log("Out of bounds:", { row, col });
+                    return false;
+                }
+            
+                const cell = this.maze.maze[row][col];
+                if (cell.includes("wall")) {
+                    console.log("Wall collision:", { row, col });
+                    return false;
+                }
+            
+                return true;
             }
         
             generateNewMaze() {
-                let width = 40; // Random width (min: 4)
-                let height = 24; // Random height (min: 4)
-                const newMaze = new MazeBuilder(width, height); // Create a new maze
-                newMaze.placeKey(); // Place the key in the new maze
-                newMaze.display("maze_container"); // Display the new maze
+                if(monster) monster.stopHunting();
+                
+                let width = 40;
+                let height = 24;
+                const newMaze = new MazeBuilder(width, height);
+                newMaze.placeKey();
+                newMaze.display("maze_container");
             
-                this.maze = newMaze; // Update the player's maze reference
-                this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 }; // Reset player position
-                this.hasKey = false; // Reset the key
-                this.updatePlayerPosition(); // Update the player position in the UI
+                this.maze = newMaze;
+                this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 };
+                this.hasKey = false;
+                this.updatePlayerPosition();
             
-                // Reinitialize the monster with the new maze
-                monster.maze = newMaze; // Update the monster's maze reference
-                monster.position = { row: 1, col: 1 }; // Reset monster position (example starting point)
-                monster.startMovement(); // Restart the monster's movement behavior
+                monster = new Monster(newMaze);
+                monster.init();
+                startTimer();
             }
             
         
@@ -2474,7 +2486,7 @@ popupOverlay.addEventListener('click', (e) => {
                 if (cell.includes("key")) {
                     this.pickUpKey();
                 } else if (cell.includes("exit") && this.hasKey) {
-                    this.generateNewMaze(); // Call a method to create a new maze
+                    completeMaze(); // Increment level and reset timer
                 }
             }
             
@@ -2510,9 +2522,29 @@ popupOverlay.addEventListener('click', (e) => {
         class Monster {
             constructor(maze) {
                 this.maze = maze;
-                this.position = { row: 1, col: 1 }; // Start near the entrance
+                this.position = { row: 1, col: 1 };
+                this.huntInterval = null; // Track the interval
+            }
+
+            startHunting() {
+                if (this.huntInterval) {
+                    clearInterval(this.huntInterval); // Clear any existing interval
+                }
+                this.huntInterval = setInterval(() => this.moveTowardsPlayer(), 500);
+            }
+
+            resetPosition() {
+                this.position = { row: 1, col: 1 }; // Reset to starting position
+                this.updateMonsterPosition();
             }
         
+            stopHunting() {
+                if (this.huntInterval) {
+                    clearInterval(this.huntInterval);
+                    this.huntInterval = null; // Reset the interval tracker
+                }
+            }
+            
             init() {
                 this.updateMonsterPosition();
                 this.startHunting();
@@ -2520,10 +2552,8 @@ popupOverlay.addEventListener('click', (e) => {
         
             canMoveTo(row, col) {
                 return (
-                    row >= 0 &&
-                    row < this.maze.rows &&
-                    col >= 0 &&
-                    col < this.maze.cols &&
+                    row >= 0 && row < this.maze.rows &&
+                    col >= 0 && col < this.maze.cols &&
                     !this.maze.maze[row][col].includes("wall")
                 );
             }
@@ -2535,30 +2565,24 @@ popupOverlay.addEventListener('click', (e) => {
                     { row: 0, col: -1 }, // Left
                     { row: 0, col: 1 },  // Right
                 ];
-        
                 const queue = [{ row: this.position.row, col: this.position.col, path: [] }];
                 const visited = Array.from({ length: this.maze.rows }, () => Array(this.maze.cols).fill(false));
                 visited[this.position.row][this.position.col] = true;
         
                 while (queue.length > 0) {
                     const { row, col, path } = queue.shift();
-        
-                    if (row === targetRow && col === targetCol) {
-                        return path;
-                    }
+                    if (row === targetRow && col === targetCol) return path;
         
                     for (const direction of directions) {
                         const newRow = row + direction.row;
                         const newCol = col + direction.col;
-        
                         if (this.canMoveTo(newRow, newCol) && !visited[newRow][newCol]) {
                             visited[newRow][newCol] = true;
                             queue.push({ row: newRow, col: newCol, path: [...path, direction] });
                         }
                     }
                 }
-        
-                return []; // No path found
+                return [];
             }
         
             moveTowardsPlayer() {
@@ -2573,32 +2597,124 @@ popupOverlay.addEventListener('click', (e) => {
             }
         
             startHunting() {
-                setInterval(() => this.moveTowardsPlayer(), 500); // Move every 0.5 seconds
+                this.huntInterval = setInterval(() => this.moveTowardsPlayer(), 500);
             }
         
             updateMonsterPosition() {
-                document.querySelectorAll(".monster").forEach((el) => el.classList.remove("monster"));
-                const currentCell = document
-                    .getElementById("maze")
-                    .children[this.position.row]
-                    .children[this.position.col];
-                currentCell.classList.add("monster");
+                document.querySelectorAll(".monster").forEach(el => el.classList.remove("monster"));
+                document.getElementById("maze").children[this.position.row].children[this.position.col].classList.add("monster");
             }
         
             checkCollision() {
-                const { row, col } = this.position;
-                if (row === player.position.row && col === player.position.col) {
-                    alert("You were caught by the monster! Generating a new maze...");
-                    this.restartGame();
+                if (this.position.row === player.position.row && this.position.col === player.position.col) {
+                    attempts--;
+                    updateHUD();
+                    if (attempts > 0) {
+                        alert("You were caught! Generating a new maze...");
+                        player.generateNewMaze();
+                        startTimer(); // Reset the timer
+                    } else {
+                        alert("You lost!");
+                        resetGame(); // Reset the game, including the timer
+                    }
                 }
             }
-        
-            restartGame() {
-                player.generateNewMaze();
-                this.position = { row: 1, col: 1 }; // Reset monster position
-                this.updateMonsterPosition();
-            }
         }
+
+        let level = 1;
+        let attempts = 3;
+        let timeLeft = 180;
+        let timer;
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 180;
+            document.getElementById("time_counter").textContent = timeLeft; // Immediate update
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById("time_counter").textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert("You lost!");
+                    resetGame();
+                }
+            }, 1000);
+        }
+
+        function updateHUD() {
+            document.getElementById("level_counter").textContent = level;
+            document.getElementById("time_counter").textContent = timeLeft;
+            document.getElementById("attempts_counter").textContent = attempts;
+        }
+
+        function resetGame() {
+            level = 1;
+            attempts = 3;
+            timeLeft = 180;
+            clearInterval(timer);
+        
+            if (monster) {
+                monster.stopHunting();
+                monster.resetPosition();
+            }
+        
+            if (player) {
+                player.position = { row: Maze.rows - 2, col: Maze.cols - 2 };
+                player.hasKey = false;
+                player.updatePlayerPosition();
+            }
+        
+            document.getElementById("start_page").style.display = "flex";
+            document.getElementById("maze_container").style.display = "none";
+            document.getElementById("game_hud").style.display = "none";
+            localStorage.setItem("currentState", "start");
+        }
+
+        function completeMaze() {
+            level++;
+            updateHUD();
+            alert("Level up! Generating a new maze...");
+            player.generateNewMaze();
+            startTimer(); // Reset the timer
+        }
+
+        // Update the start button event listener
+        document.getElementById("start_button").addEventListener("click", () => {
+            Maze = new MazeBuilder(40, 24);
+            Maze.placeKey();
+            Maze.display("maze_container");
+
+            player = new Player(Maze);
+            player.init();
+
+            monster = new Monster(Maze);
+            monster.init();
+            monster.resetPosition(); // Ensure the monster starts at the correct position
+
+            document.getElementById("start_page").style.display = "none";
+            document.getElementById("maze_container").style.display = "block";
+            document.getElementById("game_hud").style.display = "block";
+            localStorage.setItem("currentState", "maze");
+            updateHUD();
+            startTimer();
+        });
+
+        document.getElementById("menu_button").addEventListener("click", () => {
+            resetGame(); // Completely reset the game state
+            document.getElementById("start_page").style.display = "flex";
+            document.getElementById("maze_container").style.display = "none";
+            document.getElementById("game_hud").style.display = "none";
+            localStorage.setItem("currentState", "start");
+        });
+
+        document.getElementById("menu_button").addEventListener("click", function() {
+            document.getElementById("game_hud").style.display = "none";  // Hide the container
+        });
+        
+        // When the 'Start!' button is clicked, show the game HUD container
+        document.getElementById("start_button").addEventListener("click", function() {
+            document.getElementById("game_hud").style.display = "block";  // Show the container
+        });
 
         let Maze = new MazeBuilder(40,24);
         Maze.placeKey();
@@ -2610,46 +2726,31 @@ popupOverlay.addEventListener('click', (e) => {
 
         let monster = new Monster(Maze);
         monster.init();
+        updateHUD();
 
         document.addEventListener("DOMContentLoaded", () => {
-        const startButton = document.getElementById("start_button");
-        const menuButton = document.getElementById("menu_button");
-        const startPage = document.getElementById("start_page");
-        const mazeContainer = document.getElementById("maze_container");
-
-        // Restore state from localStoragez
-        const currentState = localStorage.getItem("currentState");
-
-        if (currentState === "maze") {
-            startPage.style.display = "none";
-            mazeContainer.style.display = "block";
-        } else {
-            startPage.style.display = "block";
-            mazeContainer.style.display = "none";
-            startPage.style.display = "flex";
-            startPage.style.justifyContent = "center";
-            startPage.style.alignItems = "center";
-            startPage.style.height = "100vh"; // Ensure full viewport height
-        }
-
-        // Start button event
-        startButton.addEventListener("click", () => {
-            startPage.style.display = "none";
-            mazeContainer.style.display = "block";
-            localStorage.setItem("currentState", "maze"); // Save the current state
+            const currentState = localStorage.getItem("currentState");
+            
+            // Reset game state when first loading or returning to start screen
+            resetGame();
+            
+            if(currentState === "maze") {
+                document.getElementById("start_page").style.display = "none";
+                document.getElementById("maze_container").style.display = "block";
+                document.getElementById("game_hud").style.display = "block";
+                
+                // Recreate game state
+                Maze = new MazeBuilder(40, 24);
+                Maze.placeKey();
+                Maze.display("maze_container");
+                player = new Player(Maze);
+                player.init();
+                monster = new Monster(Maze);
+                monster.init();
+                updateHUD();
+                startTimer();
+            }
         });
-
-        // Menu button event
-        menuButton.addEventListener("click", () => {
-            startPage.style.display = "block";
-            mazeContainer.style.display = "none";
-            startPage.style.display = "flex";
-            startPage.style.justifyContent = "center";
-            startPage.style.alignItems = "center";
-            startPage.style.height = "100vh"; // Ensure full viewport height
-            localStorage.setItem("currentState", "start"); // Save the current state
-        });
-    });
 
     
 

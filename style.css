@@ -3407,6 +3407,36 @@ html[data-page="spel4"] body {
     color: #fff; /* Ensure text is readable */
 }
 
+/* Make sure the game HUD stays on top without pushing other content */
+html[data-page="spel4"] #game_hud {
+    position: fixed;  /* Keeps it fixed in place */
+    top: 20px;  /* Positioned at the top of the screen */
+    left: 460px;
+    width: 40%;
+    padding: 10px 20px;  /* Adds some spacing around the HUD */
+    box-sizing: border-box;
+    z-index: 1000;  /* Makes sure it's above other content */
+}
+
+/* The container for the counters */
+html[data-page="spel4"] #hud_container {
+    display: flex;  /* Enables flexbox layout */
+    justify-content: space-between;  /* Spreads the text out evenly */
+    background-color: #4CAF50;  /* Green background for the container */
+    padding: 10px;
+    border-radius: 8px;
+    color: white;  /* Text color */
+    font-size: 16px;
+}
+
+/* Ensure each counter is styled */
+html[data-page="spel4"] #hud_container p {
+    margin: 0;  /* Remove default margin */
+    font-weight: bold;  /* Make the text bold */
+    white-space: nowrap;  /* Prevent text from wrapping to the next line */
+}
+
+
 
 /*topplista.php*/
 
