@@ -3407,26 +3407,6 @@ html[data-page="spel4"] body {
     color: #fff; /* Ensure text is readable */
 }
 
-html[data-page="spel4"] #wooden-board {
-    width: 300px;
-    height: 50px;
-    background-color: red;
-    margin-left: 42%;
-}
-
-html[data-page="spel4"] #wooden-triangle {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    border-top: 60px solid transparent; /* Top side is transparent */
-    border-left: 80px solid green;      /* Left side forms the triangle */
-    border-right: 0;                   /* Right side is removed */
-    border-bottom: 0;                  /* Bottom side is removed */
-    margin: 2rem;
-    rotate: 180deg;
-    margin-left: -80px;
-    margin-top: -10px;
-}
 
 /*topplista.php*/
 

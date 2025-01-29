@@ -2124,12 +2124,21 @@ popupOverlay.addEventListener('click', (e) => {
         
             constructor(width, height) {
         
-            this.width = width;
-            this.height = height;
-        
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+    
+            // Calculate maximum rows and columns based on screen size
+            const cellSize = 20; // Size of each cell in pixels
+            const maxCols = Math.floor(screenWidth / cellSize);
+            const maxRows = Math.floor(screenHeight / cellSize);
+    
+            // Ensure the maze has at least 4 rows and columns
+            this.width = Math.max(4, Math.floor(maxCols / 2));
+            this.height = Math.max(4, Math.floor(maxRows / 2));
+    
             this.cols = 2 * this.width + 1;
             this.rows = 2 * this.height + 1;
-        
+    
             this.maze = this.initArray([]);
         
             /* place initial walls */
@@ -2641,6 +2650,8 @@ popupOverlay.addEventListener('click', (e) => {
             localStorage.setItem("currentState", "start"); // Save the current state
         });
     });
+
+    
 
         
 } else if (currentPhpFile === "topplista.php") {
