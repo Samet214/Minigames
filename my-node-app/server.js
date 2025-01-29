@@ -835,7 +835,16 @@ app.post('/updateUserStats', (req, res) => {
   });
 });
 
-
+app.get("/get-networth", (req, res) => {
+  const sql = "SELECT username, networth FROM ekonomi";
+  
+  ekonomiDb.query(sql, (err, results) => {
+      if (err) {
+          return res.status(500).json({ error: "Database query error" });
+      }
+      res.json(results);
+  });
+});
 
 // Start the server on a specific port
 const PORT = 3000;

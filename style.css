@@ -3411,7 +3411,7 @@ html[data-page="spel4"] body {
 html[data-page="spel4"] #game_hud {
     position: fixed;  /* Keeps it fixed in place */
     top: 20px;  /* Positioned at the top of the screen */
-    left: 460px;
+    left: 30%;
     width: 40%;
     padding: 10px 20px;  /* Adds some spacing around the HUD */
     box-sizing: border-box;
@@ -3436,6 +3436,60 @@ html[data-page="spel4"] #hud_container p {
     white-space: nowrap;  /* Prevent text from wrapping to the next line */
 }
 
+
+/* Dark overlay */
+html[data-page="spel4"] #popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+/* Popup box */
+html[data-page="spel4"] #popup {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+    transform: translateY(-100%);
+    transition: transform 0.4s ease-out;
+    width: 300px;
+}
+
+/* Show popup animation */
+html[data-page="spel4"] #popup-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+html[data-page="spel4"] #popup-overlay.show #popup {
+    transform: translateY(0);
+}
+
+/* Close button */
+html[data-page="spel4"] #close-popup {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+html[data-page="spel4"] #close-popup:hover {
+    color: red;
+}
 
 
 /*topplista.php*/

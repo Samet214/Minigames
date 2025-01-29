@@ -1009,7 +1009,7 @@ if (currentPhpFile === "game_display.php") {
         
     
         if (username !== 'guest') {
-            fetch('http://localhost:3000/memory')
+            fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     let userExists = false;
@@ -1023,7 +1023,7 @@ if (currentPhpFile === "game_display.php") {
                             (async () => {
                                 try {
                                     // Fetch the response from the API
-                                    const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
+                                    const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
                                     
                                     // Parse the response as JSON
                                     const poangssystemData = await poangssystemResponse.json();
@@ -1068,7 +1068,7 @@ if (currentPhpFile === "game_display.php") {
                                 };
         
                                 // Send updated data to the backend
-                                return fetch('http://localhost:3000/update-memory', {
+                                return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
@@ -1097,7 +1097,7 @@ if (currentPhpFile === "game_display.php") {
                     
                             try {
                                 // Fetch data from the poängssystem endpoint
-                                const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
+                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
                                 const poangssystemData = await poangssystemResponse.json();
                     
                                 // Look for a match in the 'Namn' column
@@ -1110,7 +1110,7 @@ if (currentPhpFile === "game_display.php") {
                                 }
                     
                                 // Fetch data from the ekonomi endpoint
-                                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi');
+                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
                                 const ekonomiData = await ekonomiResponse.json();
                     
                                 // Look for a match in the 'username' column
@@ -1142,7 +1142,7 @@ if (currentPhpFile === "game_display.php") {
                                     netvarde: usernetworth, // Use the networth from ekonomi table
                                 };
 
-                                fetch('http://localhost:3000/ekonomi')
+                                fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
                                 .then(res => res.json())
                                 .then(ekonomiResponse => {
                                     // Find the user in the ekonomi table based on username
@@ -1161,7 +1161,7 @@ if (currentPhpFile === "game_display.php") {
                                         };
 
                                         // Send the updated data to the backend
-                                        fetch('http://localhost:3000/update-ekonomi', {
+                                        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify(updateData),
@@ -1181,7 +1181,7 @@ if (currentPhpFile === "game_display.php") {
                                 })
                     
                                 // Send the data to the backend to insert into the Spel database
-                                const insertResponse = await fetch('http://localhost:3000/insert-memory', {
+                                const insertResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(dataToInsert),
@@ -1963,7 +1963,7 @@ function handleGameOver() {
         totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
 
         function getUserLevel(username) {
-            return fetch('http://localhost:3000/poangssystem') // Ensure the correct URL
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem') // Ensure the correct URL
                 .then(response => response.json()) // Convert the response to JSON
                 .then(data => {
                     // Loop through the data and find the match for level
@@ -1982,7 +1982,7 @@ function handleGameOver() {
         }
 
         function getUserNetWorth(username) {
-            return fetch('http://localhost:3000/netvarde') // Ensure the correct URL
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde') // Ensure the correct URL
                 .then(response => response.json()) // Convert the response to JSON
                 .then(data => {
                     // Loop through the data and find the match for networth
@@ -2016,7 +2016,7 @@ function handleGameOver() {
                         document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
         
                         // Update user stats in the API
-                        fetch('http://localhost:3000/updateUserStats', {
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateUserStats', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -2034,7 +2034,7 @@ function handleGameOver() {
                             .catch(error => console.error('Error updating user stats:', error));
         
                         // Update ekonomi database
-                        fetch('http://localhost:3000/updateEkonomi', {
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateEkonomi', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -2049,7 +2049,7 @@ function handleGameOver() {
         
                         // Update användarinformation database
                         console.log(experience);
-                        fetch('http://localhost:3000/updateAnvandarinformation', {
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateAnvandarinformation', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -2448,13 +2448,11 @@ popupOverlay.addEventListener('click', (e) => {
                     col < 0 ||
                     col >= this.maze.cols
                 ) {
-                    console.log("Out of bounds:", { row, col });
                     return false;
                 }
             
                 const cell = this.maze.maze[row][col];
                 if (cell.includes("wall")) {
-                    console.log("Wall collision:", { row, col });
                     return false;
                 }
             
@@ -2506,7 +2504,6 @@ popupOverlay.addEventListener('click', (e) => {
         
                 // Update UI for key possession
                 document.getElementById("maze_score").classList.add("has-key");
-                alert("You picked up the key!");
             }
         
             updatePlayerPosition() {
@@ -2610,11 +2607,10 @@ popupOverlay.addEventListener('click', (e) => {
                     attempts--;
                     updateHUD();
                     if (attempts > 0) {
-                        alert("You were caught! Generating a new maze...");
                         player.generateNewMaze();
                         startTimer(); // Reset the timer
                     } else {
-                        alert("You lost!");
+                        showPopup(level, total_tid, pengar_tjänat, exp_tjänat);
                         resetGame(); // Reset the game, including the timer
                     }
                 }
@@ -2623,19 +2619,18 @@ popupOverlay.addEventListener('click', (e) => {
 
         let level = 1;
         let attempts = 3;
-        let timeLeft = 180;
+        let timeLeft = 10;
         let timer;
 
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 180;
+            timeLeft = 10;
             document.getElementById("time_counter").textContent = timeLeft; // Immediate update
             timer = setInterval(() => {
                 timeLeft--;
                 document.getElementById("time_counter").textContent = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    alert("You lost!");
                     resetGame();
                 }
             }, 1000);
@@ -2647,10 +2642,35 @@ popupOverlay.addEventListener('click', (e) => {
             document.getElementById("attempts_counter").textContent = attempts;
         }
 
+        function showPopup(level, tid, pengar, exp) {
+            document.getElementById('popup-level').textContent = level;
+            document.getElementById('popup-tid').textContent = tid;
+            document.getElementById('popup-pengar').textContent = pengar;
+            document.getElementById('popup-exp').textContent = exp;
+    
+            const overlay = document.getElementById('popup-overlay');
+            overlay.classList.add('show');
+    
+            function closePopup() {
+                overlay.classList.remove('show');
+                setTimeout(function() {
+                    resetGame(); // Reset the game after the animation
+                }, 300); // Delay to match the animation duration
+                overlay.removeEventListener('click', outsideClick);
+            }
+    
+            function outsideClick(event) {
+                if (event.target === overlay) closePopup();
+            }
+    
+            document.getElementById('close-popup').onclick = closePopup;
+            overlay.addEventListener('click', outsideClick);
+        }
+
         function resetGame() {
             level = 1;
             attempts = 3;
-            timeLeft = 180;
+            timeLeft = 10;
             clearInterval(timer);
         
             if (monster) {
@@ -2806,217 +2826,175 @@ popupOverlay.addEventListener('click', (e) => {
                 innerTile.style.flexDirection = "column";
                 innerTile.style.justifyContent = "flex-start";
     
-                if (index === 0 && modes[currentMode].text === "Memory - Topplista") {
-                    // Display the Memory - Topplista in the first tile (memoryData)
-                    innerTile.innerHTML = "";
-                    memoryData.sort((a, b) => b.nivå - a.nivå).forEach((row, rank) => {
-                        const div = document.createElement("div");
-                        div.style.display = "flex";
-                        div.style.justifyContent = "space-between";
-                        div.style.margin = "5px 0";
-                        div.style.padding = "10px";
-                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        div.style.borderRadius = "3px";
+                if (modes[currentMode].text === "Memory - Topplista") {
+                    const memoryEndpoint = "http://samet-desktop.adm.huddinge.se:3000/memory";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                 
-                        const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                        leftSpan.style.flex = "1";
-                        leftSpan.style.textAlign = "left";
-                
-                        const rightSpan = document.createElement("span");
-                        rightSpan.textContent = `${row.nivå}`;
-                        rightSpan.style.flex = "0";
-                        rightSpan.style.textAlign = "right";
-                
-                        div.appendChild(leftSpan);
-                        div.appendChild(rightSpan);
-                        innerTile.appendChild(div);
-                    });
-                }
-                
-                  else if (index === 1 && modes[currentMode].text === "Memory - Topplista") {
-                    // Display Memory levels in the second tile (levelsData)
-                    innerTile.innerHTML = "";
-                    levelsData.sort((a, b) => b.level - a.level).forEach((row, rank) => {
-                        const div = document.createElement("div");
-                        div.style.display = "flex";
-                        div.style.justifyContent = "space-between";
-                        div.style.margin = "5px 0";
-                        div.style.padding = "10px";
-                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        div.style.borderRadius = "3px";
-    
-                        const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                        leftSpan.style.flex = "1";
-                        leftSpan.style.textAlign = "left";
-    
-                        const rightSpan = document.createElement("span");
-                        rightSpan.textContent = `${row.level}`;
-                        rightSpan.style.flex = "0";
-                        rightSpan.style.textAlign = "right";
-    
-                        div.appendChild(leftSpan);
-                        div.appendChild(rightSpan);
-                        innerTile.appendChild(div);
-                    });
-                } else if (index === 2 && modes[currentMode].text === "Memory - Topplista") {
-                    // Display Memory time (Tid) in the third tile (tidData)
-                    innerTile.innerHTML = "";
-                    tidData.sort((a, b) => a.tid - b.tid).forEach((row, rank) => {
-                        const div = document.createElement("div");
-                        div.style.display = "flex";
-                        div.style.justifyContent = "space-between";
-                        div.style.margin = "5px 0";
-                        div.style.padding = "10px";
-                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        div.style.borderRadius = "3px";
-    
-                        const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                        leftSpan.style.flex = "1";
-                        leftSpan.style.textAlign = "left";
-    
-                        const rightSpan = document.createElement("span");
-                        rightSpan.textContent = `${row.tid}`;
-                        rightSpan.style.flex = "0";
-                        rightSpan.style.textAlign = "right";
-    
-                        div.appendChild(leftSpan);
-                        div.appendChild(rightSpan);
-                        innerTile.appendChild(div);
-                    });
-                } else if (index === 3 && modes[currentMode].text === "Memory - Topplista") {
-                    // Display Pengar (Money) in the fourth tile (pengarData)
-                    innerTile.innerHTML = "";
-                    pengarData.sort((a, b) => b.pengar_tjanat - a.pengar_tjanat).forEach((row, rank) => {
-                        const div = document.createElement("div");
-                        div.style.display = "flex";
-                        div.style.justifyContent = "space-between";
-                        div.style.margin = "5px 0";
-                        div.style.padding = "10px";
-                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        div.style.borderRadius = "3px";
-    
-                        const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                        leftSpan.style.flex = "1";
-                        leftSpan.style.textAlign = "left";
-    
-                        const rightSpan = document.createElement("span");
-                        rightSpan.textContent = `${row.pengar_tjanat}`;
-                        rightSpan.style.flex = "0";
-                        rightSpan.style.textAlign = "right";
-    
-                        div.appendChild(leftSpan);
-                        div.appendChild(rightSpan);
-                        innerTile.appendChild(div);
-                    });
-                } else if (index === 4 && modes[currentMode].text === "Memory - Topplista") {
-                    // Display EXP in the fifth tile (expData)
-                    innerTile.innerHTML = "";
-                    expData.sort((a, b) => b.exp_tjanat - a.exp_tjanat).forEach((row, rank) => {
-                        const div = document.createElement("div");
-                        div.style.display = "flex";
-                        div.style.justifyContent = "space-between";
-                        div.style.margin = "5px 0";
-                        div.style.padding = "10px";
-                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        div.style.borderRadius = "3px";
-    
-                        const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                        leftSpan.style.flex = "1";
-                        leftSpan.style.textAlign = "left";
-    
-                        const rightSpan = document.createElement("span");
-                        rightSpan.textContent = `${row.exp_tjanat}`;
-                        rightSpan.style.flex = "0";
-                        rightSpan.style.textAlign = "right";
-    
-                        div.appendChild(leftSpan);
-                        div.appendChild(rightSpan);
-                        innerTile.appendChild(div);
-                    });
-                } else if (index === 5 && modes[currentMode].text === "Memory - Topplista") {
-                    // Display Netvärde in the sixth tile (netvardeData)
-                    innerTile.innerHTML = "";
-                    netvardeData.sort((a, b) => b.netvarde - a.netvarde).forEach((row, rank) => {
-                        const div = document.createElement("div");
-                        div.style.display = "flex";
-                        div.style.justifyContent = "space-between";
-                        div.style.margin = "5px 0";
-                        div.style.padding = "10px";
-                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        div.style.borderRadius = "3px";
-    
-                        const leftSpan = document.createElement("span");
-                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                        leftSpan.style.flex = "1";
-                        leftSpan.style.textAlign = "left";
-    
-                        const rightSpan = document.createElement("span");
-                        rightSpan.textContent = `${row.netvarde}`;
-                        rightSpan.style.flex = "0";
-                        rightSpan.style.textAlign = "right";
-    
-                        div.appendChild(leftSpan);
-                        div.appendChild(rightSpan);
-                        innerTile.appendChild(div);
-                    });
-                } else if (modes[currentMode].text === "Squigglegolf - Topplista") {
-                    const endpoint = "http://localhost:3000/squigglegolf";
-                
-                    fetch(endpoint)
-                        .then((response) => {
-                            if (!response.ok) {
-                                throw new Error("Failed to fetch squigglegolf data");
-                            }
+                    // Fetch both datasets
+                    Promise.all([
+                        fetch(memoryEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Memory data");
+                            return response.json();
+                        }),
+                        fetch(ekonomiEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
                             return response.json();
                         })
-                        .then((squigglegolfData) => {
-                            tiles.forEach((tile, index) => {
-                                tile.innerHTML = ""; // Clear previous content
-                                
-                                const container = document.createElement("div");
-                                container.style.display = "flex";
-                                container.style.flexDirection = "column";
-                                container.style.alignItems = "center";
-                                container.style.height = "100%";
-                                container.style.width = "100%";
+                    ])
+                    .then(([memoryData, ekonomiData]) => {
+                        tiles.forEach((tile, index) => {
+                            tile.innerHTML = ""; // Clear previous content
                 
-                                const outerText = document.createElement("div");
-                                outerText.textContent = modes[currentMode].tileTexts[index];
-                                outerText.style.textAlign = "center";
-                                outerText.style.marginBottom = "10px";
-                                outerText.style.fontWeight = "bold";
-                                container.appendChild(outerText);
+                            const container = document.createElement("div");
+                            container.style.display = "flex";
+                            container.style.flexDirection = "column";
+                            container.style.alignItems = "center";
+                            container.style.height = "100%";
+                            container.style.width = "100%";
                 
-                                const innerTile = document.createElement("div");
-                                innerTile.classList.add("inner-tile");
-                                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
-                                innerTile.style.color = "white";
-                                innerTile.style.padding = "10px";
-                                innerTile.style.height = "85%";
-                                innerTile.style.width = "90%";
-                                innerTile.style.overflowY = "auto";
-                                innerTile.style.maxHeight = "100%";
-                                innerTile.style.borderRadius = "5px";
-                                innerTile.style.display = "flex";
-                                innerTile.style.flexDirection = "column";
-                                innerTile.style.justifyContent = "flex-start";
+                            const outerText = document.createElement("div");
+                            outerText.textContent = modes[currentMode].tileTexts[index];
+                            outerText.style.textAlign = "center";
+                            outerText.style.marginBottom = "10px";
+                            outerText.style.fontWeight = "bold";
+                            container.appendChild(outerText);
                 
-                                // Sort and rank based on the current column
-                                const columnKeys = ["slag", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
-                                const columnKey = columnKeys[index];
+                            const innerTile = document.createElement("div");
+                            innerTile.classList.add("inner-tile");
+                            innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
+                            innerTile.style.color = "white";
+                            innerTile.style.padding = "10px";
+                            innerTile.style.height = "85%";
+                            innerTile.style.width = "90%";
+                            innerTile.style.overflowY = "auto";
+                            innerTile.style.maxHeight = "100%";
+                            innerTile.style.borderRadius = "5px";
+                            innerTile.style.display = "flex";
+                            innerTile.style.flexDirection = "column";
+                            innerTile.style.justifyContent = "flex-start";
                 
-                                // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
-                                const isAscending = index === 0 || index === 2; // Ascending for index 0 and 2
-                                squigglegolfData.sort((a, b) => {
-                                    return isAscending
-                                        ? a[columnKey] - b[columnKey] // Ascending order
-                                        : b[columnKey] - a[columnKey]; // Descending order
-                                }).forEach((row, rank) => {
+                            // Define column keys
+                            const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
+                            const columnKey = columnKeys[index] || "score"; // Ensure a valid key is used
+                
+                            let dataToSort = [...memoryData];
+                
+                            if (columnKey === "netvarde") {
+                                // Merge networth from ekonomi into memory data
+                                dataToSort = memoryData.map(user => {
+                                    const ekonomiUser = ekonomiData.find(e => e.username === user.username);
+                                    return {
+                                        ...user,
+                                        netvarde: ekonomiUser && ekonomiUser.networth !== undefined ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                    };
+                                });
+                            }
+                
+                            // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
+                            const isAscending = index === 2;
+                            dataToSort
+                                .filter(row => row[columnKey] !== undefined) // Ensure no undefined values
+                                .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
+                                .forEach((row, rank) => {
+                                    const div = document.createElement("div");
+                                    div.style.display = "flex";
+                                    div.style.justifyContent = "space-between";
+                                    div.style.margin = "5px 0";
+                                    div.style.padding = "10px";
+                                    div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                                    div.style.borderRadius = "3px";
+                
+                                    const leftSpan = document.createElement("span");
+                                    leftSpan.textContent = `${rank + 1}. ${row.username ? row.username.charAt(0).toUpperCase() + row.username.slice(1) : "Unknown"}`;
+                                    leftSpan.style.flex = "1";
+                                    leftSpan.style.textAlign = "left";
+                
+                                    const rightSpan = document.createElement("span");
+                                    rightSpan.textContent = row[columnKey] !== undefined ? `${row[columnKey]}` : "-";
+                                    rightSpan.style.flex = "0";
+                                    rightSpan.style.textAlign = "right";
+                
+                                    div.appendChild(leftSpan);
+                                    div.appendChild(rightSpan);
+                                    innerTile.appendChild(div);
+                                });
+                
+                            container.appendChild(innerTile);
+                            tile.appendChild(container);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching Memory data:", error);
+                    });
+                } else if (modes[currentMode].text === "Squigglegolf - Topplista") {
+                    const squigglegolfEndpoint = "http://samet-desktop.adm.huddinge.se:3000/squigglegolf";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                
+                    // Fetch both datasets
+                    Promise.all([
+                        fetch(squigglegolfEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Squigglegolf data");
+                            return response.json();
+                        }),
+                        fetch(ekonomiEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
+                            return response.json();
+                        })
+                    ])
+                    .then(([squigglegolfData, ekonomiData]) => {
+                        tiles.forEach((tile, index) => {
+                            tile.innerHTML = ""; // Clear previous content
+                            
+                            const container = document.createElement("div");
+                            container.style.display = "flex";
+                            container.style.flexDirection = "column";
+                            container.style.alignItems = "center";
+                            container.style.height = "100%";
+                            container.style.width = "100%";
+                
+                            const outerText = document.createElement("div");
+                            outerText.textContent = modes[currentMode].tileTexts[index];
+                            outerText.style.textAlign = "center";
+                            outerText.style.marginBottom = "10px";
+                            outerText.style.fontWeight = "bold";
+                            container.appendChild(outerText);
+                
+                            const innerTile = document.createElement("div");
+                            innerTile.classList.add("inner-tile");
+                            innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
+                            innerTile.style.color = "white";
+                            innerTile.style.padding = "10px";
+                            innerTile.style.height = "85%";
+                            innerTile.style.width = "90%";
+                            innerTile.style.overflowY = "auto";
+                            innerTile.style.maxHeight = "100%";
+                            innerTile.style.borderRadius = "5px";
+                            innerTile.style.display = "flex";
+                            innerTile.style.flexDirection = "column";
+                            innerTile.style.justifyContent = "flex-start";
+                
+                            // Define column keys
+                            const columnKeys = ["slag", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
+                            const columnKey = columnKeys[index];
+                
+                            let dataToSort = [...squigglegolfData];
+                
+                            if (columnKey === "netvarde") {
+                                // Merge networth from ekonomi into squigglegolf data
+                                dataToSort = squigglegolfData.map(user => {
+                                    const ekonomiUser = ekonomiData.find(e => e.username === user.username);
+                                    return {
+                                        ...user,
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                    };
+                                });
+                            }
+                
+                            // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
+                            const isAscending = index === 0 || index === 2; // Ascending for index 0 and 2
+                            dataToSort
+                                .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
+                                .forEach((row, rank) => {
                                     const div = document.createElement("div");
                                     div.style.display = "flex";
                                     div.style.justifyContent = "space-between";
@@ -3040,95 +3018,109 @@ popupOverlay.addEventListener('click', (e) => {
                                     innerTile.appendChild(div);
                                 });
                 
-                                container.appendChild(innerTile);
-                                tile.appendChild(container);
+                            container.appendChild(innerTile);
+                            tile.appendChild(container);
                             });
                         })
                         .catch((error) => {
                             console.error("Error fetching Squigglegolf data:", error);
                         });
                 } else if (modes[currentMode].text === "Colourvision - Topplista") {
-                    const endpoint = "http://localhost:3000/colourvision";
+                    const colourvisionEndpoint = "http://samet-desktop.adm.huddinge.se:3000/colourvision";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                 
-                    fetch(endpoint)
-                        .then((response) => {
-                            if (!response.ok) {
-                                throw new Error("Failed to fetch Colourvision data");
-                            }
+                    // Fetch both datasets
+                    Promise.all([
+                        fetch(colourvisionEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Colourvision data");
+                            return response.json();
+                        }),
+                        fetch(ekonomiEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
                             return response.json();
                         })
-                        .then((colourvisionData) => {
-                            tiles.forEach((tile, index) => {
-                                tile.innerHTML = ""; // Clear previous content
-                                
-                                const container = document.createElement("div");
-                                container.style.display = "flex";
-                                container.style.flexDirection = "column";
-                                container.style.alignItems = "center";
-                                container.style.height = "100%";
-                                container.style.width = "100%";
+                    ])
+                    .then(([colourvisionData, ekonomiData]) => {
+                        tiles.forEach((tile, index) => {
+                            tile.innerHTML = ""; // Clear previous content
+                            
+                            const container = document.createElement("div");
+                            container.style.display = "flex";
+                            container.style.flexDirection = "column";
+                            container.style.alignItems = "center";
+                            container.style.height = "100%";
+                            container.style.width = "100%";
                 
-                                const outerText = document.createElement("div");
-                                outerText.textContent = modes[currentMode].tileTexts[index];
-                                outerText.style.textAlign = "center";
-                                outerText.style.marginBottom = "10px";
-                                outerText.style.fontWeight = "bold";
-                                container.appendChild(outerText);
+                            const outerText = document.createElement("div");
+                            outerText.textContent = modes[currentMode].tileTexts[index];
+                            outerText.style.textAlign = "center";
+                            outerText.style.marginBottom = "10px";
+                            outerText.style.fontWeight = "bold";
+                            container.appendChild(outerText);
                 
-                                const innerTile = document.createElement("div");
-                                innerTile.classList.add("inner-tile");
-                                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
-                                innerTile.style.color = "white";
-                                innerTile.style.padding = "10px";
-                                innerTile.style.height = "85%";
-                                innerTile.style.width = "90%";
-                                innerTile.style.overflowY = "auto";
-                                innerTile.style.maxHeight = "100%";
-                                innerTile.style.borderRadius = "5px";
-                                innerTile.style.display = "flex";
-                                innerTile.style.flexDirection = "column";
-                                innerTile.style.justifyContent = "flex-start";
+                            const innerTile = document.createElement("div");
+                            innerTile.classList.add("inner-tile");
+                            innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
+                            innerTile.style.color = "white";
+                            innerTile.style.padding = "10px";
+                            innerTile.style.height = "85%";
+                            innerTile.style.width = "90%";
+                            innerTile.style.overflowY = "auto";
+                            innerTile.style.maxHeight = "100%";
+                            innerTile.style.borderRadius = "5px";
+                            innerTile.style.display = "flex";
+                            innerTile.style.flexDirection = "column";
+                            innerTile.style.justifyContent = "flex-start";
                 
-                                // Sort and rank based on the current column
-                                const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
-                                const columnKey = columnKeys[index];
+                            // Define column keys
+                            const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
+                            const columnKey = columnKeys[index];
                 
-                                // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
-                                const isAscending = index === 2; // Ascending for "tid"
-                                colourvisionData
-                                    .sort((a, b) => {
-                                        return isAscending
-                                            ? a[columnKey] - b[columnKey] // Ascending order
-                                            : b[columnKey] - a[columnKey]; // Descending order
-                                    })
-                                    .forEach((row, rank) => {
-                                        const div = document.createElement("div");
-                                        div.style.display = "flex";
-                                        div.style.justifyContent = "space-between";
-                                        div.style.margin = "5px 0";
-                                        div.style.padding = "10px";
-                                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                                        div.style.borderRadius = "3px";
+                            let dataToSort = [...colourvisionData];
                 
-                                        const leftSpan = document.createElement("span");
-                                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                                        leftSpan.style.flex = "1";
-                                        leftSpan.style.textAlign = "left";
+                            if (columnKey === "netvarde") {
+                                // Merge networth from ekonomi into colourvision data
+                                dataToSort = colourvisionData.map(user => {
+                                    const ekonomiUser = ekonomiData.find(e => e.username === user.username);
+                                    return {
+                                        ...user,
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                    };
+                                });
+                            }
                 
-                                        const rightSpan = document.createElement("span");
-                                        rightSpan.textContent = `${row[columnKey]}`;
-                                        rightSpan.style.flex = "0";
-                                        rightSpan.style.textAlign = "right";
+                            // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
+                            const isAscending = index === 2; // Ascending for "tid"
+                            dataToSort
+                                .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
+                                .forEach((row, rank) => {
+                                    const div = document.createElement("div");
+                                    div.style.display = "flex";
+                                    div.style.justifyContent = "space-between";
+                                    div.style.margin = "5px 0";
+                                    div.style.padding = "10px";
+                                    div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                                    div.style.borderRadius = "3px";
                 
-                                        div.appendChild(leftSpan);
-                                        div.appendChild(rightSpan);
-                                        innerTile.appendChild(div);
-                                    });
+                                    const leftSpan = document.createElement("span");
+                                    leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
+                                    leftSpan.style.flex = "1";
+                                    leftSpan.style.textAlign = "left";
                 
-                                container.appendChild(innerTile);
-                                tile.appendChild(container);
-                            });
-                        })
+                                    const rightSpan = document.createElement("span");
+                                    rightSpan.textContent = `${row[columnKey]}`;
+                                    rightSpan.style.flex = "0";
+                                    rightSpan.style.textAlign = "right";
+                
+                                    div.appendChild(leftSpan);
+                                    div.appendChild(rightSpan);
+                                    innerTile.appendChild(div);
+                                });
+                
+                            container.appendChild(innerTile);
+                            tile.appendChild(container);
+                        });
+                    })
                         .catch((error) => {
                             console.error("Error fetching Colourvision data:", error);
                         });
@@ -3156,58 +3148,54 @@ popupOverlay.addEventListener('click', (e) => {
     
         function fetchLeaderboardData() {
             Promise.all([
-                fetch("http://localhost:3000/user-counts").then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch user counts");
-                    }
-                    return response.json();
+                fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch user counts");
+                    return res.json();
                 }),
-                fetch("http://localhost:3000/memory/niva").then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch memory levels");
-                    }
-                    return response.json();
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/niva").then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch memory levels");
+                    return res.json();
                 }),
-                fetch("http://localhost:3000/memory/levels").then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch memory levels");
-                    }
-                    return response.json();
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/levels").then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch memory levels");
+                    return res.json();
                 }),
-                fetch("http://localhost:3000/memory/tid").then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch memory time");
-                    }
-                    return response.json();
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/tid").then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch memory time");
+                    return res.json();
                 }),
-                fetch("http://localhost:3000/memory/pengar").then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch memory money data");
-                    }
-                    return response.json();
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/pengar").then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch memory money data");
+                    return res.json();
                 }),
-                fetch("http://localhost:3000/memory/exp").then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch memory EXP data");
-                    }
-                    return response.json();
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/exp").then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch memory EXP data");
+                    return res.json();
                 }),
-                
-                fetch("http://localhost:3000/memory/netvarde").then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch memory net worth data");
-                    }
-                    return response.json();
+                fetch("http://samet-desktop.adm.huddinge.se:3000/get-networth").then(res => {
+                    if (!res.ok) throw new Error("Failed to fetch ekonomi net worth data");
+                    return res.json();
                 })
-                
             ])
-            .then(([userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData]) => {
-                updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData);
+            .then(([userCounts, memoryData, levelsData, tidData, pengarData, expData, ekonomiData]) => {
+                // Create a map from ekonomiData using username as key
+                let ekonomiMap = new Map(ekonomiData.map(user => [user.username, user.networth]));
+        
+                // Since memoryUsers is no longer fetched, you need to adjust this part
+                // Assuming memoryData contains the user list, you can use that instead
+                let updatedUsers = memoryData.map(user => ({
+                    ...user,
+                    networth: ekonomiMap.has(user.username) ? ekonomiMap.get(user.username) : 0
+                }));
+        
+                updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, updatedUsers);
             })
-            .catch((error) => {
+            .catch(error => {
                 console.error("Error fetching leaderboard data:", error);
             });
         }
+        
+              
     
         leftButton.addEventListener("click", () => {
             if (currentMode > 0) {

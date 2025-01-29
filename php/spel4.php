@@ -23,6 +23,16 @@
         </div>
     </div>
 
+    <div id="popup-overlay" class="hidden">
+        <div id="popup">
+            <button id="close-popup">&times;</button>
+            <h2>Level: <span id="popup-level"></span></h2>
+            <p>Tid: <span id="popup-tid"></span></p>
+            <p>Pengar tjänat: <span id="popup-pengar"></span></p>
+            <p>Exp tjänat: <span id="popup-exp"></span></p>
+        </div>
+    </div>
+
     <div id="maze_container" style="display: none;"></div>
 
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
