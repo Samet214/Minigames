@@ -4,9 +4,9 @@ session_start();
 ini_set('display_errors', 1); // Enable error reporting for debugging
 error_reporting(E_ALL);
 
-// Redirect to sida.php if the user is already logged in
+// Redirect to spel.php if the user is already logged in
 if (isset($_SESSION['username'])) {
-    header("Location: sida.php");
+    header("Location: spel.php");
     exit();
 }
 
@@ -45,7 +45,7 @@ if (isset($_POST['submit'])) {
                 // Set session variables
                 $_SESSION['username'] = $username;
 
-                header("Location: sida.php");
+                header("Location: spel.php");
                 exit();
             } else {
                 $errorMessage = "Fel användarnamn eller lösenord.";
@@ -85,8 +85,6 @@ if (isset($_POST['submit'])) {
             <ul>
                 <li><a href="spel.php">Spel</a></li>
                 <li><a href="topplista.php">Topplista</a></li>
-                <li><a href="info.php">Info</a></li>
-                <li><a href="profile.php" id="a-tag4">Profil</a></li>
             </ul>
         </nav>
         <div class="buttons">

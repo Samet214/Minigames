@@ -154,103 +154,84 @@ db.connect(err => {
 });
 
 app.post('/update-memory', (req, res) => {
-  const { updatedData, currentGameData } = req.body;
+  try {
+    const { updatedData, currentGameData } = req.body;
 
-  const { username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde } = updatedData;
+    if (!updatedData || !currentGameData) {
+      return res.status(400).json({ error: 'Missing data in request body' });
+    }
 
-  const { nivå: gameNivå, level: gameLevel, pengar_tjanat: gamePengar, exp_tjanat: gameExp, tid: gameTid, netvarde: gameNetvarde } = currentGameData;
+    const { username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde } = updatedData;
+    const { pengar_tjanat: gamePengar, exp_tjanat: gameExp } = currentGameData;
 
-  if (!username || nivå == null || level == null || pengar_tjanat == null || exp_tjanat == null || tid == null || netvarde == null) {
+    // Validate required fields
+    if (!username || nivå === undefined || level === undefined || pengar_tjanat === undefined || exp_tjanat === undefined || tid === undefined || netvarde === undefined) {
       return res.status(400).json({ error: 'Invalid request body' });
-  }
+    }
 
-  // Check if user exists in the database
-  const query = 'SELECT * FROM memory WHERE username = ?';
-  db.query(query, [username], (err, results) => {
+    // Check if user exists in the database
+    const query = 'SELECT * FROM memory WHERE username = ?';
+    db.query(query, [username], (err, results) => {
       if (err) {
-          console.error('Database query error:', err);
-          return res.status(500).json({ error: 'Database error' });
+        console.error('Database query error:', err);
+        return res.status(500).json({ error: 'Database error' });
       }
 
       if (results.length === 0) {
-          return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: 'User not found' });
       }
 
       const user = results[0];
 
       // Update logic
       const updatedUser = {
-          nivå: Math.max(user.nivå, nivå),
-          level: Math.max(user.level, level),
-          pengar_tjanat: Math.max(user.pengar_tjanat, pengar_tjanat),
-          exp_tjanat: Math.max(user.exp_tjanat, exp_tjanat),
-          tid: Math.min(user.tid, tid),
-          netvarde: Math.max(user.netvarde, netvarde),
+        nivå: Math.max(user.nivå, nivå),
+        level: Math.max(user.level, level),
+        pengar_tjanat: Math.max(user.pengar_tjanat, pengar_tjanat),
+        exp_tjanat: Math.max(user.exp_tjanat, exp_tjanat),
+        tid: Math.min(user.tid, tid),
+        netvarde: Math.max(user.netvarde, netvarde),
       };
 
-      const updateQuery = `
-          UPDATE memory
-          SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ?
-          WHERE username = ?
-      `;
-      db.query(
-          updateQuery,
-          [
-              updatedUser.nivå,
-              updatedUser.level,
-              updatedUser.pengar_tjanat,
-              updatedUser.exp_tjanat,
-              updatedUser.tid,
-              updatedUser.netvarde,
-              username,
-          ],
-          (err, updateResults) => {
-              if (err) {
-                  console.error('Error updating user:', err);
-                  return res.status(500).json({ error: 'Failed to update user' });
-              }
-
-              console.log('User updated successfully:', updatedUser);
-              res.json({ message: 'User updated successfully', user: updatedUser });
-          }
-      );
-
+      // Run multiple database updates in parallel
+      const updateQuery = `UPDATE memory SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ? WHERE username = ?`;
       const updateQuery2 = `UPDATE ekonomi SET value = value + ?, networth = networth + ? WHERE username = ?`;
-
-      ekonomiDb.query(
-        updateQuery2,
-        [
-          gamePengar,
-          gamePengar,
-          username,
-        ],
-        (err, updateResults) => {
-          if (err) {
-              console.error('Error updating user:', err);
-              return res.status(500).json({ error: 'Failed to update user' });
-          }
-
-          console.log('User updated successfully:', updatedUser);
-      }
-      )
       const updateQuery3 = `UPDATE poängssystem SET EXP = EXP + ? WHERE Namn = ?`;
 
-      anvandarDb.query(
-        updateQuery3,
-        [
-          gameExp,
-          username,
-        ],
-        (err, updateResults) => {
-          if (err) {
-              console.error('Error updating user:', err);
-              return res.status(500).json({ error: 'Failed to update user' });
-          }
-
-          console.log('User updated successfully:', updatedUser);
-      }
-      )
-  });
+      // Execute multiple queries asynchronously
+      Promise.all([
+        new Promise((resolve, reject) => {
+          db.query(updateQuery, [updatedUser.nivå, updatedUser.level, updatedUser.pengar_tjanat, updatedUser.exp_tjanat, updatedUser.tid, updatedUser.netvarde, username], (err, result) => {
+            if (err) reject(err);
+            else resolve('Memory updated successfully');
+          });
+        }),
+        new Promise((resolve, reject) => {
+          ekonomiDb.query(updateQuery2, [gamePengar, gamePengar, username], (err, result) => {
+            if (err) reject(err);
+            else resolve('Ekonomi updated successfully');
+          });
+        }),
+        new Promise((resolve, reject) => {
+          anvandarDb.query(updateQuery3, [gameExp, username], (err, result) => {
+            if (err) reject(err);
+            else resolve('Poängssystem updated successfully');
+          });
+        }),
+      ])
+        .then((results) => {
+          console.log(results);
+          res.json({ message: 'User updated successfully', user: updatedUser });
+        })
+        .catch((error) => {
+          console.error('Error updating user:', error);
+          res.status(500).json({ error: 'Failed to update user' });
+        });
+    });
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 app.get('/squigglegolf', (req, res) => {
@@ -572,6 +553,31 @@ app.post('/update-netvarde', (req, res) => {
   });
 });
 
+app.post("/update-networth", async (req, res) => {
+  const { username, networth } = req.body;
+
+  // Validate required fields
+  if (!username || !networth) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // Update the networth in the ekonomi table
+    const updateQuery = `
+      UPDATE ekonomi
+      SET networth = ?
+      WHERE username = ?
+    `;
+    const updateValues = [networth, username];
+
+    await db.execute(updateQuery, updateValues);
+    res.status(200).json({ message: "Networth updated successfully" });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Failed to update networth" });
+  }
+});
+
 
 app.get('/anvandare', (req, res) => {
   const query = `SELECT * FROM användare;`;
@@ -718,22 +724,72 @@ app.post("/mazerunner", async (req, res) => {
 
   // Validate required fields
   if (!username || !nivå || !level || !tid || !pengar_tjanat || !exp_tjanat) {
-      return res.status(400).json({ error: "Missing required fields" });
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
-  // Insert into the database
-  const query = `
-      INSERT INTO mazerunner (username, nivå, level, tid, pengar_tjanat, exp_tjanat)
-      VALUES (?, ?, ?, ?, ?, ?)
-  `;
-  const values = [username, nivå, level, tid, pengar_tjanat, exp_tjanat];
+  try {
+    // Check if the user already exists in the mazerunner table
+    const checkUserQuery = "SELECT * FROM mazerunner WHERE username = ?";
+    const [existingUser] = await db.execute(checkUserQuery, [username]);
+
+    if (existingUser.length > 0) {
+      // User exists, update the existing record
+      const updateQuery = `
+        UPDATE mazerunner 
+        SET nivå = ?, level = ?, tid = ?, pengar_tjanat = ?, exp_tjanat = ?
+        WHERE username = ?
+      `;
+      const updateValues = [nivå, level, tid, pengar_tjanat, exp_tjanat, username];
+
+      await db.execute(updateQuery, updateValues);
+      res.status(200).json({ message: "User updated successfully" });
+    } else {
+      // User does not exist, insert a new record
+      const insertQuery = `
+        INSERT INTO mazerunner (username, nivå, level, tid, pengar_tjanat, exp_tjanat)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+      const insertValues = [username, nivå, level, tid, pengar_tjanat, exp_tjanat];
+
+      await db.execute(insertQuery, insertValues);
+      res.status(201).json({ message: "User inserted successfully" });
+    }
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Failed to process user data" });
+  }
+});
+
+app.put("/mazerunner", async (req, res) => {
+  const { username, nivå, level, tid, pengar_tjanat, exp_tjanat } = req.body;
+
+  // Validate required fields
+  if (!username || !nivå || !level || !tid || !pengar_tjanat || !exp_tjanat) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
   try {
-      const [result] = await db.execute(query, values); // Assuming you're using a MySQL library like `mysql2`
-      res.status(201).json({ message: "User inserted successfully", data: result });
+    // Check if the user exists
+    const checkUserQuery = "SELECT * FROM mazerunner WHERE username = ?";
+    const [existingUser] = await db.execute(checkUserQuery, [username]);
+
+    if (existingUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update the user
+    const updateQuery = `
+      UPDATE mazerunner 
+      SET nivå = ?, level = ?, tid = ?, pengar_tjanat = ?, exp_tjanat = ?
+      WHERE username = ?
+    `;
+    const updateValues = [nivå, level, tid, pengar_tjanat, exp_tjanat, username];
+
+    await db.execute(updateQuery, updateValues);
+    res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
-      console.error("Database error:", error);
-      res.status(500).json({ error: "Failed to insert user" });
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Failed to update user" });
   }
 });
 

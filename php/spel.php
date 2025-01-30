@@ -143,7 +143,7 @@ if (isset($_POST['add_exp'])) {
     exit();
 }
 
-// Add this at the top of sida.php to handle live search requests
+// Add this at the top of spel.php to handle live search requests
 if (isset($_GET['search'])) {
     $searchTerm = $_GET['search'] . '%';
 
@@ -220,8 +220,6 @@ $conn->close();
                     <ul>
                         <li><a href="spel.php">Spel</a></li>
                         <li><a href="topplista.php">Topplista</a></li>
-                        <li><a href="info.php">Info</a></li>
-                        <li><a href="profile.php" id="a-tag4">Profil</a></li>
                     </ul>
                 </nav>
                 <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
@@ -234,8 +232,6 @@ $conn->close();
                     <ul>
                         <li><a href="spel.php">Spel</a></li>
                         <li><a href="topplista.php">Topplista</a></li>
-                        <li><a href="info.php">Info</a></li>
-                        <li><a href="profile.php" id="a-tag4">Profil</a></li>
                     </ul>
                 </nav>
                 <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
@@ -350,7 +346,7 @@ $conn->close();
             <a id="a-tag1" href="logout.php">Logga ut</a>
             <hr>
         <?php endif; ?>
-    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" data-username="<?php echo htmlspecialchars($username); ?>"></div>
     <script src="../script.js"></script>
 </body>
 </html>

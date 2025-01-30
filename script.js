@@ -58,23 +58,43 @@ function gainExp(expAmount, callback) {
     xhr.send("add_exp=true&exp_amount=" + expAmount);
 }
 
-let currency = 0; // Default starting amount
+let currency = 0; // This will be updated dynamically
+
+// Fetch the user's networth on page load
+async function fetchUserNetworth() {
+    try {
+        const response = await fetch('get_currency.php');
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            currency = data.networth; // Set currency to networth
+            document.getElementById('currency-amount').textContent = currency;
+        } else {
+            console.error('Error fetching networth:', data.message);
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+    }
+}
+
+// Call the function when the page loads
+window.onload = fetchUserNetworth;
 
 function gainCurrency(amount) {
-    // Fetch the current currency value from the server before updating
     fetch('get_currency.php')  // This PHP script returns the current user's currency value
         .then((response) => response.json())
         .then((data) => {
             if (data.status === 'success') {
-                let currency = data.value; // Get the current currency value for the logged-in user
+                let currentCurrency = data.value; // Get the current value
 
-                // Add the amount to the current value
-                currency += amount;
+                // Add the amount
+                currentCurrency += amount;
+                currency = currentCurrency;
 
                 // Update the currency display
                 document.getElementById('currency-amount').textContent = currency;
 
-                // Send the updated value to the server to store in the database
+                // Send the updated value to the server
                 fetch('update_ekonomi.php', {
                     method: 'POST',
                     headers: {
@@ -82,12 +102,7 @@ function gainCurrency(amount) {
                     },
                     body: `action=gain&amount=${amount}`,
                 })
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
+                    .then((response) => response.json())
                     .then((data) => {
                         if (data.status === 'success') {
                             console.log('Currency updated successfully.');
@@ -99,7 +114,7 @@ function gainCurrency(amount) {
                         console.error('Fetch error:', error);
                     });
             } else {
-                console.error('Error retrieving current currency value:', data.message);
+                console.error('Error retrieving currency:', data.message);
             }
         })
         .catch((error) => {
@@ -107,23 +122,6 @@ function gainCurrency(amount) {
         });
 }
 
-
-async function updateNetworth(username) {
-    const networth = await fetchNetworth(username);
-    if (networth !== null) {
-        const networthElement = document.getElementById("networth_counter");
-        if (networthElement) {
-            networthElement.textContent = networth;
-        } else {
-            console.error("Element with ID 'networth_counter' not found.");
-        }
-    } else {
-        console.error("Failed to fetch networth.");
-    }
-}
-
-// Call the function when the page loads
-window.onload = updateNetworth;
 
 function loseCurrency(amount) {
     if (currency - amount < 0) {
@@ -182,7 +180,7 @@ if (currentPhpFile === "game_display.php") {
             toggleButton.style.left = "10px"; // Reset to original position
         }
     }
-    
+
     document.getElementById("logo").addEventListener("click", function() {
         redirect('index.php');
     });
@@ -233,257 +231,7 @@ if (currentPhpFile === "game_display.php") {
     
 } else if (currentPhpFile === "sida.php") {
 
-    function toggleSidebar() {
-        var sidebar = document.getElementById("sidebar");
-        var toggleButton = document.getElementById("sidebar-toggle");
-    
-        sidebar.classList.toggle("open");
-    
-        // Check if sidebar is open and move the button accordingly
-        if (sidebar.classList.contains("open")) {
-            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
-        } else {
-            toggleButton.style.left = "10px"; // Reset to original position
-        }
-    }
-    
-    function toggleProfile() {
-        const profileSquare = document.getElementById('profileSquare');
-        const searchBox = document.getElementById('searchInput');
-    
-        document.addEventListener('click', handleOutsideClick);
-    
-        // Ensure profileSquare remains visible without re-toggling
-        if (profileSquare.classList.contains('active')) {
-            closeProfile();
-        } else {
-            profileSquare.classList.add('active');
-            profileSquare.style.display = 'block';
-            profileSquare.style.opacity = '1';
-            profileSquare.style.transform = 'translateY(10px)';
-        }
-    }
-    
-    // Function to close the profile square
-    function closeProfile() {
-        const profileSquare = document.getElementById('profileSquare');
-    
-        profileSquare.style.opacity = '0';
-        profileSquare.style.transform = 'translateY(0px)';
-    
-        // Timeout to wait for the animation to finish before hiding
-        setTimeout(() => {
-            profileSquare.classList.remove('active');
-            profileSquare.style.display = 'none';
-        }, 300); // Match the CSS transition duration
-    
-        // Remove the event listener
-        document.removeEventListener('click', handleOutsideClick);
-    }
-    
-    // Handle clicks outside of the square
-    function handleOutsideClick(event) {
-        const profileSquare = document.getElementById('profileSquare');
-        const searchProfileBtn = document.getElementById('searchProfileBtn');
-        
-        // Check if the click is outside profileSquare and not on result-item or close-button
-        if (
-            !profileSquare.contains(event.target) &&
-            event.target !== searchProfileBtn &&
-            !event.target.classList.contains('result-item') &&
-            !event.target.classList.contains('close-button') &&
-            !event.target.classList.contains('profile-image') &&
-            event.target.id !== 'sidebar-toggle' &&
-            !event.target.classList.contains('messagebutton')
-        ) {
-            closeProfile();
-        }
-    }
-    
-    // Assuming searchProfiles is where you create and display search results
-    function searchProfiles() {
-        const searchInput = document.getElementById('searchInput').value.trim();
-    
-        if (searchInput === '') {
-            document.getElementById('searchResults').innerHTML = '';
-            return;
-        }
-    
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
-    
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                const results = JSON.parse(xhr.responseText);
-                const searchResultsContainer = document.getElementById('searchResults');
-                searchResultsContainer.innerHTML = '';
-    
-                if (results.message) {
-                    const noUserFound = document.createElement('div');
-                    noUserFound.classList.add('result-item');
-                    noUserFound.textContent = results.message;
-                    searchResultsContainer.appendChild(noUserFound);
-                } else {
-                    results.forEach(function(user) {
-                        const profileImage = user.Profil_bild || 'default.png';
-                        const resultItem = document.createElement('div');
-                        resultItem.classList.add('result-item');
-    
-                        // Set data attributes for level, exp, and exp threshold
-                        resultItem.dataset.profileImage = profileImage;
-                        resultItem.dataset.level = user.Levels;
-                        resultItem.dataset.exp = user.EXP;
-                        resultItem.dataset.expThreshold = user.EXP_GRÄNS;
-    
-                        const img = document.createElement('img');
-                        img.classList.add('profile-image');
-                        img.src = '../pfp/' + profileImage;
-    
-                        const username = document.createElement('span');
-                        username.classList.add('username');
-                        username.textContent = user.Namn;
-    
-                        resultItem.appendChild(img);
-                        resultItem.appendChild(username);
-                        searchResultsContainer.appendChild(resultItem);
-                    });
-                }
-            }
-        };
-    
-        xhr.send();
-    }
-    
-    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
-        const searchResultsContainer = document.getElementById('searchResults');
-    
-        // Clear previous results
-        searchResultsContainer.innerHTML = '';
-    
-        // Create a new container for the selected profile
-        const selectedProfileContainer = document.createElement('div');
-        selectedProfileContainer.style.display = 'flex';
-        selectedProfileContainer.style.alignItems = 'center';
-        selectedProfileContainer.style.flexDirection = 'column';
-        selectedProfileContainer.style.textAlign = 'center';
-    
-        // Add profile picture and username
-        const profileCircle = document.createElement('img');
-        profileCircle.src = '../pfp/' + profileImageSrc;
-        profileCircle.classList.add('selected-profile-circle');
-    
-        const username = document.createElement('span');
-        username.classList.add('username2');
-        username.textContent = userName;
-    
-        // Create the level section with EXP details as plain text
-        const levelSection = document.createElement('div');
-        levelSection.classList.add('level-section2');
-        levelSection.innerHTML = `
-            <h4>Level <span>${userLevel}</span></h4>
-            <div class="exp-bar2">
-                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
-            </div>
-            <p>${userExp} / ${expThreshold} EXP</p>
-        `;
-    
-        // Append elements to the new profile container
-        selectedProfileContainer.appendChild(profileCircle);
-        selectedProfileContainer.appendChild(username);
-        selectedProfileContainer.appendChild(levelSection);
-    
-        const messagebutton = document.createElement('button');
-        messagebutton.classList.add('messagebutton');
-    
-        messagebutton.textContent = 'Meddelande'
-    
-        searchResultsContainer.appendChild(messagebutton);
-    
-        // Append to the search results container
-        searchResultsContainer.appendChild(selectedProfileContainer);
-    
-        // Add the close button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'X';
-        closeButton.classList.add('close-button');
-        closeButton.addEventListener('click', function() {
-            searchResultsContainer.innerHTML = '';
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
-            searchProfiles(); // Reload the search results
-        });
-        selectedProfileContainer.appendChild(closeButton);
-    }
-    
-    function openMessageContainer() {
-        const searchResultsContainer = document.getElementById('searchResults');
-        searchResultsContainer.innerHTML = ''; // Clear any previous content
-    
-        // Create and configure the "Close" button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'X';
-        closeButton.classList.add('close-button');
-        closeButton.addEventListener('click', function() {
-            // Return to the search input and reload search results
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box
-            searchResultsContainer.innerHTML = ''; // Clear the message container
-            searchProfiles(); // Reload the search results
-        });
-    
-        // Message display area
-        const messageDisplay = document.createElement('div');
-        messageDisplay.classList.add('message-display');
-    
-        // Input field for composing new messages
-        const messageInput = document.createElement('input');
-        messageInput.type = 'text';
-        messageInput.classList.add('message-input');
-        messageInput.placeholder = 'Write a message...';
-    
-        // "Send" button for sending messages
-        const sendButton = document.createElement('button');
-        sendButton.textContent = 'Send';
-        sendButton.classList.add('send-button');
-    
-        // Append elements to display the message UI
-        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
-        searchResultsContainer.appendChild(closeButton);
-        searchResultsContainer.appendChild(messageDisplay);
-        searchResultsContainer.appendChild(messageInput);
-        searchResultsContainer.appendChild(sendButton);
-    }
 
-    // Event listener for handling profile and message interactions
-    document.addEventListener('click', function(event) {
-        const searchResultsContainer = document.getElementById('searchResults');
-        const searchBox = document.getElementById('searchInput');
-    
-        // Check if a profile item or profile image is clicked
-        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
-            const clickedItem = event.target.closest('.result-item');
-            const profileImageSrc = clickedItem.dataset.profileImage;
-            const userName = clickedItem.querySelector('.username').textContent;
-    
-            // Update the global profile data
-            currentProfile = {
-                userLevel: clickedItem.dataset.level,
-                userName: userName,
-                userExp: clickedItem.dataset.exp,
-                expThreshold: clickedItem.dataset.expThreshold,
-                profileImage: profileImageSrc,
-            };
-    
-            // Hide the search box
-            searchBox.style.display = 'none';
-    
-            // Display the selected profile with its details
-            updateProfile(profileImageSrc, userName, currentProfile.userLevel, currentProfile.userExp, currentProfile.expThreshold);
-        }
-    
-        // Check if the "Meddelande" (Message) button is clicked
-        if (event.target.classList.contains('messagebutton')) {
-            openMessageContainer();
-        }
-    });
       
 } else if (currentPhpFile === "signup.php") {
     
@@ -850,7 +598,7 @@ if (currentPhpFile === "game_display.php") {
     let userSequence = [];
     let level = 1;
     let attempts = 3;
-    let timeRemaining = 180;
+    let timeRemaining = 10;
     let timer;
     let canInteract = false;
     let progressiveMode = false;
@@ -908,15 +656,15 @@ if (currentPhpFile === "game_display.php") {
         levelDisplay.textContent = level;
         timeRemaining = 10 + (level - 1) * 5; // Adjust timer for each level
         updateStats();
-
+    
         if (progressiveMode) {
             sequence.push(Math.floor(Math.random() * 9));
         } else {
             sequence = Array.from({ length: level }, () => Math.floor(Math.random() * 9));
         }
-
+    
         displaySequence(() => {
-
+            startTimer(); // Start the timer **only after** sequence display completes
         });
     }
 
@@ -941,16 +689,16 @@ if (currentPhpFile === "game_display.php") {
         }, 800);
     }
 
+    // Update the startTimer function:
     function startTimer() {
-        clearInterval(timer);
-        timeLeft = 10; // Set to 10 seconds for testing
-        document.getElementById("time_counter").textContent = timeLeft; // Immediate update
+        clearInterval(timer); // Clear any existing timers
+        updateStats(); // Update the display immediately
         timer = setInterval(() => {
-            timeLeft--;
-            document.getElementById("time_counter").textContent = timeLeft;
-            if (timeLeft <= 0) {
+            timeRemaining--; // Use the global variable
+            updateStats();
+            if (timeRemaining <= 0) {
                 clearInterval(timer);
-                showPopup(); // Show the popup when time runs out
+                endGame(); // Handle time expiration
             }
         }, 1000);
     }
@@ -2117,6 +1865,22 @@ popupOverlay.addEventListener('click', (e) => {
         const phpFileInfo = document.getElementById("php-file-info");
         const username = phpFileInfo.dataset.username;
 
+        async function updateNetworth(username) {
+            try {
+                const response = await fetch(`http://localhost:3000/update-networth`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ username }),
+                });
+                const data = await response.json();
+                console.log("Networth updated:", data);
+            } catch (error) {
+                console.error("Error updating networth:", error);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", async () => {
             const username = phpFileInfo.dataset.username; // Fetch the username
             if (username) {
@@ -2128,18 +1892,12 @@ popupOverlay.addEventListener('click', (e) => {
 
         async function fetchUserLevel(username) {
             try {
-                const response = await fetch("http://localhost:3000/poangssystem", {
-                    method: "GET", // Use GET request
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Username": username, // Send the username in a custom header
-                    },
-                });
+                const response = await fetch(`http://localhost:3000/poangssystem?username=${username}`);
                 const data = await response.json();
-                return data.Levels; // Assuming the response has a "Levels" field
+                return data.Levels; // Ensure API returns correct level format
             } catch (error) {
                 console.error("Error fetching user level:", error);
-                return null;
+                return 1; // Default to level 1 if error occurs
             }
         }
 
@@ -2799,9 +2557,8 @@ popupOverlay.addEventListener('click', (e) => {
         async function showPopup() {
             // Calculate total elapsed time
             const endTime = Date.now();
-            const elapsedTimeInMilliseconds = endTime - startTime; // Difference in milliseconds
-            const elapsedTimeInSeconds = Math.floor(elapsedTimeInMilliseconds / 1000); // Convert to seconds
-            const averagetime = elapsedTimeInSeconds / level; // Calculate average time per level
+            const elapsedTimeInSeconds = Math.floor((endTime - startTime) / 1000);
+            const averagetime = elapsedTimeInSeconds / level;  // Remove totalElapsedTime reference
         
             // Create the popup overlay and content
             const popupOverlay = document.createElement('div');
@@ -2842,14 +2599,25 @@ popupOverlay.addEventListener('click', (e) => {
                     const userExists = await checkUserExists(username);
                     const pengar = level * 10;
                     const exp = level * 10;
-        
+            
                     if (!userExists) {
-                        // Insert the user if they don't exist
                         await insertUser(username, level, userlevel, averagetime, pengar, exp);
                     } else {
-                        // Update the user if they exist
-                        await updateUser(username, level, userlevel, averagetime, pengar, exp);
+                        // Get current values and increment them
+                        const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
+                        const existingData = await currentData.json();
+                        
+                        await updateUser(
+                            username,
+                            level,
+                            userlevel, 
+                            (existingData.tid + averagetime) / 2, // Update average time
+                            existingData.pengar_tjanat + pengar, // Accumulate money
+                            existingData.exp_tjanat + exp // Accumulate EXP
+                        );
                     }
+                    // Update networth after database operations
+                    await updateNetworth(username);
                 }
             }
         }
@@ -2883,7 +2651,14 @@ popupOverlay.addEventListener('click', (e) => {
             level++;
             updateHUD();
             player.generateNewMaze();
-            startTimer(); // Reset the timer
+            startTimer();
+            
+            // Reset monster position for new level
+            if (monster) {
+                monster.stopHunting();
+                monster.resetPosition();
+                monster.startHunting();
+            }
         }
 
         // Update the start button event listener
@@ -2965,8 +2740,6 @@ popupOverlay.addEventListener('click', (e) => {
                 startTimer(); // Start the countdown timer
             }
         });
-    
-    let averagetime = totalElapsedTime/level;
 
         
 } else if (currentPhpFile === "topplista.php") {

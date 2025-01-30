@@ -12,7 +12,7 @@
         <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
     </div>
     <!-- File input for profile picture upload -->
-    <form id="profilePictureForm" action="sida.php" method="POST" enctype="multipart/form-data" style="display: none;">
+    <form id="profilePictureForm" method="POST" enctype="multipart/form-data" style="display: none;">
         <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
     </form>
 </div>

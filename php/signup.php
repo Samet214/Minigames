@@ -15,7 +15,7 @@ include 'db.php';
 
 // Redirect if already logged in
 if (isset($_SESSION['username'])) {
-    header("Location: sida.php");
+    header("Location: spel.php");
     exit();
 }
 
@@ -105,8 +105,6 @@ if (isset($_POST['submit'])) {
                 <ul>
                     <li><a href="spel.php">Spel</a></li>
                     <li><a href="topplista.php">Topplista</a></li>
-                    <li><a href="info.php">Info</a></li>
-                    <li><a href="profile.php" id="a-tag4">Profil</a></li>
                 </ul>
             </nav>
             <div class="buttons">

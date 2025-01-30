@@ -37,8 +37,6 @@ $next_level_exp = 100;
                 <ul>
                     <li><a href="spel.php">Spel</a></li>
                     <li><a href="topplista.php">Topplista</a></li>
-                    <li><a href="info.php">Info</a></li>
-                    <li><a href="profile.php" id="a-tag4">Profil</a></li>
                 </ul>
             </nav>
             <div class="buttons">
