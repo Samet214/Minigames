@@ -108,19 +108,17 @@ function gainCurrency(amount) {
 }
 
 
-async function updateNetworth() {
-    try {
-        // Fetch the networth value from the PHP script
-        const response = await fetch('get_networth.php');
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
+async function updateNetworth(username) {
+    const networth = await fetchNetworth(username);
+    if (networth !== null) {
+        const networthElement = document.getElementById("networth_counter");
+        if (networthElement) {
+            networthElement.textContent = networth;
+        } else {
+            console.error("Element with ID 'networth_counter' not found.");
         }
-        const value = await response.text();
-
-        // Update the span with the networth value
-        document.getElementById('currency-amount').textContent = value;
-    } catch (error) {
-        console.error('Error fetching networth:', error);
+    } else {
+        console.error("Failed to fetch networth.");
     }
 }
 
@@ -165,7 +163,7 @@ function loseCurrency(amount) {
 
 //Specifika filer
 if (currentPhpFile === "game_display.php") {
-    alert('hey');
+    
 } else if (currentPhpFile === "index.php") {
     
     function toggleSidebar() {
@@ -536,7 +534,7 @@ if (currentPhpFile === "game_display.php") {
         if (gameUrls[gameId]) {
             window.location.href = gameUrls[gameId];
         } else {
-            alert("Game not found!");
+            
         }
     }
     
@@ -852,7 +850,7 @@ if (currentPhpFile === "game_display.php") {
     let userSequence = [];
     let level = 1;
     let attempts = 3;
-    let timeRemaining = 10;
+    let timeRemaining = 180;
     let timer;
     let canInteract = false;
     let progressiveMode = false;
@@ -944,20 +942,15 @@ if (currentPhpFile === "game_display.php") {
     }
 
     function startTimer() {
-        clearInterval(timer); // Ensure no overlapping timers
+        clearInterval(timer);
+        timeLeft = 10; // Set to 10 seconds for testing
+        document.getElementById("time_counter").textContent = timeLeft; // Immediate update
         timer = setInterval(() => {
-            timeRemaining--;
-            updateStats();
-
-            if (timeRemaining <= 0) {
+            timeLeft--;
+            document.getElementById("time_counter").textContent = timeLeft;
+            if (timeLeft <= 0) {
                 clearInterval(timer);
-                attempts--;
-                updateStats();
-                if (attempts <= 0) {
-                    endGame();
-                } else {
-                    nextLevel();
-                }
+                showPopup(); // Show the popup when time runs out
             }
         }, 1000);
     }
@@ -1009,7 +1002,7 @@ if (currentPhpFile === "game_display.php") {
         
     
         if (username !== 'guest') {
-            fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
+            fetch('http://localhost:3000/memory')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     let userExists = false;
@@ -1023,7 +1016,7 @@ if (currentPhpFile === "game_display.php") {
                             (async () => {
                                 try {
                                     // Fetch the response from the API
-                                    const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                    const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
                                     
                                     // Parse the response as JSON
                                     const poangssystemData = await poangssystemResponse.json();
@@ -1068,7 +1061,7 @@ if (currentPhpFile === "game_display.php") {
                                 };
         
                                 // Send updated data to the backend
-                                return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
+                                return fetch('http://localhost:3000/update-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
@@ -1097,7 +1090,7 @@ if (currentPhpFile === "game_display.php") {
                     
                             try {
                                 // Fetch data from the poängssystem endpoint
-                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
                                 const poangssystemData = await poangssystemResponse.json();
                     
                                 // Look for a match in the 'Namn' column
@@ -1110,7 +1103,7 @@ if (currentPhpFile === "game_display.php") {
                                 }
                     
                                 // Fetch data from the ekonomi endpoint
-                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi');
                                 const ekonomiData = await ekonomiResponse.json();
                     
                                 // Look for a match in the 'username' column
@@ -1142,7 +1135,7 @@ if (currentPhpFile === "game_display.php") {
                                     netvarde: usernetworth, // Use the networth from ekonomi table
                                 };
 
-                                fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+                                fetch('http://localhost:3000/ekonomi')
                                 .then(res => res.json())
                                 .then(ekonomiResponse => {
                                     // Find the user in the ekonomi table based on username
@@ -1161,7 +1154,7 @@ if (currentPhpFile === "game_display.php") {
                                         };
 
                                         // Send the updated data to the backend
-                                        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                                        fetch('http://localhost:3000/update-ekonomi', {
                                             method: 'POST',
                                             headers: { 'Content-Type': 'application/json' },
                                             body: JSON.stringify(updateData),
@@ -1181,7 +1174,7 @@ if (currentPhpFile === "game_display.php") {
                                 })
                     
                                 // Send the data to the backend to insert into the Spel database
-                                const insertResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
+                                const insertResponse = await fetch('http://localhost:3000/insert-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(dataToInsert),
@@ -1963,7 +1956,7 @@ function handleGameOver() {
         totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
 
         function getUserLevel(username) {
-            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem') // Ensure the correct URL
+            return fetch('http://localhost:3000/poangssystem') // Ensure the correct URL
                 .then(response => response.json()) // Convert the response to JSON
                 .then(data => {
                     // Loop through the data and find the match for level
@@ -1982,7 +1975,7 @@ function handleGameOver() {
         }
 
         function getUserNetWorth(username) {
-            return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde') // Ensure the correct URL
+            return fetch('http://localhost:3000/netvarde') // Ensure the correct URL
                 .then(response => response.json()) // Convert the response to JSON
                 .then(data => {
                     // Loop through the data and find the match for networth
@@ -2016,7 +2009,7 @@ function handleGameOver() {
                         document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
         
                         // Update user stats in the API
-                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateUserStats', {
+                        fetch('http://localhost:3000/updateUserStats', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -2034,7 +2027,7 @@ function handleGameOver() {
                             .catch(error => console.error('Error updating user stats:', error));
         
                         // Update ekonomi database
-                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateEkonomi', {
+                        fetch('http://localhost:3000/updateEkonomi', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -2049,7 +2042,7 @@ function handleGameOver() {
         
                         // Update användarinformation database
                         console.log(experience);
-                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateAnvandarinformation', {
+                        fetch('http://localhost:3000/updateAnvandarinformation', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -2117,10 +2110,110 @@ popupOverlay.addEventListener('click', (e) => {
 
 
     } else if (currentPhpFile === "spel4.php") {
-        class MazeBuilder {
+        let startTime = null; // Tracks when the game starts
+        let totalElapsedTime = 0; // Tracks total elapsed time in seconds
 
-            // Original JavaScript code by Chirp Internet: www.chirpinternet.eu
-            // Please acknowledge use of this code by including this header.
+        // Get the username from the php-file-info element
+        const phpFileInfo = document.getElementById("php-file-info");
+        const username = phpFileInfo.dataset.username;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const username = phpFileInfo.dataset.username; // Fetch the username
+            if (username) {
+                await updateNetworth(username);
+            } else {
+                console.log("User is not logged in. Skipping networth update.");
+            }
+        });
+
+        async function fetchUserLevel(username) {
+            try {
+                const response = await fetch("http://localhost:3000/poangssystem", {
+                    method: "GET", // Use GET request
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Username": username, // Send the username in a custom header
+                    },
+                });
+                const data = await response.json();
+                return data.Levels; // Assuming the response has a "Levels" field
+            } catch (error) {
+                console.error("Error fetching user level:", error);
+                return null;
+            }
+        }
+
+        async function checkUserExists(username) {
+            try {
+                const response = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
+                const data = await response.json();
+                return data.length > 0; // Returns true if the user exists
+            } catch (error) {
+                console.error("Error checking if user exists:", error);
+                return false;
+            }
+        }
+
+        async function fetchNetworth(username) {
+            try {
+                const response = await fetch(`http://localhost:3000/ekonomi?username=${username}`);
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                return data.networth; // Assuming the response contains a "networth" field
+            } catch (error) {
+                console.error("Error fetching networth:", error);
+                return null;
+            }
+        }
+
+        async function insertUser(username, level, userlevel, averagetime, pengar, exp) {
+            try {
+                const response = await fetch("http://localhost:3000/mazerunner", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username,
+                        nivå: level,
+                        level: userlevel,
+                        tid: averagetime,
+                        pengar_tjanat: pengar,
+                        exp_tjanat: exp,
+                    }),
+                });
+                const data = await response.json();
+                console.log("User inserted:", data);
+            } catch (error) {
+                console.error("Error inserting user:", error);
+            }
+        }
+        
+        async function updateUser(username, level, userlevel, averagetime, pengar, exp) {
+            try {
+                const response = await fetch(`http://localhost:3000/mazerunner?username=${username}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        nivå: level,
+                        level: userlevel,
+                        tid: averagetime,
+                        pengar_tjanat: pengar,
+                        exp_tjanat: exp,
+                    }),
+                });
+                const data = await response.json();
+                console.log("User updated:", data);
+            } catch (error) {
+                console.error("Error updating user:", error);
+            }
+        }
+
+        class MazeBuilder {
         
             constructor(width, height) {
         
@@ -2370,7 +2463,6 @@ popupOverlay.addEventListener('click', (e) => {
             this.parentDiv = document.getElementById(id);
         
             if(!this.parentDiv) {
-                alert("Cannot initialise maze - no element found with id \"" + id + "\"");
                 return false;
             }
         
@@ -2607,11 +2699,11 @@ popupOverlay.addEventListener('click', (e) => {
                     attempts--;
                     updateHUD();
                     if (attempts > 0) {
+                        alert("You were caught! Generating a new maze...");
                         player.generateNewMaze();
                         startTimer(); // Reset the timer
                     } else {
-                        showPopup(level, total_tid, pengar_tjänat, exp_tjänat);
-                        resetGame(); // Reset the game, including the timer
+                        showPopup(); // Show the popup instead of an alert
                     }
                 }
             }
@@ -2631,7 +2723,7 @@ popupOverlay.addEventListener('click', (e) => {
                 document.getElementById("time_counter").textContent = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    resetGame();
+                    showPopup(); // Show the popup instead of an alert
                 }
             }, 1000);
         }
@@ -2642,35 +2734,131 @@ popupOverlay.addEventListener('click', (e) => {
             document.getElementById("attempts_counter").textContent = attempts;
         }
 
-        function showPopup(level, tid, pengar, exp) {
-            document.getElementById('popup-level').textContent = level;
-            document.getElementById('popup-tid').textContent = tid;
-            document.getElementById('popup-pengar').textContent = pengar;
-            document.getElementById('popup-exp').textContent = exp;
-    
-            const overlay = document.getElementById('popup-overlay');
-            overlay.classList.add('show');
-    
-            function closePopup() {
-                overlay.classList.remove('show');
-                setTimeout(function() {
-                    resetGame(); // Reset the game after the animation
-                }, 300); // Delay to match the animation duration
-                overlay.removeEventListener('click', outsideClick);
+        const style = document.createElement('style');
+        style.innerHTML = `
+            #popupOverlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center; /* Center vertically and horizontally */
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
             }
-    
-            function outsideClick(event) {
-                if (event.target === overlay) closePopup();
+
+            #popupOverlay.visible {
+                opacity: 1;
+                visibility: visible;
             }
-    
-            document.getElementById('close-popup').onclick = closePopup;
-            overlay.addEventListener('click', outsideClick);
+
+            #popup {
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                position: relative;
+                width: 300px;
+                text-align: center;
+                transform: translateY(-100vh); /* Start off-screen */
+                transition: transform 0.5s ease-in-out;
+            }
+
+            #popupOverlay.visible #popup {
+                transform: translateY(0); /* Bring it to the center */
+            }
+
+            #popup h2 {
+                margin: 0 0 10px;
+                font-size: 1.5em;
+                color: black;
+            }
+
+            #popup p {
+                margin: 5px 0;
+                color: black;
+            }
+
+            #popup button {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: none;
+                border: none;
+                font-size: 1.2em;
+                cursor: pointer;
+            }
+        `;
+        document.head.appendChild(style);
+
+        async function showPopup() {
+            // Calculate total elapsed time
+            const endTime = Date.now();
+            const elapsedTimeInMilliseconds = endTime - startTime; // Difference in milliseconds
+            const elapsedTimeInSeconds = Math.floor(elapsedTimeInMilliseconds / 1000); // Convert to seconds
+            const averagetime = elapsedTimeInSeconds / level; // Calculate average time per level
+        
+            // Create the popup overlay and content
+            const popupOverlay = document.createElement('div');
+            popupOverlay.id = 'popupOverlay';
+            popupOverlay.innerHTML = `
+                <div id="popup">
+                    <button id="closePopup">&times;</button>
+                    <h2>Game Over</h2>
+                    <p>Level Reached: ${level}</p>
+                    <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
+                    <p>EXP Earned: ${level * 10}</p>
+                    <p>Money Earned: ${level * 10}</p>
+                </div>
+            `;
+            document.body.appendChild(popupOverlay);
+        
+            // Show the popup with animation
+            setTimeout(() => {
+                popupOverlay.classList.add('visible');
+            }, 10);
+        
+            // Freeze the game state
+            clearInterval(timer); // Stop the countdown timer
+            if (monster) monster.stopHunting(); // Stop the monster
+        
+            // Close the popup when clicking outside or on the X button
+            popupOverlay.addEventListener('click', (e) => {
+                if (e.target.id === 'popupOverlay' || e.target.id === 'closePopup') {
+                    popupOverlay.remove();
+                    resetGame();
+                }
+            });
+        
+            // Database operations (only if the user is logged in)
+            if (username) {
+                const userlevel = await fetchUserLevel(username);
+                if (userlevel !== null) {
+                    const userExists = await checkUserExists(username);
+                    const pengar = level * 10;
+                    const exp = level * 10;
+        
+                    if (!userExists) {
+                        // Insert the user if they don't exist
+                        await insertUser(username, level, userlevel, averagetime, pengar, exp);
+                    } else {
+                        // Update the user if they exist
+                        await updateUser(username, level, userlevel, averagetime, pengar, exp);
+                    }
+                }
+            }
         }
 
         function resetGame() {
             level = 1;
             attempts = 3;
-            timeLeft = 10;
+            timeLeft = 10; // Reset to 10 seconds for testing
+            startTime = null; // Reset the start time
             clearInterval(timer);
         
             if (monster) {
@@ -2689,11 +2877,11 @@ popupOverlay.addEventListener('click', (e) => {
             document.getElementById("game_hud").style.display = "none";
             localStorage.setItem("currentState", "start");
         }
+        
 
         function completeMaze() {
             level++;
             updateHUD();
-            alert("Level up! Generating a new maze...");
             player.generateNewMaze();
             startTimer(); // Reset the timer
         }
@@ -2703,20 +2891,23 @@ popupOverlay.addEventListener('click', (e) => {
             Maze = new MazeBuilder(40, 24);
             Maze.placeKey();
             Maze.display("maze_container");
-
+        
             player = new Player(Maze);
             player.init();
-
+        
             monster = new Monster(Maze);
             monster.init();
-            monster.resetPosition(); // Ensure the monster starts at the correct position
-
+            monster.resetPosition();
+        
             document.getElementById("start_page").style.display = "none";
             document.getElementById("maze_container").style.display = "block";
             document.getElementById("game_hud").style.display = "block";
             localStorage.setItem("currentState", "maze");
             updateHUD();
-            startTimer();
+        
+            // Start the global timer
+            startTime = Date.now(); // Record the start time
+            startTimer(); // Start the countdown timer
         });
 
         document.getElementById("menu_button").addEventListener("click", () => {
@@ -2754,7 +2945,7 @@ popupOverlay.addEventListener('click', (e) => {
             // Reset game state when first loading or returning to start screen
             resetGame();
             
-            if(currentState === "maze") {
+            if (currentState === "maze") {
                 document.getElementById("start_page").style.display = "none";
                 document.getElementById("maze_container").style.display = "block";
                 document.getElementById("game_hud").style.display = "block";
@@ -2768,20 +2959,23 @@ popupOverlay.addEventListener('click', (e) => {
                 monster = new Monster(Maze);
                 monster.init();
                 updateHUD();
-                startTimer();
+        
+                // Initialize startTime when reloading into the game screen
+                startTime = Date.now(); // Initialize startTime
+                startTimer(); // Start the countdown timer
             }
         });
-
     
+    let averagetime = totalElapsedTime/level;
 
         
 } else if (currentPhpFile === "topplista.php") {
     document.addEventListener("DOMContentLoaded", function () {
         const modes = [
-            { text: "Memory - Topplista", tileTexts: ["Nivå", "Level", "Tid/Level", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Memory - Topplista", tileTexts: ["Nivå", "Level", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
             { text: "Squigglegolf - Topplista", tileTexts: ["Mängden slag", "Level", "Total tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Colourvision - Topplista", tileTexts: ["Nivå", "Level", "Tid/Level", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Maze Runner - Topplista", tileTexts: ["Maze 1", "Maze 2", "Maze 3", "Maze 4", "Maze 5", "Maze 6"] },
+            { text: "Colourvision - Topplista", tileTexts: ["Nivå", "Level", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Maze Runner - Topplista", tileTexts: ["Nivå", "Level", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
             { text: "Biljard - Topplista", tileTexts: ["Biljard 1", "Biljard 2", "Biljard 3", "Biljard 4", "Biljard 5", "Biljard 6"] },
         ];
     
@@ -2827,8 +3021,8 @@ popupOverlay.addEventListener('click', (e) => {
                 innerTile.style.justifyContent = "flex-start";
     
                 if (modes[currentMode].text === "Memory - Topplista") {
-                    const memoryEndpoint = "http://samet-desktop.adm.huddinge.se:3000/memory";
-                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const memoryEndpoint = "http://localhost:3000/memory";
+                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
                 
                     // Fetch both datasets
                     Promise.all([
@@ -2927,8 +3121,8 @@ popupOverlay.addEventListener('click', (e) => {
                         console.error("Error fetching Memory data:", error);
                     });
                 } else if (modes[currentMode].text === "Squigglegolf - Topplista") {
-                    const squigglegolfEndpoint = "http://samet-desktop.adm.huddinge.se:3000/squigglegolf";
-                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const squigglegolfEndpoint = "http://localhost:3000/squigglegolf";
+                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
                 
                     // Fetch both datasets
                     Promise.all([
@@ -3026,8 +3220,8 @@ popupOverlay.addEventListener('click', (e) => {
                             console.error("Error fetching Squigglegolf data:", error);
                         });
                 } else if (modes[currentMode].text === "Colourvision - Topplista") {
-                    const colourvisionEndpoint = "http://samet-desktop.adm.huddinge.se:3000/colourvision";
-                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const colourvisionEndpoint = "http://localhost:3000/colourvision";
+                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
                 
                     // Fetch both datasets
                     Promise.all([
@@ -3148,31 +3342,31 @@ popupOverlay.addEventListener('click', (e) => {
     
         function fetchLeaderboardData() {
             Promise.all([
-                fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then(res => {
+                fetch("http://localhost:3000/user-counts").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch user counts");
                     return res.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/niva").then(res => {
+                fetch("http://localhost:3000/memory/niva").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory levels");
                     return res.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/levels").then(res => {
+                fetch("http://localhost:3000/memory/levels").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory levels");
                     return res.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/tid").then(res => {
+                fetch("http://localhost:3000/memory/tid").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory time");
                     return res.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/pengar").then(res => {
+                fetch("http://localhost:3000/memory/pengar").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory money data");
                     return res.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/exp").then(res => {
+                fetch("http://localhost:3000/memory/exp").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory EXP data");
                     return res.json();
                 }),
-                fetch("http://samet-desktop.adm.huddinge.se:3000/get-networth").then(res => {
+                fetch("http://localhost:3000/get-networth").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch ekonomi net worth data");
                     return res.json();
                 })

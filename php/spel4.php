@@ -1,3 +1,14 @@
+<?php
+session_start(); // Start the session (if not already started)
+
+// Check if the user is logged in and set the $username variable
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username']; // Assuming the username is stored in the session
+} else {
+    $username = null; // Set to null if the user is not logged in
+}
+?>
+
 <!DOCTYPE html>
 <html data-page="spel4">
     <head>
@@ -5,6 +16,7 @@
         <link rel="stylesheet" href="../style.css" type="text/css">
     </head>
     <body>
+    <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" <?php if ($username) echo 'data-username="' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '"'; ?>></div>
 
     <div id="menu_button_container">
         <button id="menu_button">Meny</button>

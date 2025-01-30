@@ -713,6 +713,42 @@ app.get("/colourvision", (req, res) => {
   });
 });
 
+app.post("/mazerunner", async (req, res) => {
+  const { username, nivå, level, tid, pengar_tjanat, exp_tjanat } = req.body;
+
+  // Validate required fields
+  if (!username || !nivå || !level || !tid || !pengar_tjanat || !exp_tjanat) {
+      return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  // Insert into the database
+  const query = `
+      INSERT INTO mazerunner (username, nivå, level, tid, pengar_tjanat, exp_tjanat)
+      VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  const values = [username, nivå, level, tid, pengar_tjanat, exp_tjanat];
+
+  try {
+      const [result] = await db.execute(query, values); // Assuming you're using a MySQL library like `mysql2`
+      res.status(201).json({ message: "User inserted successfully", data: result });
+  } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ error: "Failed to insert user" });
+  }
+});
+
+app.get("/mazerunner", (req, res) => {
+  const query = "SELECT * FROM mazerunner"; // Fetch all records from mazerunner table
+
+  spelDb.query(query, (err, results) => {
+      if (err) {
+          console.error("Error fetching data:", err);
+          return res.status(500).json({ error: "Database query failed" });
+      }
+      res.json(results);
+  });
+});
+
 app.post('/updateEkonomi', (req, res) => {
   const { username, moneyToAdd, netWorthToAdd } = req.body;
 
