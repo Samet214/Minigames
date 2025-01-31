@@ -1906,7 +1906,11 @@ popupOverlay.addEventListener('click', (e) => {
 
         async function insertUser(username, level, userlevel, averagetime) {
             try {
-                const response = await fetch("http://localhost:3000/mazerunner", {
+                const pengar_tjanat = 2 * userlevel * level;
+                const exp_tjanat = 2 * userlevel * level;
+        
+                // Insert user into mazerunner table
+                const mazerunnerResponse = await fetch("http://localhost:3000/mazerunner", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -1916,19 +1920,71 @@ popupOverlay.addEventListener('click', (e) => {
                         nivå: level,
                         level: userlevel,
                         tid: averagetime,
-                        pengar_tjanat: 2 * userlevel * level,
-                        exp_tjanat: 2 * userlevel * level,
+                        pengar_tjanat,
+                        exp_tjanat,
                     }),
                 });
-                const data = await response.json();
+        
+                if (!mazerunnerResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${mazerunnerResponse.status}`);
+                }
+        
+                // Check if the user exists in ekonomi
+                const ekonomiCheckResponse = await fetch(`http://localhost:3000/ekonomi?username=${username}`);
+                if (!ekonomiCheckResponse.ok) {
+                    throw new Error(`HTTP error! Status: ${ekonomiCheckResponse.status}`);
+                }
+                const ekonomiData = await ekonomiCheckResponse.json();
+        
+                if (ekonomiData.length > 0) {
+                    // User exists, update ekonomi
+                    const ekonomiUpdateResponse = await fetch(`http://localhost:3000/ekonomi`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            username,
+                            value: pengar_tjanat, 
+                            networth: pengar_tjanat,
+                        }),
+                    });
+        
+                    if (!ekonomiUpdateResponse.ok) {
+                        throw new Error(`HTTP error! Status: ${ekonomiUpdateResponse.status}`);
+                    }
+                } else {
+                    // User does not exist, insert into ekonomi
+                    const ekonomiInsertResponse = await fetch(`http://localhost:3000/ekonomi`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            username,
+                            value: pengar_tjanat, 
+                            networth: pengar_tjanat,
+                        }),
+                    });
+        
+                    if (!ekonomiInsertResponse.ok) {
+                        throw new Error(`HTTP error! Status: ${ekonomiInsertResponse.status}`);
+                    }
+                    console.log(`Ekonomi inserted for ${username}.`);
+                }
             } catch (error) {
-                console.error("Error inserting user:", error);
+                console.error("Error inserting user and updating ekonomi:", error);
             }
         }
         
+        
         async function updateUser(username, level, userlevel, averagetime) {
             try {
-              const response = await fetch(`http://localhost:3000/mazerunner`, {
+              const pengar_tjanat = 2 * userlevel * level;
+              const exp_tjanat = 2 * userlevel * level;
+          
+              // Update mazerunner table
+              const mazerunnerResponse = await fetch(`http://localhost:3000/mazerunner`, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
@@ -1938,22 +1994,39 @@ popupOverlay.addEventListener('click', (e) => {
                   nivå: level,
                   level: userlevel,
                   tid: averagetime,
-                  pengar_tjanat: 2 * userlevel * level,
-                  exp_tjanat: 2 * userlevel * level,
+                  pengar_tjanat,
+                  exp_tjanat,
                 }),
               });
           
-              if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+              if (!mazerunnerResponse.ok) {
+                throw new Error(`HTTP error! Status: ${mazerunnerResponse.status}`);
               }
           
-              const data = await response.json();
-              return data;
+              // Update ekonomi table (adds pengar_tjanat to value and networth)
+              const ekonomiResponse = await fetch(`http://localhost:3000/ekonomi`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  username,
+                  value: pengar_tjanat, // Adding pengar_tjanat to value
+                  networth: pengar_tjanat, // Adding pengar_tjanat to networth
+                }),
+              });
+          
+              if (!ekonomiResponse.ok) {
+                throw new Error(`HTTP error! Status: ${ekonomiResponse.status}`);
+              }
+          
+              const ekonomiData = await ekonomiResponse.json();
+              return ekonomiData;
             } catch (error) {
-              console.error("Error updating user:", error);
+              console.error("Error updating user and ekonomi:", error);
               throw error;
             }
-          }
+          }          
 
         class MazeBuilder {
         
@@ -2542,34 +2615,37 @@ popupOverlay.addEventListener('click', (e) => {
             // Calculate total elapsed time
             const endTime = Date.now();
             const elapsedTimeInSeconds = Math.floor((endTime - startTime) / 1000);
-            const averagetime = elapsedTimeInSeconds / level;  // Remove totalElapsedTime reference
+            const averagetime = elapsedTimeInSeconds / level;
         
             // Create the popup overlay and content
             const popupOverlay = document.createElement('div');
             popupOverlay.id = 'popupOverlay';
+            
             if (!username) {
                 popupOverlay.innerHTML = `
-                <div id="popup">
-                    <button id="closePopup">&times;</button>
-                    <h2>Game Over</h2>
-                    <p>Level Reached: ${level}</p>
-                    <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
-                </div>
-            `;
+                    <div id="popup">
+                        <button id="closePopup">&times;</button>
+                        <h2>Game Over</h2>
+                        <p>Level Reached: ${level}</p>
+                        <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
+                    </div>
+                `;
             }
+            
             if (username) {
                 const userlevel = await fetchUserLevel(username);
                 popupOverlay.innerHTML = `
-                <div id="popup">
-                    <button id="closePopup">&times;</button>
-                    <h2>Game Over</h2>
-                    <p>Level Reached: ${level}</p>
-                    <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
-                    <p>EXP Earned: ${2 * userlevel * level}</p>
-                    <p>Money Earned: ${2 * userlevel * level}</p>
-                </div>
-            `;
+                    <div id="popup">
+                        <button id="closePopup">&times;</button>
+                        <h2>Game Over</h2>
+                        <p>Level Reached: ${level}</p>
+                        <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
+                        <p>EXP Earned: ${2 * userlevel * level}</p>
+                        <p>Money Earned: ${2 * userlevel * level}</p>
+                    </div>
+                `;
             }
+            
             document.body.appendChild(popupOverlay);
         
             // Show the popup with animation
@@ -2592,31 +2668,57 @@ popupOverlay.addEventListener('click', (e) => {
             // Database operations (only if the user is logged in)
             if (username) {
                 const userlevel = await fetchUserLevel(username);
-            
-                if (userlevel !== null) {
-                    const userExists = await checkUserExists(username);
-            
-                    const pengar = 2 * userlevel * level;
-                    const exp = 2 * userlevel * level;
-            
-                    if (!userExists) {
-                        await insertUser(username, level, userlevel, averagetime, pengar, exp);
-                    } else {
-                        const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
-                        const existingData = await currentData.json();
-            
-                        await updateUser(
-                            username,
-                            level,          // Current game level reached
-                            userlevel,      // Fetched user level from `/poangssystem`
-                            averagetime,  // New average time
-                            2 * userlevel * level,   // Accumulated money
-                            2 * userlevel * level          // Accumulated EXP
-                        );
-                    }
+        
+                const pengar = 2 * userlevel * level;
+                const exp = 2 * userlevel * level;
+        
+                // Update EXP in poängssystem table via backend API
+                await updateUserEXP(username, userlevel, level);
+        
+                const userExists = await checkUserExists(username);
+        
+                if (!userExists) {
+                    await insertUser(username, level, userlevel, averagetime, pengar, exp);
+                } else {
+                    const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
+                    const existingData = await currentData.json();
+        
+                    await updateUser(
+                        username,
+                        level,
+                        userlevel,
+                        averagetime,
+                        2 * userlevel * level,
+                        2 * userlevel * level
+                    );
                 }
             }
         }
+        
+        // Send request to update EXP in the backend (Node.js)
+        async function updateUserEXP(username, userlevel, level) {
+            try {
+                const response = await fetch('http://localhost:3000/update-exp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        userlevel: userlevel,
+                        level: level,
+                    }),
+                });
+        
+                if (!response.ok) {
+                    throw new Error(`Failed to update EXP: ${response.status}`);
+                }
+        
+                console.log('EXP update request successful');
+            } catch (error) {
+                console.error('Error updating EXP:', error);
+            }
+        }                  
 
         function resetGame() {
             level = 1;

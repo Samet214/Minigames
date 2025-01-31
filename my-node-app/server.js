@@ -44,19 +44,16 @@ ekonomiDb.connect((err) => {
 });
 
 // Route to fetch all data from the "memory" table in the "Spel" database
-app.get('/memory', (req, res) => {
+app.get('/memory', async (req, res) => {
   const query = 'SELECT * FROM memory';
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching data from memory table:', err);
-      return res.status(500).send('Error fetching data from the memory table.');
-    }
-
-    // Log all rows from the memory table to the console
+  try {
+    const [results] = await spelDb.query(query);
     console.log('Memory Table Data:', results);
-
-    res.json(results); // Send the results as JSON
-  });
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching data from memory table:', error);
+    res.status(500).send('Error fetching data from the memory table.');
+  }
 });
 
 // Route to fetch "netvärde" column from the "ekonomi" table in the "ekonomi" database
@@ -234,18 +231,15 @@ app.post('/update-memory', (req, res) => {
   }
 });
 
-app.get('/squigglegolf', (req, res) => {
+app.get('/squigglegolf', async (req, res) => {
   const query = 'SELECT * FROM squigglegolf';
-
-  spelDb.query(query, (err, results) => {
-      if (err) {
-          console.error('Error fetching data from squigglegolf table:', err);
-          res.status(500).send('Internal Server Error');
-          return;
-      }
-
-      res.json(results);
-  });
+  try {
+    const [results] = await spelDb.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching data from squigglegolf table:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 app.post('/update-squigglegolf', (req, res) => {
@@ -319,147 +313,129 @@ app.post('/update-squigglegolf', (req, res) => {
 
 
 // Route to fetch and log the total number of users in the "memory" table
-app.get('/memory-count', (req, res) => {
+app.get('/memory-count', async (req, res) => {
   const query = 'SELECT COUNT(*) AS totalUsers FROM memory';
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching user count from memory table:', err);
-      return res.status(500).send('Error fetching user count from the memory table.');
-    }
-
+  try {
+    const [results] = await spelDb.query(query);
     const totalUsers = results[0].totalUsers;
     console.log('Total number of users in the memory table:', totalUsers);
-
-    res.json({ totalUsers }); // Send the count as JSON
-  });
+    res.json({ totalUsers });
+  } catch (error) {
+    console.error('Error fetching user count from memory table:', error);
+    res.status(500).send('Error fetching user count from the memory table.');
+  }
 });
 
 // Route to fetch user counts from multiple tables in the "Spel" database
-app.get('/user-counts', (req, res) => {
+app.get('/user-counts', async (req, res) => {
   const tables = ['biljard', 'colourvision', 'mazerunner', 'memory', 'squigglegolf'];
   const results = {};
-  let completed = 0;
 
-  tables.forEach((table) => {
-    const query = `SELECT COUNT(*) AS totalUsers FROM ${table}`;
-    spelDb.query(query, (err, tableResults) => {
-      if (err) {
-        console.error(`Error fetching user count from ${table} table:, err`);
-        results[table] = 'Error fetching count';
-      } else {
-        results[table] = tableResults[0].totalUsers;
-        console.log(`Total users in ${table} table:, tableResults[0].totalUsers`);
-      }
+  try {
+    for (const table of tables) {
+      const query = `SELECT COUNT(*) AS totalUsers FROM ${table}`;
+      const [tableResults] = await spelDb.query(query);
+      results[table] = tableResults[0].totalUsers;
+      console.log(`Total users in ${table} table:`, tableResults[0].totalUsers);
+    }
 
-      completed++;
-      if (completed === tables.length) {
-        res.json(results); // Send the results after processing all tables
-      }
-    });
-  });
+    res.json(results); // Send the results after processing all tables
+  } catch (error) {
+    console.error('Error fetching user counts:', error);
+    res.status(500).send('Error fetching user counts from the tables.');
+  }
 });
 
+
 // Route to fetch nivå values along with usernames, sorted by nivå in descending order
-app.get('/memory/niva', (req, res) => {
-  const query = 
-    `SELECT username, nivå
+app.get('/memory/niva', async (req, res) => {
+  const query = `
+    SELECT username, nivå
     FROM memory
     ORDER BY nivå DESC
   `;
-
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching nivå data from memory table:', err);
-      return res.status(500).send('Error fetching nivå data from memory table.');
-    }
-
-    res.json(results); // Send the sorted results as JSON
-  });
+  try {
+    const [results] = await spelDb.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching nivå data from memory table:', error);
+    res.status(500).send('Error fetching nivå data from memory table.');
+  }
 });
 
-app.get('/memory/levels', (req, res) => {
-  const query = 
-    `SELECT username, level
+app.get('/memory/levels', async (req, res) => {
+  const query = `
+    SELECT username, level
     FROM memory
     ORDER BY level DESC
   `;
-
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching nivå data from memory table:', err);
-      return res.status(500).send('Error fetching nivå data from memory table.');
-    }
-
-    res.json(results); // Send the sorted results as JSON
-  });
+  try {
+    const [results] = await spelDb.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching level data from memory table:', error);
+    res.status(500).send('Error fetching level data from memory table.');
+  }
 });
 
-app.get('/memory/tid', (req, res) => {
-  const query = 
-    `SELECT username, tid
+app.get('/memory/tid', async (req, res) => {
+  const query = `
+    SELECT username, tid
     FROM memory
     ORDER BY tid ASC
   `;
-
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching nivå data from memory table:', err);
-      return res.status(500).send('Error fetching nivå data from memory table.');
-    }
-
-    res.json(results); // Send the sorted results as JSON
-  });
+  try {
+    const [results] = await spelDb.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching tid data from memory table:', error);
+    res.status(500).send('Error fetching tid data from memory table.');
+  }
 });
 
-app.get('/memory/pengar', (req, res) => {
-  const query = 
-    `SELECT username, pengar_tjanat
+app.get('/memory/pengar', async (req, res) => {
+  const query = `
+    SELECT username, pengar_tjanat
     FROM memory
     ORDER BY pengar_tjanat DESC
   `;
-
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching nivå data from memory table:', err);
-      return res.status(500).send('Error fetching nivå data from memory table.');
-    }
-
-    res.json(results); // Send the sorted results as JSON
-  });
+  try {
+    const [results] = await spelDb.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching pengar_tjanat data from memory table:', error);
+    res.status(500).send('Error fetching pengar_tjanat data from memory table.');
+  }
 });
 
-app.get('/memory/exp', (req, res) => {
-  const query = 
-    `SELECT username, exp_tjanat
+app.get('/memory/exp', async (req, res) => {
+  const query = `
+    SELECT username, exp_tjanat
     FROM memory
     ORDER BY exp_tjanat DESC
   `;
-
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching nivå data from memory table:', err);
-      return res.status(500).send('Error fetching nivå data from memory table.');
-    }
-
-    res.json(results); // Send the sorted results as JSON
-  });
+  try {
+    const [results] = await spelDb.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching exp_tjanat data from memory table:', error);
+    res.status(500).send('Error fetching exp_tjanat data from memory table.');
+  }
 });
 
-app.get('/memory/netvarde', (req, res) => {
-  const query = 
-    `SELECT username, netvarde
+app.get('/memory/netvarde', async (req, res) => {
+  const query = `
+    SELECT username, netvarde
     FROM memory
     ORDER BY netvarde DESC
   `;
-
-  spelDb.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching nivå data from memory table:', err);
-      return res.status(500).send('Error fetching nivå data from memory table.');
-    }
-
-    res.json(results); // Send the sorted results as JSON
-  });
+  try {
+    const [results] = await spelDb.query(query);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching netvarde data from memory table:', error);
+    res.status(500).send('Error fetching netvarde data from memory table.');
+  }
 });
 
 const anvandarDb = mysql.createConnection({
@@ -495,6 +471,36 @@ app.get('/ekonomi', (req, res) => {
     res.json(results); // Send the combined results as JSON
   });
 });
+
+app.put("/ekonomi", async (req, res) => {
+  const { username, value, networth } = req.body;
+
+  if (!username || value === undefined || networth === undefined) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const updateQuery = `
+      UPDATE ekonomi 
+      SET value = value + ?, networth = networth + ?
+      WHERE username = ?
+    `;
+
+    // Execute the query without destructuring
+    const result = await ekonomiDb.execute(updateQuery, [value, networth, username]);
+
+    // result will be an object, so check its affectedRows
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found in ekonomi" });
+    }
+
+    res.status(200).json({ message: "Ekonomi updated successfully" });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Failed to update ekonomi" });
+  }
+});
+
 
 app.post('/insert-memory', (req, res) => {
   const { username, level, userlevel, pengar_tjanat, exp_tjanat, tid, netvarde } = req.body;
@@ -684,17 +690,19 @@ async function updateSquiggleGolfTable(username, totalStrokes, timeTaken, levels
     }
 }
 
-app.get("/colourvision", (req, res) => {
+app.get("/colourvision", async (req, res) => {
   const query = "SELECT username, nivå, level, tid, pengar_tjanat, exp_tjanat, netvarde FROM colourvision";
-  spelDb.query(query, (error, results) => {
-      if (error) {
-          console.error("Error fetching Colourvision data: ", error);
-          res.status(500).send("Internal Server Error");
-      } else {
-          res.json(results);
-      }
-  });
+
+  try {
+    const [results] = await spelDb.query(query);
+    console.log("Colourvision Table Data:", results); // Log results for debugging
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching Colourvision data:", error);
+    res.status(500).send("Internal Server Error");
+  }
 });
+
 
 app.post("/mazerunner", async (req, res) => {
   const { username, nivå, level, tid, pengar_tjanat, exp_tjanat } = req.body;
@@ -940,6 +948,54 @@ app.post('/updateUserStats', (req, res) => {
       });
   });
 });
+
+app.post('/update-exp', async (req, res) => {
+  const { username, userlevel, level } = req.body;
+
+  // Ensure variables are available
+  if (!username || userlevel === undefined || level === undefined) {
+      return res.status(400).send('Missing required data');
+  }
+
+  const expToAdd = 2 * userlevel * level; // Calculate EXP to add
+  const query = `
+      UPDATE poängssystem 
+      SET EXP = EXP + ? 
+      WHERE Namn = ?
+  `;
+
+  console.log("Query:", query);
+  console.log("Parameters:", [expToAdd, username]);  // Debug log for parameters
+
+  try {
+    const [rows] = await anvandarDb.query(query, [expToAdd, username]);
+    console.log("Query result:", rows);
+    
+    if (rows.affectedRows > 0) {
+        res.status(200).send('EXP updated successfully');
+    } else {
+        res.status(404).send('User not found or no changes made');
+    }    
+
+      // Debugging the result structure
+      console.log('Raw result:', result); 
+
+      // If result is an array, destructure it
+      if (Array.isArray(result) && result.length > 0) {
+          const [affectedRows] = result;
+          console.log('EXP updated successfully. Affected rows:', affectedRows);
+
+          res.status(200).send('EXP updated successfully');
+      } else {
+          console.error('Unexpected result structure:', result);
+          res.status(500).send('Internal server error');
+      }
+  } catch (error) {
+      console.error('Error updating EXP in poängssystem table:', error);
+      res.status(500).send('Internal server error');
+  }
+});
+
 
 app.get("/get-networth", (req, res) => {
   const sql = "SELECT username, networth FROM ekonomi";
