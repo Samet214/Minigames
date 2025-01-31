@@ -15,9 +15,9 @@ app.use(express.json());
 const spelDb = mysql.createConnection({
   host: 'localhost',
   user: 'samet',
-  password: 'samet', // Replace with your MySQL password
-  database: 'Spel', // "Spel" database name
-});
+  password: 'samet',
+  database: 'Spel',
+}).promise(); // <-- Add this
 
 // Create a MySQL database connection for the "ekonomi" database
 const ekonomiDb = mysql.createConnection({
@@ -553,31 +553,6 @@ app.post('/update-netvarde', (req, res) => {
   });
 });
 
-app.post("/update-networth", async (req, res) => {
-  const { username, networth } = req.body;
-
-  // Validate required fields
-  if (!username || !networth) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  try {
-    // Update the networth in the ekonomi table
-    const updateQuery = `
-      UPDATE ekonomi
-      SET networth = ?
-      WHERE username = ?
-    `;
-    const updateValues = [networth, username];
-
-    await db.execute(updateQuery, updateValues);
-    res.status(200).json({ message: "Networth updated successfully" });
-  } catch (error) {
-    console.error("Database error:", error);
-    res.status(500).json({ error: "Failed to update networth" });
-  }
-});
-
 
 app.get('/anvandare', (req, res) => {
   const query = `SELECT * FROM användare;`;
@@ -591,6 +566,8 @@ app.get('/anvandare', (req, res) => {
     res.json(results); // Send the combined results as JSON
   });
 });
+
+
 
 app.post('/updateUserStats', (req, res) => {
   const { username, level, userlevel, averagetime, money, experience, userNetWorth } = req.body;
@@ -730,9 +707,10 @@ app.post("/mazerunner", async (req, res) => {
   try {
     // Check if the user already exists in the mazerunner table
     const checkUserQuery = "SELECT * FROM mazerunner WHERE username = ?";
-    const [existingUser] = await db.execute(checkUserQuery, [username]);
+    const result = await spelDb.execute(checkUserQuery, [username]);
+    const existingUser = result[0]; // Access the first element of the result
 
-    if (existingUser.length > 0) {
+    if (existingUser && existingUser.length > 0) {
       // User exists, update the existing record
       const updateQuery = `
         UPDATE mazerunner 
@@ -741,7 +719,7 @@ app.post("/mazerunner", async (req, res) => {
       `;
       const updateValues = [nivå, level, tid, pengar_tjanat, exp_tjanat, username];
 
-      await db.execute(updateQuery, updateValues);
+      await spelDb.execute(updateQuery, updateValues);
       res.status(200).json({ message: "User updated successfully" });
     } else {
       // User does not exist, insert a new record
@@ -751,7 +729,7 @@ app.post("/mazerunner", async (req, res) => {
       `;
       const insertValues = [username, nivå, level, tid, pengar_tjanat, exp_tjanat];
 
-      await db.execute(insertQuery, insertValues);
+      await spelDb.execute(insertQuery, insertValues);
       res.status(201).json({ message: "User inserted successfully" });
     }
   } catch (error) {
@@ -771,21 +749,55 @@ app.put("/mazerunner", async (req, res) => {
   try {
     // Check if the user exists
     const checkUserQuery = "SELECT * FROM mazerunner WHERE username = ?";
-    const [existingUser] = await db.execute(checkUserQuery, [username]);
+    const [rows] = await spelDb.execute(checkUserQuery, [username]); // Destructure the result
 
-    if (existingUser.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+    // Log the retrieved user data for debugging
+    console.log("Retrieved user data:", rows);
+
+    if (rows.length === 0) {
+      // Insert new user
+      const insertQuery = `
+        INSERT INTO mazerunner (username, nivå, level, tid, pengar_tjanat, exp_tjanat)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+      await spelDb.execute(insertQuery, [
+        username, nivå, level, tid, pengar_tjanat, exp_tjanat,
+      ]);
+      console.log("Inserted new user:", { username, nivå, level, tid, pengar_tjanat, exp_tjanat });
+      return res.status(201).json({ message: "User inserted successfully" });
     }
 
-    // Update the user
+    // Extract existing values from the database
+    const existingUser = rows[0];
+    console.log("Existing user values:", existingUser);
+
+    // Update existing user
     const updateQuery = `
       UPDATE mazerunner 
-      SET nivå = ?, level = ?, tid = ?, pengar_tjanat = ?, exp_tjanat = ?
+      SET 
+        nivå = CASE WHEN ? > nivå THEN ? ELSE nivå END,
+        level = CASE WHEN ? > level THEN ? ELSE level END,
+        tid = CASE WHEN ? < tid THEN ? ELSE tid END,
+        pengar_tjanat = CASE WHEN ? > pengar_tjanat THEN ? ELSE pengar_tjanat END,
+        exp_tjanat = CASE WHEN ? > exp_tjanat THEN ? ELSE exp_tjanat END
       WHERE username = ?
     `;
-    const updateValues = [nivå, level, tid, pengar_tjanat, exp_tjanat, username];
 
-    await db.execute(updateQuery, updateValues);
+    const updateValues = [
+      nivå, nivå,
+      level, level,
+      tid, tid,
+      pengar_tjanat, pengar_tjanat,
+      exp_tjanat, exp_tjanat,
+      username,
+    ];
+
+    console.log("Update values:", {
+      nivå, level, tid, pengar_tjanat, exp_tjanat,
+      existing_tid: existingUser.tid
+    });
+
+    await spelDb.execute(updateQuery, updateValues);
     res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
     console.error("Database error:", error);
@@ -793,17 +805,19 @@ app.put("/mazerunner", async (req, res) => {
   }
 });
 
-app.get("/mazerunner", (req, res) => {
-  const query = "SELECT * FROM mazerunner"; // Fetch all records from mazerunner table
 
-  spelDb.query(query, (err, results) => {
-      if (err) {
-          console.error("Error fetching data:", err);
-          return res.status(500).json({ error: "Database query failed" });
-      }
-      res.json(results);
-  });
+app.get("/mazerunner", async (req, res) => {
+  const query = "SELECT * FROM mazerunner";
+
+  try {
+    const [results] = await spelDb.query(query); // Use await since spelDb is promise-based
+    res.json(results);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Database query failed" });
+  }
 });
+
 
 app.post('/updateEkonomi', (req, res) => {
   const { username, moneyToAdd, netWorthToAdd } = req.body;

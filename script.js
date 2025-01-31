@@ -890,7 +890,7 @@ if (currentPhpFile === "game_display.php") {
                                     const matchedUser = ekonomiResponse.find(user => user.username === username);
 
                                     if (matchedUser) {
-                                        // Add level * 10 to the existing value and networth
+                                        // Add 2 * level * userlevel to the existing value and networth
                                         const updatedValue = matchedUser.value + (2 * level * userlevel);
                                         const updatedNetworth = matchedUser.networth + (2 * level * userlevel);
 
@@ -1865,39 +1865,31 @@ popupOverlay.addEventListener('click', (e) => {
         const phpFileInfo = document.getElementById("php-file-info");
         const username = phpFileInfo.dataset.username;
 
-        async function updateNetworth(username) {
-            try {
-                const response = await fetch(`http://localhost:3000/update-networth`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ username }),
-                });
-                const data = await response.json();
-                console.log("Networth updated:", data);
-            } catch (error) {
-                console.error("Error updating networth:", error);
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", async () => {
-            const username = phpFileInfo.dataset.username; // Fetch the username
-            if (username) {
-                await updateNetworth(username);
-            } else {
-                console.log("User is not logged in. Skipping networth update.");
-            }
-        });
-
         async function fetchUserLevel(username) {
             try {
-                const response = await fetch(`http://localhost:3000/poangssystem?username=${username}`);
+                // Fetch all data from the poangssystem endpoint
+                const response = await fetch(`http://localhost:3000/poangssystem`);
                 const data = await response.json();
-                return data.Levels; // Ensure API returns correct level format
+        
+                // Check if the response is an array
+                if (!Array.isArray(data)) {
+                    console.error("Invalid response format: Expected an array");
+                    return 1; // Default to level 1 if the response is not an array
+                }
+        
+                // Find the user with the matching 'Namn' (username)
+                const user = data.find((entry) => entry.Namn === username);
+        
+                // If a matching user is found, return their level; otherwise, default to level 1
+                if (user && user.Levels) {
+                    return user.Levels;
+                } else {
+                    console.log("User not found or level not defined. Defaulting to level 1.");
+                    return 1;
+                }
             } catch (error) {
                 console.error("Error fetching user level:", error);
-                return 1; // Default to level 1 if error occurs
+                return 1; // Default to level 1 if an error occurs
             }
         }
 
@@ -1905,28 +1897,14 @@ popupOverlay.addEventListener('click', (e) => {
             try {
                 const response = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
                 const data = await response.json();
-                return data.length > 0; // Returns true if the user exists
+                return data.length > 0; // Ensure this returns true if the user exists
             } catch (error) {
                 console.error("Error checking if user exists:", error);
                 return false;
             }
         }
 
-        async function fetchNetworth(username) {
-            try {
-                const response = await fetch(`http://localhost:3000/ekonomi?username=${username}`);
-                if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.json();
-                return data.networth; // Assuming the response contains a "networth" field
-            } catch (error) {
-                console.error("Error fetching networth:", error);
-                return null;
-            }
-        }
-
-        async function insertUser(username, level, userlevel, averagetime, pengar, exp) {
+        async function insertUser(username, level, userlevel, averagetime) {
             try {
                 const response = await fetch("http://localhost:3000/mazerunner", {
                     method: "POST",
@@ -1938,38 +1916,44 @@ popupOverlay.addEventListener('click', (e) => {
                         nivå: level,
                         level: userlevel,
                         tid: averagetime,
-                        pengar_tjanat: pengar,
-                        exp_tjanat: exp,
+                        pengar_tjanat: 2 * userlevel * level,
+                        exp_tjanat: 2 * userlevel * level,
                     }),
                 });
                 const data = await response.json();
-                console.log("User inserted:", data);
             } catch (error) {
                 console.error("Error inserting user:", error);
             }
         }
         
-        async function updateUser(username, level, userlevel, averagetime, pengar, exp) {
+        async function updateUser(username, level, userlevel, averagetime) {
             try {
-                const response = await fetch(`http://localhost:3000/mazerunner?username=${username}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        nivå: level,
-                        level: userlevel,
-                        tid: averagetime,
-                        pengar_tjanat: pengar,
-                        exp_tjanat: exp,
-                    }),
-                });
-                const data = await response.json();
-                console.log("User updated:", data);
+              const response = await fetch(`http://localhost:3000/mazerunner`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  username,
+                  nivå: level,
+                  level: userlevel,
+                  tid: averagetime,
+                  pengar_tjanat: 2 * userlevel * level,
+                  exp_tjanat: 2 * userlevel * level,
+                }),
+              });
+          
+              if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+              }
+          
+              const data = await response.json();
+              return data;
             } catch (error) {
-                console.error("Error updating user:", error);
+              console.error("Error updating user:", error);
+              throw error;
             }
-        }
+          }
 
         class MazeBuilder {
         
@@ -2469,12 +2453,12 @@ popupOverlay.addEventListener('click', (e) => {
 
         let level = 1;
         let attempts = 3;
-        let timeLeft = 10;
+        let timeLeft = 20;
         let timer;
 
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 10;
+            timeLeft = 20;
             document.getElementById("time_counter").textContent = timeLeft; // Immediate update
             timer = setInterval(() => {
                 timeLeft--;
@@ -2563,16 +2547,29 @@ popupOverlay.addEventListener('click', (e) => {
             // Create the popup overlay and content
             const popupOverlay = document.createElement('div');
             popupOverlay.id = 'popupOverlay';
-            popupOverlay.innerHTML = `
+            if (!username) {
+                popupOverlay.innerHTML = `
                 <div id="popup">
                     <button id="closePopup">&times;</button>
                     <h2>Game Over</h2>
                     <p>Level Reached: ${level}</p>
                     <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
-                    <p>EXP Earned: ${level * 10}</p>
-                    <p>Money Earned: ${level * 10}</p>
                 </div>
             `;
+            }
+            if (username) {
+                const userlevel = await fetchUserLevel(username);
+                popupOverlay.innerHTML = `
+                <div id="popup">
+                    <button id="closePopup">&times;</button>
+                    <h2>Game Over</h2>
+                    <p>Level Reached: ${level}</p>
+                    <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
+                    <p>EXP Earned: ${2 * userlevel * level}</p>
+                    <p>Money Earned: ${2 * userlevel * level}</p>
+                </div>
+            `;
+            }
             document.body.appendChild(popupOverlay);
         
             // Show the popup with animation
@@ -2595,29 +2592,28 @@ popupOverlay.addEventListener('click', (e) => {
             // Database operations (only if the user is logged in)
             if (username) {
                 const userlevel = await fetchUserLevel(username);
+            
                 if (userlevel !== null) {
                     const userExists = await checkUserExists(username);
-                    const pengar = level * 10;
-                    const exp = level * 10;
+            
+                    const pengar = 2 * userlevel * level;
+                    const exp = 2 * userlevel * level;
             
                     if (!userExists) {
                         await insertUser(username, level, userlevel, averagetime, pengar, exp);
                     } else {
-                        // Get current values and increment them
                         const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
                         const existingData = await currentData.json();
-                        
+            
                         await updateUser(
                             username,
-                            level,
-                            userlevel, 
-                            (existingData.tid + averagetime) / 2, // Update average time
-                            existingData.pengar_tjanat + pengar, // Accumulate money
-                            existingData.exp_tjanat + exp // Accumulate EXP
+                            level,          // Current game level reached
+                            userlevel,      // Fetched user level from `/poangssystem`
+                            averagetime,  // New average time
+                            2 * userlevel * level,   // Accumulated money
+                            2 * userlevel * level          // Accumulated EXP
                         );
                     }
-                    // Update networth after database operations
-                    await updateNetworth(username);
                 }
             }
         }
@@ -2625,7 +2621,7 @@ popupOverlay.addEventListener('click', (e) => {
         function resetGame() {
             level = 1;
             attempts = 3;
-            timeLeft = 10; // Reset to 10 seconds for testing
+            timeLeft = 20; // Reset to 10 seconds for testing
             startTime = null; // Reset the start time
             clearInterval(timer);
         
