@@ -212,7 +212,7 @@ if (currentPhpFile === "game_display.php") {
     });
     
     document.getElementById("logo").addEventListener("click", function() {
-        redirect('index.php');
+        redirect('../index.php');
     });
     
     const logo = document.getElementById('logo');
@@ -246,7 +246,7 @@ if (currentPhpFile === "game_display.php") {
     });
     
     document.getElementById("logo").addEventListener("click", function() {
-        redirect('index.php');
+        redirect('../index.php');
     });
     
     const logo = document.getElementById('logo');
@@ -266,7 +266,7 @@ if (currentPhpFile === "game_display.php") {
 } else if (currentPhpFile === "spel.php") {
 
     document.getElementById("logo").addEventListener("click", function() {
-        redirect('index.php');
+        redirect('../index.php');
     });
     
     function openModal(gameId) {
@@ -480,13 +480,6 @@ if (currentPhpFile === "game_display.php") {
         selectedProfileContainer.appendChild(profileCircle);
         selectedProfileContainer.appendChild(username);
         selectedProfileContainer.appendChild(levelSection);
-    
-        const messagebutton = document.createElement('button');
-        messagebutton.classList.add('messagebutton');
-    
-        messagebutton.textContent = 'Meddelande'
-    
-        searchResultsContainer.appendChild(messagebutton);
     
         // Append to the search results container
         searchResultsContainer.appendChild(selectedProfileContainer);
@@ -2314,14 +2307,17 @@ popupOverlay.addEventListener('click', (e) => {
                 this.maze = maze;
                 this.position = { row: maze.rows - 2, col: maze.cols - 2 }; // Start near the entrance
                 this.hasKey = false;
+                this.isMovementEnabled = false; // Disable movement initially
             }
         
             init() {
-                document.addEventListener("keydown", (e) => this.move(e));
-                this.updatePlayerPosition();
+                document.addEventListener("keydown", (e) => this.move(e)); // Add the movement listener
+                this.updatePlayerPosition(); // Update the player's position in the UI
             }
         
             move(event) {
+                if (!this.isMovementEnabled) return; // Only move if movement is enabled
+        
                 let { row, col } = this.position;
         
                 switch (event.key) {
@@ -2347,44 +2343,55 @@ popupOverlay.addEventListener('click', (e) => {
                     this.updatePlayerPosition();
                 }
             }
+
+            enableMovement() {
+                this.isMovementEnabled = true; // Enable movement
+            }
+        
+            disableMovement() {
+                this.isMovementEnabled = false; // Disable movement
+            }
         
             canMoveTo(row, col) {
-                if (
-                    row < 0 ||
-                    row >= this.maze.rows ||
-                    col < 0 ||
-                    col >= this.maze.cols
-                ) {
+                // Check if the new position is within bounds
+                if (row < 0 || row >= this.maze.rows || col < 0 || col >= this.maze.cols) {
                     return false;
                 }
-            
+        
+                // Get the cell at the new position
                 const cell = this.maze.maze[row][col];
+        
+                // Check if the cell contains a wall
                 if (cell.includes("wall")) {
                     return false;
                 }
-            
+        
+                // Additional check to ensure the cell is not a door (if needed)
+                if (cell.includes("door") && !cell.includes("entrance") && !cell.includes("exit")) {
+                    return false;
+                }
+        
                 return true;
             }
         
             generateNewMaze() {
-                if(monster) monster.stopHunting();
-                
+                if (monster) monster.stopHunting();
+        
                 let width = 40;
                 let height = 24;
                 const newMaze = new MazeBuilder(width, height);
                 newMaze.placeKey();
                 newMaze.display("maze_container");
-            
+        
                 this.maze = newMaze;
                 this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 };
                 this.hasKey = false;
                 this.updatePlayerPosition();
-            
+        
                 monster = new Monster(newMaze);
                 monster.init();
                 startTimer();
             }
-            
         
             checkInteraction() {
                 const cell = this.maze.maze[this.position.row][this.position.col];
@@ -2394,7 +2401,6 @@ popupOverlay.addEventListener('click', (e) => {
                     completeMaze(); // Increment level and reset timer
                 }
             }
-            
         
             pickUpKey() {
                 this.hasKey = true;
@@ -2514,7 +2520,7 @@ popupOverlay.addEventListener('click', (e) => {
                     attempts--;
                     updateHUD();
                     if (attempts > 0) {
-                        alert("You were caught! Generating a new maze...");
+
                         player.generateNewMaze();
                         startTimer(); // Reset the timer
                     } else {
@@ -2526,12 +2532,12 @@ popupOverlay.addEventListener('click', (e) => {
 
         let level = 1;
         let attempts = 3;
-        let timeLeft = 20;
+        let timeLeft = 180;
         let timer;
 
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 20;
+            timeLeft = 180;
             document.getElementById("time_counter").textContent = timeLeft; // Immediate update
             timer = setInterval(() => {
                 timeLeft--;
@@ -2723,8 +2729,8 @@ popupOverlay.addEventListener('click', (e) => {
         function resetGame() {
             level = 1;
             attempts = 3;
-            timeLeft = 20; // Reset to 10 seconds for testing
-            startTime = null; // Reset the start time
+            timeLeft = 180;
+            startTime = null;
             clearInterval(timer);
         
             if (monster) {
@@ -2733,6 +2739,7 @@ popupOverlay.addEventListener('click', (e) => {
             }
         
             if (player) {
+                player.disableMovement(); // Disable player movement
                 player.position = { row: Maze.rows - 2, col: Maze.cols - 2 };
                 player.hasKey = false;
                 player.updatePlayerPosition();
@@ -2741,7 +2748,6 @@ popupOverlay.addEventListener('click', (e) => {
             document.getElementById("start_page").style.display = "flex";
             document.getElementById("maze_container").style.display = "none";
             document.getElementById("game_hud").style.display = "none";
-            localStorage.setItem("currentState", "start");
         }
         
 
@@ -2767,6 +2773,7 @@ popupOverlay.addEventListener('click', (e) => {
         
             player = new Player(Maze);
             player.init();
+            player.enableMovement(); // Enable player movement
         
             monster = new Monster(Maze);
             monster.init();
@@ -2775,10 +2782,8 @@ popupOverlay.addEventListener('click', (e) => {
             document.getElementById("start_page").style.display = "none";
             document.getElementById("maze_container").style.display = "block";
             document.getElementById("game_hud").style.display = "block";
-            localStorage.setItem("currentState", "maze");
             updateHUD();
         
-            // Start the global timer
             startTime = Date.now(); // Record the start time
             startTimer(); // Start the countdown timer
         });
@@ -2838,7 +2843,6 @@ popupOverlay.addEventListener('click', (e) => {
                 startTimer(); // Start the countdown timer
             }
         });
-
         
 } else if (currentPhpFile === "topplista.php") {
     document.addEventListener("DOMContentLoaded", function () {
@@ -3378,7 +3382,7 @@ popupOverlay.addEventListener('click', (e) => {
         fetchLeaderboardData();
     
         document.getElementById("logo").addEventListener("click", function () {
-            redirect("index.php");
+            redirect("../index.php");
         });
     });
     

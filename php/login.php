@@ -89,7 +89,7 @@ if (isset($_POST['submit'])) {
         </nav>
         <div class="buttons">
             <button id="signin" onclick="redirect('signup.php')">Registrera</button>
-            <button id="hemsida" onclick="redirect('index.php')">Hemsida</button>
+            <button id="hemsida" onclick="redirect('../index.php')">Hemsida</button>
         </div>
     </div>
     <div id="currency-bar">
@@ -103,6 +103,8 @@ if (isset($_POST['submit'])) {
     <input type="password" name="password" placeholder="Lägg in lösenord" required />
     <input type="submit" name="submit" value="Logga in" />
 </form>
+
+<h2 id="text-register">Har du ingen konto? <a href="signup.php" id="register-button">Registrera</a></h2>
 
 <?php
 // Display error messages if set

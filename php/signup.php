@@ -13,7 +13,6 @@ ini_set('display_errors', 0);
 
 include 'db.php';
 
-// Redirect if already logged in
 if (isset($_SESSION['username'])) {
     header("Location: spel.php");
     exit();
@@ -21,8 +20,8 @@ if (isset($_SESSION['username'])) {
 
 // Define status messages
 $status = '';
-if (isset($_GET['status'])) {
-    $status = $_GET['status'];
+if (isset($_GET['status']) && $_GET['status'] === 'exists') {
+    $status = 'exists';
 }
 
 // Handle form submission
@@ -66,9 +65,11 @@ if (isset($_POST['submit'])) {
                         $stmt_ekonomi->close();
                     }
 
-
-                    // Redirect with status: account created
-                    header("Location: " . $_SERVER['PHP_SELF'] . "?status=created");
+                    // Automatically log in the user
+                    $_SESSION['username'] = $username;
+                    
+                    // Redirect directly to spel.php
+                    header("Location: spel.php");
                     exit();
                 }
                 $stmt->close();
@@ -109,7 +110,7 @@ if (isset($_POST['submit'])) {
             </nav>
             <div class="buttons">
                 <button id="signin" onclick="redirect('login.php')">Logga in</button>
-                <button id="hemsida" onclick="redirect('index.php')">Hemsida</button>
+                <button id="hemsida" onclick="redirect('../index.php')">Hemsida</button>
             </div>
         </div>
         <div id="currency-bar">
@@ -123,6 +124,8 @@ if (isset($_POST['submit'])) {
         <input type="password" name="password" placeholder="Lägg in lösenord" required/>
         <input type="submit" name="submit" value="Registrera" />
     </form>
+
+    <h2 id="text-register">Har du en konto? <a href="login.php" id="register-button">Logga in</a></h2>
 
     <?php if ($status === 'created'): ?>
         <p id="success-message" style="display: block;">Användarkonto skapat!</p>

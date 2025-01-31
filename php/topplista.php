@@ -41,7 +41,7 @@ $next_level_exp = 100;
             </nav>
             <div class="buttons">
                 <button id="signin" onclick="redirect('signup.php')">Registrera</button>
-                <button id="hemsida" onclick="redirect('index.php')">Hemsida</button>
+                <button id="hemsida" onclick="redirect('../index.php')">Hemsida</button>
             </div>
         </div>
         <div id="currency-bar">
