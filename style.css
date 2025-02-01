@@ -50,7 +50,7 @@ html[data-page="game_display"] #currency-bar {
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
-    width: 70px;
+    width: 100px;
     position: relative;
 }
 
@@ -72,7 +72,7 @@ html[data-page="index"] #currency-bar {
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
-    width: 70px;
+    width: 100px;
     position: relative;
 }
 
@@ -636,7 +636,7 @@ html[data-page="login"] #currency-bar {
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
-    width: 70px;
+    width: 100px;
     position: relative;
 }
 
@@ -1014,7 +1014,7 @@ html[data-page="signup"] #currency-bar {
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
-    width: 70px;
+    width: 100px;
     position: relative;
 }
 
@@ -1432,7 +1432,7 @@ html[data-page="spel"] #currency-bar {
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
-    width: 70px;
+    width: 100px;
     position: relative;
 }
 
@@ -3215,7 +3215,7 @@ html[data-page="topplista"] #currency-bar {
     color: white;
     padding: 5px 10px;
     border-radius: 5px;
-    width: 70px;
+    width: 100px;
     position: relative;
 }
 

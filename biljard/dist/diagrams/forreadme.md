@@ -1,9 +1,3 @@
-Cushion bounce
-
-This is based on [Mathaven paper](https://billiards.colostate.edu/physics_articles/Mathavan_IMechE_2010.pdf). Many of the [figures](https://tailuge.github.io/billiards/dist/diagrams/mathaven.html) from the paper are recreated to confirm correctness.
-
-Slip velocity at cushion contact point I
-
 $$
 ẋ_I = \dot{v_x} + \dot{\omega_y} R \sin \theta - \dot{\omega_z} R \cos \theta,
 ẏ'_I = -\dot{v_y} \sin \theta + \dot{\omega_x} R

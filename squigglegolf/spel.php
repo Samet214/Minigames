@@ -1245,13 +1245,13 @@ function stopTimer() {
 async function handleEnd(reason) {
     // Check the reason for ending the game
     if (reason === "death") {
-        alert("💀 You died too many times 💀 - score of 12");
+        alert("Du dog för många gånger 💀 - 12 slag");
         strokes = 12;
     } else {
         if (strokes === 1) {
-            alert("⛳ You scored a hole in one!! ⛳");
+            alert("⛳ Hole in one baby!! ⛳");
         } else {
-            alert(`You finished the hole in ${strokes} strokes!`);
+            alert(`Du klarade hålen i ${strokes} slag!`);
         }
     }
 
@@ -1296,7 +1296,7 @@ async function handleEnd(reason) {
             document.getElementById("playbtn").addEventListener("click", startTimer);
 
             // Fetch from poangssystem
-            await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+            await fetch('http://localhost:3000/poangssystem')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     const poangMatch = memoryResponse.find(entry => entry.Namn === username);
@@ -1304,7 +1304,7 @@ async function handleEnd(reason) {
                         levels = poangMatch.Levels; // Assign 'Levels' to the outer variable
 
                         // Fetch from ekonomi
-                        return fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                        return fetch('http://localhost:3000/ekonomi');
                     } else {
       
                     }
@@ -1340,7 +1340,7 @@ async function handleEnd(reason) {
 
         networth += pengar_tjanat;
 
-        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+        fetch('http://localhost:3000/update-ekonomi', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1364,7 +1364,7 @@ async function handleEnd(reason) {
                 console.error('Error updating ekonomi:', error); // Log error
             });
 
-        fetch('http://samet-desktop.adm.huddinge.se:3000/update-netvarde', {
+        fetch('http://localhost:3000/update-netvarde', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1392,7 +1392,7 @@ async function handleEnd(reason) {
 
 
         // Send data to the server
-        const response = await fetch('http://samet-desktop.adm.huddinge.se:3000/update-squigglegolf', {
+        const response = await fetch('http://localhost:3000/update-squigglegolf', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

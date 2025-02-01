@@ -9,8 +9,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
-
 // Create a MySQL database connection for the "Spel" database
 const spelDb = mysql.createConnection({
   host: 'localhost',
@@ -949,6 +947,51 @@ app.post('/updateUserStats', (req, res) => {
   });
 });
 
+app.post('/update-ekonomi2', (req, res) => {
+  const { username, pengar_tjanat } = req.body;
+
+  if (!username || pengar_tjanat == null) {
+      return res.status(400).json({ error: "Missing username or pengar_tjanat" });
+  }
+
+  const query = `
+      UPDATE ekonomi 
+      SET value = value + ?, networth = networth + ?
+      WHERE username = ?
+  `;
+
+  ekonomiDb.query(query, [pengar_tjanat, pengar_tjanat, username], (err, result) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).json({ error: "Database update failed" });
+      }
+      res.json({ message: "Ekonomi updated successfully", affectedRows: result.affectedRows });
+  });
+});
+
+// Update poängssystem table (adds exp_tjanat to EXP)
+app.post('/update-exp2', (req, res) => {
+  const { username, exp_tjanat } = req.body;
+
+  if (!username || exp_tjanat == null) {
+      return res.status(400).json({ error: "Missing username or exp_tjanat" });
+  }
+
+  const query = `
+      UPDATE poängssystem 
+      SET EXP = EXP + ?
+      WHERE Namn = ?
+  `;
+
+  anvandarDb.query(query, [exp_tjanat, username], (err, result) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).json({ error: "Database update failed" });
+      }
+      res.json({ message: "EXP updated successfully", affectedRows: result.affectedRows });
+  });
+});
+
 app.post('/update-exp', async (req, res) => {
   const { username, userlevel, level } = req.body;
 
@@ -994,6 +1037,70 @@ app.post('/update-exp', async (req, res) => {
       console.error('Error updating EXP in poängssystem table:', error);
       res.status(500).send('Internal server error');
   }
+});
+
+app.get('/biljard', async (req, res) => {
+  try {
+      // Query the biljard table using promise-based query
+      const [results] = await spelDb.execute('SELECT * FROM biljard');
+      res.json(results); // Return the results from the biljard table
+  } catch (err) {
+      console.error("Error fetching data from biljard:", err);
+      res.status(500).json({ error: "Failed to fetch biljard data" });
+  }
+});
+
+
+app.post('/update-biljard', (req, res) => {
+  const { username, shots, userlevel, time, pengar_tjanat, exp_tjanat } = req.body;
+
+  if (!username) {
+      return res.status(400).json({ error: "Username is required" });
+  }
+
+  const query = "SELECT * FROM biljard WHERE username = ?";
+  db.query(query, [username], (err, results) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).json({ error: "Database error" });
+      }
+
+      if (results.length === 0) {
+          // User does not exist, insert new record
+          const insertQuery = `
+              INSERT INTO biljard (username, slag, level, tid, pengar_tjanat, exp_tjanat) 
+              VALUES (?, ?, ?, ?, ?, ?)
+          `;
+          db.query(insertQuery, [username, shots, userlevel, time, pengar_tjanat, exp_tjanat], (err) => {
+              if (err) {
+                  console.error(err);
+                  return res.status(500).json({ error: "Insert failed" });
+              }
+              return res.json({ message: "User inserted successfully" });
+          });
+      } else {
+          // User exists, update only if conditions are met
+          const user = results[0];
+          const updatedShots = shots < user.slag ? shots : user.slag;
+          const updatedLevel = userlevel > user.level ? userlevel : user.level;
+          const updatedPengar = pengar_tjanat > user.pengar_tjanat ? pengar_tjanat : user.pengar_tjanat;
+          const updatedExp = exp_tjanat > user.exp_tjanat ? exp_tjanat : user.exp_tjanat;
+          const updatedTime = time < user.tid ? time : user.tid;
+
+          const updateQuery = `
+              UPDATE biljard 
+              SET slag = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ? 
+              WHERE username = ?
+          `;
+          db.query(updateQuery, [updatedShots, updatedLevel, updatedPengar, updatedExp, updatedTime, username], (err) => {
+              if (err) {
+                  console.error(err);
+                  return res.status(500).json({ error: "Update failed" });
+              }
+              return res.json({ message: "User updated successfully" });
+          });
+      }
+  });
 });
 
 

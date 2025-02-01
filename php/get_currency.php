@@ -15,7 +15,7 @@ try {
     $pdo = new PDO("mysql:host=localhost;dbname=ekonomi", "samet", "samet");  // Change to your DB credentials
 
     // Fetch the user's value and networth from the database
-    $stmt = $pdo->prepare("SELECT value, networth FROM ekonomi WHERE username = :username");
+    $stmt = $pdo->prepare("SELECT value FROM ekonomi WHERE username = :username");
     $stmt->execute([':username' => $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -24,7 +24,6 @@ try {
         echo json_encode([
             'status' => 'success',
             'value' => $user['value'],
-            'networth' => $user['networth']
         ]);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'User not found in database']);
