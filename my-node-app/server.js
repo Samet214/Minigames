@@ -156,11 +156,11 @@ app.post('/update-memory', (req, res) => {
       return res.status(400).json({ error: 'Missing data in request body' });
     }
 
-    const { username, nivå, level, pengar_tjanat, exp_tjanat, tid, netvarde } = updatedData;
-    const { pengar_tjanat: gamePengar, exp_tjanat: gameExp } = currentGameData;
+    const { username, nivå, level, pengar_tjanat, tid, netvarde } = updatedData;
+    const { pengar_tjanat: gamePengar } = currentGameData;
 
     // Validate required fields
-    if (!username || nivå === undefined || level === undefined || pengar_tjanat === undefined || exp_tjanat === undefined || tid === undefined || netvarde === undefined) {
+    if (!username || nivå === undefined || level === undefined || pengar_tjanat === undefined || tid === undefined || netvarde === undefined) {
       return res.status(400).json({ error: 'Invalid request body' });
     }
 
@@ -183,20 +183,18 @@ app.post('/update-memory', (req, res) => {
         nivå: Math.max(user.nivå, nivå),
         level: Math.max(user.level, level),
         pengar_tjanat: Math.max(user.pengar_tjanat, pengar_tjanat),
-        exp_tjanat: Math.max(user.exp_tjanat, exp_tjanat),
         tid: Math.min(user.tid, tid),
         netvarde: Math.max(user.netvarde, netvarde),
       };
 
       // Run multiple database updates in parallel
-      const updateQuery = `UPDATE memory SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ? WHERE username = ?`;
+      const updateQuery = `UPDATE memory SET nivå = ?, level = ?, pengar_tjanat = ?, tid = ?, netvarde = ? WHERE username = ?`;
       const updateQuery2 = `UPDATE ekonomi SET value = value + ?, networth = networth + ? WHERE username = ?`;
-      const updateQuery3 = `UPDATE poängssystem SET EXP = EXP + ? WHERE Namn = ?`;
 
       // Execute multiple queries asynchronously
       Promise.all([
         new Promise((resolve, reject) => {
-          db.query(updateQuery, [updatedUser.nivå, updatedUser.level, updatedUser.pengar_tjanat, updatedUser.exp_tjanat, updatedUser.tid, updatedUser.netvarde, username], (err, result) => {
+          db.query(updateQuery, [updatedUser.nivå, updatedUser.level, updatedUser.pengar_tjanat, updatedUser.tid, updatedUser.netvarde, username], (err, result) => {
             if (err) reject(err);
             else resolve('Memory updated successfully');
           });
@@ -205,12 +203,6 @@ app.post('/update-memory', (req, res) => {
           ekonomiDb.query(updateQuery2, [gamePengar, gamePengar, username], (err, result) => {
             if (err) reject(err);
             else resolve('Ekonomi updated successfully');
-          });
-        }),
-        new Promise((resolve, reject) => {
-          anvandarDb.query(updateQuery3, [gameExp, username], (err, result) => {
-            if (err) reject(err);
-            else resolve('Poängssystem updated successfully');
           });
         }),
       ])
@@ -520,20 +512,23 @@ app.post('/insert-memory', (req, res) => {
 app.post('/update-ekonomi', (req, res) => {
   const { username, pengar_tjanat } = req.body;
 
+  if (!username || !pengar_tjanat) {
+      return res.status(400).json({ success: false, message: 'Missing required fields.' });
+  }
+
   const query = `
       UPDATE ekonomi
       SET value = value + ?, networth = networth + ?
       WHERE username = ?
   `;
 
-  
-
   ekonomiDb.query(query, [pengar_tjanat, pengar_tjanat, username], (err, results) => {
       if (err) {
           console.error('Error updating ekonomi table:', err);
           return res.status(500).json({ success: false, message: 'Failed to update ekonomi data.' });
       }
-      res.json({ success: true, message: `Added ${pengar_tjanat} to value and networth.` });
+
+      res.json({ success: true, message: `Added ${pengar_tjanat} to value and networth for ${username}.` });
   });
 });
 

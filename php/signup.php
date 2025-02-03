@@ -65,15 +65,24 @@ if (isset($_POST['submit'])) {
                         $stmt_ekonomi->close();
                     }
 
+                    // Add user to poängssystem table
+                    $sql_poang = "INSERT INTO poängssystem (Namn, Levels, EXP, EXP_GRÄNS) VALUES (?, 1, 0, 50)";
+                    if ($stmt_poang = $conn->prepare($sql_poang)) {
+                        $stmt_poang->bind_param("s", $username);
+                        $stmt_poang->execute();
+                        $stmt_poang->close();
+                    }
+
                     // Automatically log in the user
                     $_SESSION['username'] = $username;
-                    
+
                     // Redirect directly to spel.php
                     header("Location: spel.php");
                     exit();
                 }
                 $stmt->close();
             }
+
         }
         $stmt->close();
     }
@@ -93,7 +102,6 @@ if (isset($_POST['submit'])) {
 </head>
 <body>
     <header id="header">
-        <?php include 'sidebar.php'; ?>
         <div id="circle-container" style="position: relative; display: inline-block;">
             <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;">
             <div id="hover-circle"></div>
@@ -113,11 +121,52 @@ if (isset($_POST['submit'])) {
                 <button id="hemsida" onclick="redirect('../index.php')">Hemsida</button>
             </div>
         </div>
-        <div id="currency-bar">
-            <span id="currency-amount">0</span>
-            <img src="../bilder/mynt.png" id="currency-icon" alt="Coin Icon">
-        </div>
     </header>
+
+
+    <div id="sidebar-toggle" onclick="toggleSidebar()">☰</div>
+    <div id="sidebar" class="sidebar">
+        <!-- Profile Picture Section -->
+        <div class="profile-section">
+            <div class="username">
+            <div class="profile-circle" style="background-image: url('../pfp/<?php echo htmlspecialchars($profile_picture); ?>');" onclick="document.getElementById('profilePictureInput').click();"></div>
+            <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
+        </div>
+        <!-- File input for profile picture upload -->
+        <form id="profilePictureForm" method="POST" enctype="multipart/form-data" style="display: none;">
+            <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
+        </form>
+    </div>
+
+        <!-- Level and EXP bar -->
+        <div class="level-section">
+            <h4>Level <span id="level"><?php echo $level; ?></span></h4>
+            <div class="exp-bar">
+                <div class="exp-progress" style="width: <?php echo ($current_exp / $next_level_exp) * 100; ?>%;" id="expProgress"></div>
+            </div>
+            <p id="expText">
+                <?php
+                function formatNumber($number) {
+                    if ($number >= 1000000000) {
+                        return round($number / 1000000000, 1) . 'G';
+                    } elseif ($number >= 1000000) {
+                        return round($number / 1000000, 1) . 'M';
+                    } elseif ($number >= 1000) {
+                        return round($number / 1000, 1) . 'K';
+                    } else {
+                        return $number;
+                    }
+                }
+
+                $formattedCurrentExp = formatNumber($current_exp);
+                $formattedNextLevelExp = formatNumber($next_level_exp);
+
+                echo $formattedCurrentExp . '/' . $formattedNextLevelExp . ' EXP';
+                ?>
+            </p>
+        </div>
+    </div>
+
     <h2>Registrera</h2>
     <form action="" method="post">
         <input type="text" name="username" placeholder="Lägg in användernamn" required/>

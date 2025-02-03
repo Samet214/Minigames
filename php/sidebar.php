@@ -1,7 +1,3 @@
-<?php
-// sidebar.php
-?>
-
 <!-- Sidebar HTML -->
 <div id="sidebar-toggle" onclick="toggleSidebar()">☰</div>
 <div id="sidebar" class="sidebar">
@@ -45,7 +41,7 @@
         </p>
     </div>
     <hr>
-    <a id="a-tag1" href="logout.php">Logga ut</a>
+    <a id="a-tag1" href="../minigames/php/logout.php">Logga ut</a>
     <hr>
 </div>
 
@@ -466,23 +462,3 @@ transition: color 0.2s ease;
 color: #333;
 }
 </style>
-
-<!-- Sidebar JavaScript -->
-<script>
-function toggleSidebar() {
-        var sidebar = document.getElementById("sidebar");
-        var toggleButton = document.getElementById("sidebar-toggle");
-    
-        // Toggle the 'open' class
-        sidebar.classList.toggle("open");
-    
-        // Adjust the width of the sidebar when open
-        if (sidebar.classList.contains("open")) {
-            sidebar.style.width = "250px"; // Set width when sidebar is open
-            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
-        } else {
-            sidebar.style.width = "0"; // Set width to 0 when sidebar is closed
-            toggleButton.style.left = "10px"; // Reset to original position
-        }
-    }
-</script>

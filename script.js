@@ -63,7 +63,7 @@ let currency = 0; // This will be updated dynamically
 // Fetch the user's networth on page load
 async function fetchUserNetworth() {
     try {
-        const response = await fetch('get_currency.php');
+        const response = await fetch('../php/get_currency.php');
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -93,7 +93,7 @@ function formatNumber(number) {
 window.onload = fetchUserNetworth;
 
 function gainCurrency(amount) {
-    fetch('get_currency.php')  // This PHP script returns the current user's currency value
+    fetch('../php/get_currency.php')  // This PHP script returns the current user's currency value
         .then((response) => response.json())
         .then((data) => {
             if (data.status === 'success') {
@@ -169,7 +169,22 @@ function loseCurrency(amount) {
         });
 }
 
+function toggleSidebar() {
+    var sidebar = document.getElementById("sidebar");
+    var toggleButton = document.getElementById("sidebar-toggle");
 
+    // Toggle the 'open' class
+    sidebar.classList.toggle("open");
+
+    // Adjust the width of the sidebar when open
+    if (sidebar.classList.contains("open")) {
+        sidebar.style.width = "250px"; // Set width when sidebar is open
+        toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+    } else {
+        sidebar.style.width = "0"; // Set width to 0 when sidebar is closed
+        toggleButton.style.left = "10px"; // Reset to original position
+    }
+}
 
 //Specifika filer
 if (currentPhpFile === "game_display.php") {
@@ -748,13 +763,12 @@ if (currentPhpFile === "game_display.php") {
         clearInterval(timer); // Stop the timer
         endTime = Date.now(); // Record end time
         const totalTimeElapsed = Math.floor((endTime - startTime) / 1000); // Calculate elapsed time in seconds
-
+    
         finalLevel.textContent = level;
         totalTime.textContent = totalTimeElapsed; // Display total time
-        
     
         if (username !== 'guest') {
-            fetch('http://localhost:3000/memory')
+            fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     let userExists = false;
@@ -762,192 +776,176 @@ if (currentPhpFile === "game_display.php") {
                     for (const record of memoryResponse) {
                         if (record.username === username) {
                             userExists = true;
-
-                            let userlevel;
-
-                            (async () => {
-                                try {
-                                    // Fetch the response from the API
-                                    const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
-                                    
-                                    // Parse the response as JSON
-                                    const poangssystemData = await poangssystemResponse.json();
-                                    
-                                    // Look for a match in the 'Namn' column
-                                    const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
-                                    
-                                    if (matchedPoangssystemUser) {
-                                        userlevel = matchedPoangssystemUser.Levels;
-                                    } else {
-                                        console.log("User not found in poängssystem.");
-                                    }
-                                } catch (error) {
-                                    console.error("Error fetching data: ", error);
-                                }
-
-                                const currentGameData = {
-                                    nivå: level,
-                                    level: userlevel,
-                                    pengar_tjanat: 2 * level * userlevel,
-                                    exp_tjanat: 2 * level * userlevel,
-                                    tid: totalTimeElapsed / level,
-                                    netvarde: record.netvarde,
-                                };
-
-                                record.netvarde += 2 * level * userlevel;
-
-                                finalLevel.textContent = level;
-                                finalXP.textContent = 2 * level * userlevel; // Calculate XP
-                                finalAP.textContent = 2 * level * userlevel;
-                                totalTime.textContent = totalTimeElapsed; // Display total time
-        
-                                // Compare and update values if needed
-                                const updatedData = {
-                                    username: record.username,
-                                    nivå: Math.max(record.nivå, currentGameData.nivå),
-                                    level: Math.max(record.level, currentGameData.level),
-                                    pengar_tjanat: Math.max(record.pengar_tjanat, currentGameData.pengar_tjanat),
-                                    exp_tjanat: Math.max(record.exp_tjanat, currentGameData.exp_tjanat),
-                                    tid: Math.min(record.tid, currentGameData.tid), // Opposite logic for tid
-                                    netvarde: Math.max(record.netvarde, currentGameData.netvarde),
-                                };
-        
-                                // Send updated data to the backend
-                                return fetch('http://localhost:3000/update-memory', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        updatedData: updatedData,
-                                        currentGameData: currentGameData
-                                    }),
-                                })
-                                    .then(response => response.json())
-                                    .then(result => {
-                                        // Show popup after successful update
-                                        popup.classList.add('visible');
-                                        overlay.classList.add('visible');
-                                    });
-                            })();
-
-
+    
+                            const currentGameData = {
+                                nivå: level,
+                                level: record.level,
+                                pengar_tjanat: 2 * level * record.level,
+                                exp_tjanat: 2 * level * record.level,
+                                tid: totalTimeElapsed / level,
+                                netvarde: record.netvarde,
+                            };
+    
+                            gainExp(2 * level * record.level);
+    
+                            record.netvarde += 2 * level * record.level;
+    
+                            finalLevel.textContent = level;
+                            finalXP.textContent = 2 * level * record.level;
+                            finalAP.textContent = 2 * level * record.level;
+                            totalTime.textContent = totalTimeElapsed;
+    
+                            const updatedData = {
+                                username: record.username,
+                                nivå: Math.max(record.nivå, currentGameData.nivå),
+                                level: Math.max(record.level, currentGameData.level),
+                                pengar_tjanat: Math.max(record.pengar_tjanat, currentGameData.pengar_tjanat),
+                                exp_tjanat: Math.max(record.exp_tjanat, currentGameData.exp_tjanat),
+                                tid: Math.min(record.tid, currentGameData.tid),
+                                netvarde: Math.max(record.netvarde, currentGameData.netvarde),
+                            };
+    
+                            return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    updatedData: updatedData,
+                                    currentGameData: currentGameData
+                                }),
+                            })
+                                .then(response => response.json())
+                                .then(result => {
+                                    popup.classList.add('visible');
+                                    overlay.classList.add('visible');
+                                });
                         }
                     }
     
-                    // If the user does not exist, check poangssystem for a match
-                    if (!userExists) {
-                        // Make the function asynchronous
-                        (async () => {
-                            let userlevel;
-                            let usernetworth;
-                    
-                            try {
-                                // Fetch data from the poängssystem endpoint
-                                const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
-                                const poangssystemData = await poangssystemResponse.json();
-                    
-                                // Look for a match in the 'Namn' column
-                                const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
-                                
-                                if (matchedPoangssystemUser) {
-                                    userlevel = matchedPoangssystemUser.Levels;
+                    (async () => {
+                        let userlevel;
+                        let usernetworth;
+    
+                        try {
+                            const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                            const ekonomiData = await ekonomiResponse.json();
+    
+                            const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
+                            
+                            if (matchedEkonomiUser) {
+                                usernetworth = matchedEkonomiUser.networth;
+                            } else {
+                                console.log("User not found in ekonomi.");
+                            }
+    
+                            finalLevel.textContent = level;
+                            finalXP.textContent = 2 * level * userlevel;
+                            finalAP.textContent = 2 * level * userlevel;
+                            totalTime.textContent = totalTimeElapsed;
+    
+                            usernetworth += 2 * level * userlevel;
+    
+                            const dataToInsert = {
+                                username: username,
+                                level: level,
+                                userlevel: userlevel,
+                                usernetworth: usernetworth,
+                                pengar_tjanat: 2 * level * userlevel,
+                                exp_tjanat: 2 * level * userlevel,
+                                tid: totalTimeElapsed / level,
+                                netvarde: usernetworth,
+                            };
+    
+                            gainExp(2 * level * userlevel);
+    
+                            fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+                            .then(res => res.json())
+                            .then(ekonomiResponse => {
+                                const matchedUser = ekonomiResponse.find(user => user.username === username);
+    
+                                if (matchedUser) {
+                                    const updatedValue = matchedUser.value + (2 * level * userlevel);
+                                    const updatedNetworth = matchedUser.networth + (2 * level * userlevel);
+    
+                                    let pengar_tjanat = 2 * level * userlevel;
+    
+                                    const updateData = {
+                                        username: username,
+                                        pengar_tjanat: pengar_tjanat,
+                                    };
+    
+                                    fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(updateData),
+                                    })
+                                    .then(response => response.json())
+                                    .then(result => {
+                                        if (result.success) {
+                                            popup.classList.add('visible');
+                                            overlay.classList.add('visible');
+                                        } else {
+                                            console.error('Failed to update ekonomi table.');
+                                        }
+                                    })
+                                    .catch(error => console.error('Error updating ekonomi table:', error));
                                 } else {
-                                    console.log("User not found in poängssystem.");
+                                    console.error('User not found in ekonomi table.');
                                 }
-                    
-                                // Fetch data from the ekonomi endpoint
-                                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi');
-                                const ekonomiData = await ekonomiResponse.json();
-                    
-                                // Look for a match in the 'username' column
-                                const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
-                                
-                                if (matchedEkonomiUser) {
-                                    usernetworth = matchedEkonomiUser.networth;
-                                } else {
-                                    console.log("User not found in ekonomi.");
-                                }
-
-                                finalLevel.textContent = level;
-                                finalXP.textContent = 2 * level * userlevel; // Calculate XP
-                                finalAP.textContent = 2 * level * userlevel;
-                                totalTime.textContent = totalTimeElapsed; // Display total time
-
-                                usernetworth += 2 * level * userlevel;
-
-                    
-                                // Prepare data for insertion
-                                const dataToInsert = {
-                                    username: username,
-                                    level: level,
-                                    userlevel: userlevel,
-                                    usernetworth: usernetworth,
-                                    pengar_tjanat: 2 * level * userlevel,
-                                    exp_tjanat: 2 * level * userlevel,
-                                    tid: totalTimeElapsed / level,
-                                    netvarde: usernetworth, // Use the networth from ekonomi table
-                                };
-
-                                fetch('http://localhost:3000/ekonomi')
-                                .then(res => res.json())
-                                .then(ekonomiResponse => {
-                                    // Find the user in the ekonomi table based on username
-                                    const matchedUser = ekonomiResponse.find(user => user.username === username);
-
-                                    if (matchedUser) {
-                                        // Add 2 * level * userlevel to the existing value and networth
-                                        const updatedValue = matchedUser.value + (2 * level * userlevel);
-                                        const updatedNetworth = matchedUser.networth + (2 * level * userlevel);
-
-                                        // Prepare data to send to the backend to update the user's values
-                                        const updateData = {
-                                            username: username,
-                                            value: updatedValue,
-                                            networth: updatedNetworth
-                                        };
-
-                                        // Send the updated data to the backend
-                                        fetch('http://localhost:3000/update-ekonomi', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify(updateData),
-                                        })
-                                        .then(response => response.json())
-                                        .then(result => {
-                                            if (result.success) {
-                                                
-                                            } else {
-                                                
-                                            }
-                                        })
-                                        .catch(error => console.error('Error updating ekonomi table:', error));
-                                    } else {
-                                        
-                                    }
-                                })
-                    
-                                // Send the data to the backend to insert into the Spel database
-                                const insertResponse = await fetch('http://localhost:3000/insert-memory', {
+                            });
+    
+                            if (!userExists) {
+                                const insertResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(dataToInsert),
                                 });
-                    
+                            
                                 const insertResult = await insertResponse.json();
-                    
+                            
                                 if (insertResult.success) {
-                                    popup.classList.add('visible');
-                                    overlay.classList.add('visible');
+                                    console.log('User data inserted into memory table.');
+                            
+                                    const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                                    const ekonomiData = await ekonomiResponse.json();
+                            
+                                    const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
+                            
+                                    if (matchedEkonomiUser) {
+                                        const updatedValue = matchedEkonomiUser.value + (2 * level * userlevel);
+                                        const updatedNetworth = matchedEkonomiUser.networth + (2 * level * userlevel);
+    
+                                        let pengar_tjanat = 2 * level * userlevel;
+                            
+                                        const updateEkonomiData = {
+                                            username: username,
+                                            pengar_tjanat: pengar_tjanat,
+                                        };
+                            
+                                        const updateEkonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(updateEkonomiData),
+                                        });
+                            
+                                        const updateEkonomiResult = await updateEkonomiResponse.json();
+                            
+                                        if (updateEkonomiResult.success) {
+                                            console.log('Ekonomi table updated successfully.');
+                                        } else {
+                                            console.error('Failed to update ekonomi table.');
+                                        }
+                                    } else {
+                                        console.error('User not found in ekonomi table.');
+                                    }
                                 } else {
-                                    
+                                    console.error('Failed to insert user data into memory table.');
                                 }
-                    
-                                // Log the final data (for debugging purposes)
-                            } catch (error) {
-                                console.error('Error fetching data:', error);
                             }
-                        })(); // Invoke the async function immediately
-                    }
-                    
+    
+                        } catch (error) {
+                            console.error('Error fetching data:', error);
+                        }
+                    })(); 
                 })
                 .catch(error => console.error('Error:', error));
         } else {
@@ -955,6 +953,7 @@ if (currentPhpFile === "game_display.php") {
             overlay.classList.add('visible');
         }
     }
+    
     
     
     function closePopup() {
@@ -1708,7 +1707,7 @@ function handleGameOver() {
         totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
 
         function getUserLevel(username) {
-            return fetch('http://localhost:3000/poangssystem') // Ensure the correct URL
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem') // Ensure the correct URL
                 .then(response => response.json()) // Convert the response to JSON
                 .then(data => {
                     // Loop through the data and find the match for level
@@ -1727,7 +1726,7 @@ function handleGameOver() {
         }
 
         function getUserNetWorth(username) {
-            return fetch('http://localhost:3000/netvarde') // Ensure the correct URL
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde') // Ensure the correct URL
                 .then(response => response.json()) // Convert the response to JSON
                 .then(data => {
                     // Loop through the data and find the match for networth
@@ -1761,7 +1760,7 @@ function handleGameOver() {
                         document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
         
                         // Update user stats in the API
-                        fetch('http://localhost:3000/updateUserStats', {
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateUserStats', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -1779,7 +1778,7 @@ function handleGameOver() {
                             .catch(error => console.error('Error updating user stats:', error));
         
                         // Update ekonomi database
-                        fetch('http://localhost:3000/updateEkonomi', {
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateEkonomi', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -1794,7 +1793,7 @@ function handleGameOver() {
         
                         // Update användarinformation database
                         console.log(experience);
-                        fetch('http://localhost:3000/updateAnvandarinformation', {
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/updateAnvandarinformation', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -1872,7 +1871,7 @@ popupOverlay.addEventListener('click', (e) => {
         async function fetchUserLevel(username) {
             try {
                 // Fetch all data from the poangssystem endpoint
-                const response = await fetch(`http://localhost:3000/poangssystem`);
+                const response = await fetch(`http://samet-desktop.adm.huddinge.se:3000/poangssystem`);
                 const data = await response.json();
         
                 // Check if the response is an array
@@ -1899,7 +1898,7 @@ popupOverlay.addEventListener('click', (e) => {
 
         async function checkUserExists(username) {
             try {
-                const response = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
+                const response = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner?username=${username}`);
                 const data = await response.json();
                 return data.length > 0; // Ensure this returns true if the user exists
             } catch (error) {
@@ -1914,7 +1913,7 @@ popupOverlay.addEventListener('click', (e) => {
                 const exp_tjanat = 10 * userlevel * level;
         
                 // Insert user into mazerunner table
-                const mazerunnerResponse = await fetch("http://localhost:3000/mazerunner", {
+                const mazerunnerResponse = await fetch("http://samet-desktop.adm.huddinge.se:3000/mazerunner", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -1934,7 +1933,7 @@ popupOverlay.addEventListener('click', (e) => {
                 }
         
                 // Check if the user exists in ekonomi
-                const ekonomiCheckResponse = await fetch(`http://localhost:3000/ekonomi?username=${username}`);
+                const ekonomiCheckResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi?username=${username}`);
                 if (!ekonomiCheckResponse.ok) {
                     throw new Error(`HTTP error! Status: ${ekonomiCheckResponse.status}`);
                 }
@@ -1942,7 +1941,7 @@ popupOverlay.addEventListener('click', (e) => {
         
                 if (ekonomiData.length > 0) {
                     // User exists, update ekonomi
-                    const ekonomiUpdateResponse = await fetch(`http://localhost:3000/ekonomi`, {
+                    const ekonomiUpdateResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                         method: "PUT",
                         headers: {
                             "Content-Type": "application/json",
@@ -1959,7 +1958,7 @@ popupOverlay.addEventListener('click', (e) => {
                     }
                 } else {
                     // User does not exist, insert into ekonomi
-                    const ekonomiInsertResponse = await fetch(`http://localhost:3000/ekonomi`, {
+                    const ekonomiInsertResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -1988,7 +1987,7 @@ popupOverlay.addEventListener('click', (e) => {
               const exp_tjanat = 10 * userlevel * level;
           
               // Update mazerunner table
-              const mazerunnerResponse = await fetch(`http://localhost:3000/mazerunner`, {
+              const mazerunnerResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner`, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
@@ -2008,7 +2007,7 @@ popupOverlay.addEventListener('click', (e) => {
               }
           
               // Update ekonomi table (adds pengar_tjanat to value and networth)
-              const ekonomiResponse = await fetch(`http://localhost:3000/ekonomi`, {
+              const ekonomiResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
@@ -2697,7 +2696,7 @@ popupOverlay.addEventListener('click', (e) => {
                 if (!userExists) {
                     await insertUser(username, level, userlevel, averagetime, pengar, exp);
                 } else {
-                    const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
+                    const currentData = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner?username=${username}`);
                     const existingData = await currentData.json();
         
                     await updateUser(
@@ -2715,7 +2714,7 @@ popupOverlay.addEventListener('click', (e) => {
         // Send request to update EXP in the backend (Node.js)
         async function updateUserEXP(username, userlevel, level) {
             try {
-                const response = await fetch('http://localhost:3000/update-exp', {
+                const response = await fetch('http://samet-desktop.adm.huddinge.se:3000/update-exp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2907,8 +2906,8 @@ popupOverlay.addEventListener('click', (e) => {
                 innerTile.style.justifyContent = "flex-start";
     
                 if (modes[currentMode].text === "Memory - Topplista") {
-                    const memoryEndpoint = "http://localhost:3000/memory";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
+                    const memoryEndpoint = "http://samet-desktop.adm.huddinge.se:3000/memory";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                 
                     // Fetch both datasets
                     Promise.all([
@@ -3007,8 +3006,8 @@ popupOverlay.addEventListener('click', (e) => {
                         console.error("Error fetching Memory data:", error);
                     });
                 } else if (modes[currentMode].text === "Squigglegolf - Topplista") {
-                    const squigglegolfEndpoint = "http://localhost:3000/squigglegolf";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
+                    const squigglegolfEndpoint = "http://samet-desktop.adm.huddinge.se:3000/squigglegolf";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                 
                     // Fetch both datasets
                     Promise.all([
@@ -3106,8 +3105,8 @@ popupOverlay.addEventListener('click', (e) => {
                             console.error("Error fetching Squigglegolf data:", error);
                         });
                 } else if (modes[currentMode].text === "Colourvision - Topplista") {
-                    const colourvisionEndpoint = "http://localhost:3000/colourvision";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
+                    const colourvisionEndpoint = "http://samet-desktop.adm.huddinge.se:3000/colourvision";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                 
                     // Fetch both datasets
                     Promise.all([
@@ -3205,8 +3204,8 @@ popupOverlay.addEventListener('click', (e) => {
                             console.error("Error fetching Colourvision data:", error);
                         });
                     } else if (modes[currentMode].text === "Maze Runner - Topplista") {
-                        const mazerunnerEndpoint = "http://localhost:3000/mazerunner";
-                        const ekonomiEndpoint = "http://localhost:3000/ekonomi";
+                        const mazerunnerEndpoint = "http://samet-desktop.adm.huddinge.se:3000/mazerunner";
+                        const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                     
                         // Fetch both datasets
                         Promise.all([
@@ -3304,8 +3303,8 @@ popupOverlay.addEventListener('click', (e) => {
                             console.error("Error fetching Mazerunner data:", error);
                         });
                     } else if (modes[currentMode].text === "Biljard - Topplista") {
-                        const biljardEndpoint = "http://localhost:3000/biljard";
-                        const ekonomiEndpoint = "http://localhost:3000/ekonomi";
+                        const biljardEndpoint = "http://samet-desktop.adm.huddinge.se:3000/biljard";
+                        const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                     
                         // Fetch both datasets
                         Promise.all([
@@ -3426,31 +3425,31 @@ popupOverlay.addEventListener('click', (e) => {
     
         function fetchLeaderboardData() {
             Promise.all([
-                fetch("http://localhost:3000/user-counts").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch user counts");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/niva").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/niva").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory levels");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/levels").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/levels").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory levels");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/tid").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/tid").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory time");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/pengar").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/pengar").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory money data");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/exp").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/exp").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory EXP data");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/get-networth").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/get-networth").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch ekonomi net worth data");
                     return res.json();
                 })
@@ -3495,5 +3494,309 @@ popupOverlay.addEventListener('click', (e) => {
             redirect("../index.php");
         });
     });
+
+    document.getElementById("logo").addEventListener("click", function() {
+        redirect('../index.php');
+    });
+    
+    function openModal(gameId) {
+        const gameUrls = {
+            game1: "game_display.php?gameId=game1",
+            game2: "game_display.php?gameId=game2",
+            game3: "game_display.php?gameId=game3",
+            game4: "game_display.php?gameId=game4",
+            game5: "game_display.php?gameId=game5"
+        };
+    
+        if (gameUrls[gameId]) {
+            window.location.href = gameUrls[gameId];
+        } else {
+            
+        }
+    }
+    
+    function closeModal() {
+        const overlay = document.getElementById("overlay");
+        const modal = document.getElementById("modal");
+        overlay.style.animation = "fadeOut 0.5s ease-out forwards";
+        modal.style.animation = "modalResizeOut 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards";
+    
+        setTimeout(() => {
+            overlay.style.display = "none";
+        }, 500);
+    }
+    
+    // Toggle Full-Screen Mode
+    function toggleFullScreen(event) {
+        event.stopPropagation();
+        const modal = document.getElementById("modal");
+        const enterIcon = document.getElementById("enter-fullscreen-icon");
+        const exitIcon = document.getElementById("exit-fullscreen-icon");
+        const gameIframe = document.getElementById("game-iframe");
+    
+        if (!document.fullscreenElement) {
+            modal.requestFullscreen().then(() => {
+                modal.classList.add("full-screen-mode");
+                enterIcon.style.display = "none";
+                exitIcon.style.display = "inline";
+            });
+        } else {
+            document.exitFullscreen().then(() => {
+                modal.classList.remove("full-screen-mode");
+                enterIcon.style.display = "inline";
+                exitIcon.style.display = "none";
+            });
+        }
+    }
+    
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        var toggleButton = document.getElementById("sidebar-toggle");
+    
+        sidebar.classList.toggle("open");
+    
+        // Check if sidebar is open and move the button accordingly
+        if (sidebar.classList.contains("open")) {
+            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+        } else {
+            toggleButton.style.left = "10px"; // Reset to original position
+        }
+    }
+    
+    function toggleProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchBox = document.getElementById('searchInput');
+    
+        document.addEventListener('click', handleOutsideClick);
+    
+        // Ensure profileSquare remains visible without re-toggling
+        if (profileSquare.classList.contains('active')) {
+            closeProfile();
+        } else {
+            profileSquare.classList.add('active');
+            profileSquare.style.display = 'block';
+            profileSquare.style.opacity = '1';
+            profileSquare.style.transform = 'translateY(10px)';
+        }
+    }
+    
+    // Function to close the profile square
+    function closeProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+    
+        profileSquare.style.opacity = '0';
+        profileSquare.style.transform = 'translateY(0px)';
+    
+        // Timeout to wait for the animation to finish before hiding
+        setTimeout(() => {
+            profileSquare.classList.remove('active');
+            profileSquare.style.display = 'none';
+        }, 300); // Match the CSS transition duration
+    
+        // Remove the event listener
+        document.removeEventListener('click', handleOutsideClick);
+    }
+    
+    // Handle clicks outside of the square
+    function handleOutsideClick(event) {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchProfileBtn = document.getElementById('searchProfileBtn');
+        
+        // Check if the click is outside profileSquare and not on result-item or close-button
+        if (
+            !profileSquare.contains(event.target) &&
+            event.target !== searchProfileBtn &&
+            !event.target.classList.contains('result-item') &&
+            !event.target.classList.contains('close-button') &&
+            !event.target.classList.contains('profile-image') &&
+            event.target.id !== 'sidebar-toggle' &&
+            !event.target.classList.contains('messagebutton')
+        ) {
+            closeProfile();
+        }
+    }
+    
+    // Assuming searchProfiles is where you create and display search results
+    function searchProfiles() {
+        const searchInput = document.getElementById('searchInput').value.trim();
+    
+        if (searchInput === '') {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+    
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
+    
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const results = JSON.parse(xhr.responseText);
+                const searchResultsContainer = document.getElementById('searchResults');
+                searchResultsContainer.innerHTML = '';
+    
+                if (results.message) {
+                    const noUserFound = document.createElement('div');
+                    noUserFound.classList.add('result-item');
+                    noUserFound.textContent = results.message;
+                    searchResultsContainer.appendChild(noUserFound);
+                } else {
+                    results.forEach(function(user) {
+                        const profileImage = user.Profil_bild || 'default.png';
+                        const resultItem = document.createElement('div');
+                        resultItem.classList.add('result-item');
+    
+                        // Set data attributes for level, exp, and exp threshold
+                        resultItem.dataset.profileImage = profileImage;
+                        resultItem.dataset.level = user.Levels;
+                        resultItem.dataset.exp = user.EXP;
+                        resultItem.dataset.expThreshold = user.EXP_GRÄNS;
+    
+                        const img = document.createElement('img');
+                        img.classList.add('profile-image');
+                        img.src = '../pfp/' + profileImage;
+    
+                        const username = document.createElement('span');
+                        username.classList.add('username');
+                        username.textContent = user.Namn;
+    
+                        resultItem.appendChild(img);
+                        resultItem.appendChild(username);
+                        searchResultsContainer.appendChild(resultItem);
+                    });
+                }
+            }
+        };
+    
+        xhr.send();
+    }
+
+    
+    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
+        const searchResultsContainer = document.getElementById('searchResults');
+    
+        // Clear previous results
+        searchResultsContainer.innerHTML = '';
+    
+        // Create a new container for the selected profile
+        const selectedProfileContainer = document.createElement('div');
+        selectedProfileContainer.style.display = 'flex';
+        selectedProfileContainer.style.alignItems = 'center';
+        selectedProfileContainer.style.flexDirection = 'column';
+        selectedProfileContainer.style.textAlign = 'center';
+    
+        // Add profile picture and username
+        const profileCircle = document.createElement('img');
+        profileCircle.src = '../pfp/' + profileImageSrc;
+        profileCircle.classList.add('selected-profile-circle');
+    
+        const username = document.createElement('span');
+        username.classList.add('username2');
+        username.textContent = userName;
+        
+    
+        // Create the level section with EXP details as plain text
+        const levelSection = document.createElement('div');
+        levelSection.classList.add('level-section2');
+        levelSection.innerHTML = `
+            <h4>Level <span>${userLevel}</span></h4>
+            <div class="exp-bar2">
+                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
+            </div>
+            <p>${userExp} / ${expThreshold} EXP</p>
+        `;
+    
+        // Append elements to the new profile container
+        selectedProfileContainer.appendChild(profileCircle);
+        selectedProfileContainer.appendChild(username);
+        selectedProfileContainer.appendChild(levelSection);
+    
+        // Append to the search results container
+        searchResultsContainer.appendChild(selectedProfileContainer);
+    
+        // Add the close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            searchResultsContainer.innerHTML = '';
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
+            searchProfiles(); // Reload the search results
+        });
+        selectedProfileContainer.appendChild(closeButton);
+    }
+    
+    function openMessageContainer() {
+        const searchResultsContainer = document.getElementById('searchResults');
+        searchResultsContainer.innerHTML = ''; // Clear any previous content
+    
+        // Create and configure the "Close" button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            // Return to the search input and reload search results
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box
+            searchResultsContainer.innerHTML = ''; // Clear the message container
+            searchProfiles(); // Reload the search results
+        });
+    
+        // Message display area
+        const messageDisplay = document.createElement('div');
+        messageDisplay.classList.add('message-display');
+    
+        // Input field for composing new messages
+        const messageInput = document.createElement('input');
+        messageInput.type = 'text';
+        messageInput.classList.add('message-input');
+        messageInput.placeholder = 'Write a message...';
+    
+        // "Send" button for sending messages
+        const sendButton = document.createElement('button');
+        sendButton.textContent = 'Send';
+        sendButton.classList.add('send-button');
+    
+        // Append elements to display the message UI
+        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
+        searchResultsContainer.appendChild(closeButton);
+        searchResultsContainer.appendChild(messageDisplay);
+        searchResultsContainer.appendChild(messageInput);
+        searchResultsContainer.appendChild(sendButton);
+    }
+    
+    
+    // Event listener for handling profile and message interactions
+    document.addEventListener('click', function(event) {
+        const searchResultsContainer = document.getElementById('searchResults');
+        const searchBox = document.getElementById('searchInput');
+    
+        // Check if a profile item or profile image is clicked
+        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
+            const clickedItem = event.target.closest('.result-item');
+            const profileImageSrc = clickedItem.dataset.profileImage;
+            const userName = clickedItem.querySelector('.username').textContent;
+            const userLevel = clickedItem.dataset.level;
+            const userExp = clickedItem.dataset.exp;
+            const expThreshold = clickedItem.dataset.expThreshold;
+    
+            // Hide the search box
+            searchBox.style.display = 'none';
+    
+            // Display the selected profile with its details
+            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+        }
+    
+        // Check if the "Meddelande" (Message) button is clicked
+        if (event.target.classList.contains('messagebutton')) {
+            openMessageContainer();
+        }
+    });
+    
+    // Dismiss messages automatically after 5 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.message').forEach(msg => {
+            msg.style.display = 'none';
+        });
+    }, 5000);
     
 }
+
