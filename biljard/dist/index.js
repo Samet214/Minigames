@@ -635,7 +635,7 @@ let starttime = Date.now();
                                     if (data.loggedIn) {
                                         let username = data.username;
 
-                                        fetch('http://localhost:3000/poangssystem')
+                                        fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
                                             .then(response => response.json())
                                             .then(poangssystem => {
                                                 let user = poangssystem.find(item => item.Namn === username);
@@ -645,7 +645,57 @@ let starttime = Date.now();
                                                 let pengar_tjanat = Math.round(20000 * (userlevel/(shots * time)));
                                                 let exp_tjanat = Math.round(20000 * (userlevel/(shots * time)));
 
-                                                fetch('http://localhost:3000/update-ekonomi2', {
+                                                function gainExp(expAmount, callback) {
+                                                    var xhr = new XMLHttpRequest();
+                                                    xhr.open("POST", "../../php/sida.php", true);
+                                                    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                                                
+                                                    xhr.onreadystatechange = function() {
+                                                        if (xhr.readyState == 4 && xhr.status == 200) {
+                                                            var response = JSON.parse(xhr.responseText);
+                                                            var currentExp = response.current_exp;
+                                                            var nextLevelExp = response.next_level_exp;
+                                                            var level = response.level;
+                                                
+                                                            // Format numbers with appropriate units (K, M, G)
+                                                            function formatNumber(number) {
+                                                                if (number >= 1000000000) {
+                                                                    return (number / 1000000000).toFixed(1) + 'G';
+                                                                } else if (number >= 1000000) {
+                                                                    return (number / 1000000).toFixed(1) + 'M';
+                                                                } else if (number >= 1000) {
+                                                                    return (number / 1000).toFixed(1) + 'K';
+                                                                } else {
+                                                                    return number;
+                                                                }
+                                                            }
+                                                
+                                                            var formattedCurrentExp = formatNumber(currentExp);
+                                                            var formattedNextLevelExp = formatNumber(nextLevelExp);
+                                                
+                                                            // Update the EXP bar and text
+                                                            var progressBar = document.getElementById('expProgress');
+                                                            var expText = document.getElementById('expText');
+                                                            progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
+                                                            expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
+                                                
+                                                            // Update the user's level
+                                                            document.getElementById('level').textContent = level;
+                                                
+                                                            // If callback is provided, execute it with EXP data
+                                                            if (callback) {
+                                                                callback(currentExp, nextLevelExp, level);
+                                                            }
+                                                        }
+                                                    };
+                                                
+                                                    // Send the request to the server with the EXP amount
+                                                    xhr.send("add_exp=true&exp_amount=" + expAmount);
+                                                }
+
+                                                gainExp(exp_tjanat);
+
+                                                fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi2', {
                                                     method: 'POST',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ username, pengar_tjanat })
@@ -653,18 +703,9 @@ let starttime = Date.now();
                                                 .then(response => response.json())
                                                 .then(data => console.log("Ekonomi updated:", data))
                                                 .catch(error => console.error('Error updating ekonomi:', error));
-    
-                                                // Send exp_tjanat to update-exp2
-                                                fetch('http://localhost:3000/update-exp2', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ username, exp_tjanat })
-                                                })
-                                                .then(response => response.json())
-                                                .then(data => console.log("EXP updated:", data))
-                                                .catch(error => console.error("Error updating EXP:", error));
 
-                                                fetch('http://localhost:3000/update-biljard', {
+
+                                                fetch('http://samet-desktop.adm.huddinge.se:3000/update-biljard', {
                                                     method: 'POST',
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({

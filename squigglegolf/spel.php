@@ -1339,11 +1339,11 @@ async function handleEnd(reason) {
             document.getElementById("playbtn").addEventListener("click", startTimer);
 
             try {
-                const memoryResponse = await fetch('http://localhost:3000/poangssystem').then(res => res.json());
+                const memoryResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem').then(res => res.json());
                 const poangMatch = memoryResponse.find(entry => entry.Namn === username);
                 if (poangMatch) levels = poangMatch.Levels;
 
-                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi').then(res => res.json());
+                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi').then(res => res.json());
                 const ekonomiMatch = ekonomiResponse.find(entry => entry.username === username);
                 if (ekonomiMatch) networth = ekonomiMatch.networth;
             } catch (err) {
@@ -1362,13 +1362,13 @@ async function handleEnd(reason) {
         networth += pengar_tjanat;
 
         // Update ekonomi and netvarde
-        fetch('http://localhost:3000/update-ekonomi', {
+        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, pengar_tjanat }),
         }).catch(err => console.error('Error updating ekonomi:', err));
 
-        fetch('http://localhost:3000/update-netvarde', {
+        fetch('http://samet-desktop.adm.huddinge.se:3000/update-netvarde', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, pengar_tjanat }),
@@ -1377,7 +1377,7 @@ async function handleEnd(reason) {
         gainExp(exp_tjanat); // Use gainExp to add experience.
 
         // Final data update
-        await fetch('http://localhost:3000/update-squigglegolf', {
+        await fetch('http://samet-desktop.adm.huddinge.se:3000/update-squigglegolf', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1393,7 +1393,7 @@ async function handleEnd(reason) {
 
         // Check if EXP exceeds EXP_GRÄNS
         try {
-          const memoryResponse = await fetch('http://localhost:3000/poangssystem').then(res => res.json());
+          const memoryResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem').then(res => res.json());
           const userEntry = memoryResponse.find(entry => entry.Namn === username);
 
           if (userEntry && userEntry.EXP >= userEntry.EXP_GRÄNS) {
@@ -1402,7 +1402,7 @@ async function handleEnd(reason) {
               const newEXP_GRÄNS = userEntry.EXP_GRÄNS * 2;
 
               // Update EXP, Level, and double EXP_GRÄNS
-              await fetch('http://localhost:3000/update-exp-levels', {
+              await fetch('http://samet-desktop.adm.huddinge.se:3000/update-exp-levels', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ username, newEXP, newLevel, newEXP_GRÄNS }),
