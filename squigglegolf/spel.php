@@ -1338,30 +1338,17 @@ async function handleEnd(reason) {
         if (username) {
             document.getElementById("playbtn").addEventListener("click", startTimer);
 
-            // Fetch from poangssystem
-            await fetch('http://localhost:3000/poangssystem')
-                .then(res => res.json())
-                .then(memoryResponse => {
-                    const poangMatch = memoryResponse.find(entry => entry.Namn === username);
-                    if (poangMatch) {
-                        levels = poangMatch.Levels; // Assign 'Levels' to the outer variable
+            try {
+                const memoryResponse = await fetch('http://localhost:3000/poangssystem').then(res => res.json());
+                const poangMatch = memoryResponse.find(entry => entry.Namn === username);
+                if (poangMatch) levels = poangMatch.Levels;
 
-                        // Fetch from ekonomi
-                        return fetch('http://localhost:3000/ekonomi');
-                    } else {
-      
-                    }
-                })
-                .then(res => res.json())
-                .then(ekonomiResponse => {
-                    const ekonomiMatch = ekonomiResponse.find(entry => entry.username === username);
-                    if (ekonomiMatch) {
-                        networth = ekonomiMatch.networth; // Assign 'networth' to the outer variable
-                    } else {
-                       
-                    }
-                })
-                .catch(err => console.error('Error:', err));
+                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi').then(res => res.json());
+                const ekonomiMatch = ekonomiResponse.find(entry => entry.username === username);
+                if (ekonomiMatch) networth = ekonomiMatch.networth;
+            } catch (err) {
+                console.error('Error fetching data:', err);
+            }
         }
 
         let finalScoreDiv = document.createElement("div");
@@ -1374,41 +1361,23 @@ async function handleEnd(reason) {
 
         networth += pengar_tjanat;
 
+        // Update ekonomi and netvarde
         fetch('http://localhost:3000/update-ekonomi', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, pengar_tjanat }),
         }).catch(err => console.error('Error updating ekonomi:', err));
 
-        fetch('http://samet-desktop.adm.huddinge.se:3000/update-netvarde', {
+        fetch('http://localhost:3000/update-netvarde', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username, // Replace with the actual username variable
-                pengar_tjanat: pengar_tjanat,
-            }),
-        })
-            .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Failed to update ekonomi');
-                }
-            })
-            .then((data) => {
-                console.log(data.message); // Log success message
-            })
-            .catch((error) => {
-                console.error('Error updating ekonomi:', error); // Log error
-            });
-        
-    };
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, pengar_tjanat }),
+        }).catch(err => console.error('Error updating netvarde:', err));
 
+        gainExp(exp_tjanat); // Use gainExp to add experience.
 
-        // Send data to the server
-        const response = await fetch('http://localhost:3000/update-squigglegolf', {
+        // Final data update
+        await fetch('http://localhost:3000/update-squigglegolf', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1446,6 +1415,7 @@ async function handleEnd(reason) {
             console.error('Error checking or updating EXP and Levels:', err);
         }
     }
+}
 
 // Call startTimer() when the game starts
 document.getElementById("playbtn").addEventListener("click", startTimer);
