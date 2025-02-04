@@ -513,6 +513,25 @@ app.put("/ekonomi", async (req, res) => {
   }
 });
 
+app.post("/insertIntoColourvision", async (req, res) => {
+  const { username, level, userlevel, tid, pengar_tjanat, exp_tjanat, netvarde } = req.body;
+
+  const query = `
+    INSERT INTO colourvision (username, nivå, level, tid, pengar_tjanat, exp_tjanat, netvarde)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  try {
+    const [result] = await spelDb.query(query, [username, level, userlevel, tid, pengar_tjanat, exp_tjanat, netvarde]);
+    console.log("New user inserted into colourvision:", result);
+    res.status(201).json({ message: "User successfully inserted into colourvision", result });
+  } catch (error) {
+    console.error("Error inserting user into colourvision:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 
 app.post('/insert-memory', (req, res) => {
   const { username, level, userlevel, pengar_tjanat, exp_tjanat, tid, netvarde } = req.body;

@@ -1781,62 +1781,91 @@ function handleGameOver() {
                         const money = 2 * level * userlevel;
                         let averagetime = totalTimePlayed / level; // Use totalTimePlayed for average time calculation
         
-                        document.getElementById('popup-level').textContent = `Level: ${level}`;
-                        document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`; // Display total time played
-                        document.getElementById('popup-exp').textContent = `Experience Gained: ${experience}`;
-                        document.getElementById('popup-money').textContent = `Money Gained: ${money}`;
-        
-                        // Update user stats in the API
-                        fetch('http://localhost:3000/updateUserStats', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                username,
-                                level,
-                                userlevel,
-                                averagetime,
-                                money,
-                                experience,
-                                userNetWorth
-                            })
-                        })
+                        // Fetch all data from the 'colourvision' table
+                        fetch('http://localhost:3000/colourvision')
                             .then(response => response.json())
-                            .then(data => console.log('User stats updated:', data))
-                            .catch(error => console.error('Error updating user stats:', error));
+                            .then(data => {
+                                // Check if the username exists in the fetched data
+                                const userExists = data.some(user => user.username === username);
         
-                        // Update ekonomi database
-                        fetch('http://localhost:3000/updateEkonomi', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                username,
-                                moneyToAdd: money,
-                                netWorthToAdd: money // Assuming net worth increases by the same money value
+                                if (userExists) {
+                                    // User exists, update stats
+                                    updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth);
+                                } else {
+                                    // User does not exist, insert new data into 'colourvision'
+                                    fetch('http://localhost:3000/insertIntoColourvision', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            username,
+                                            level,
+                                            userlevel,
+                                            tid: averagetime,
+                                            pengar_tjanat: money,
+                                            exp_tjanat: experience,
+                                            netvarde: userNetWorth
+                                        })
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => console.log('User inserted into colourvision:', data))
+                                        .catch(error => console.error('Error inserting into colourvision:', error));
+                                }
                             })
-                        })
-                            .then(response => response.json())
-                            .then(data => console.log('Ekonomi updated:', data))
-                            .catch(error => console.error('Error updating ekonomi:', error));
-        
-                        // Update användarinformation database
-                        console.log(experience);
-                        fetch('http://localhost:3000/updateAnvandarinformation', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                username,
-                                expToAdd: experience
-                            })
-                        })
-                            .then(response => response.json())
-                            .then(data => console.log('Experience updated:', data))
-                            .catch(error => console.error('Error updating experience:', error));
+                            .catch(error => console.error('Error fetching colourvision data:', error));
                     }
                 })
                 .catch(error => {
                     console.error('Error getting user data:', error);
                 });
         }
+        
+        function updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth) {
+            // Update user stats in the API
+            fetch('http://localhost:3000/updateUserStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    level,
+                    userlevel,
+                    averagetime,
+                    money,
+                    experience,
+                    userNetWorth
+                })
+            })
+                .then(response => response.json())
+                .then(data => console.log('User stats updated:', data))
+                .catch(error => console.error('Error updating user stats:', error));
+        
+            // Update ekonomi database
+            fetch('http://localhost:3000/updateEkonomi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    moneyToAdd: money,
+                    netWorthToAdd: money // Assuming net worth increases by the same money value
+                })
+            })
+                .then(response => response.json())
+                .then(data => console.log('Ekonomi updated:', data))
+                .catch(error => console.error('Error updating ekonomi:', error));
+        
+            // Update användarinformation database
+            fetch('http://localhost:3000/updateAnvandarinformation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    expToAdd: experience
+                })
+            })
+                .then(response => response.json())
+                .then(data => console.log('Experience updated:', data))
+                .catch(error => console.error('Error updating experience:', error));
+        }
+        
         
 
         // Example usage
