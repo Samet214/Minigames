@@ -1942,6 +1942,54 @@ popupOverlay.addEventListener('click', (e) => {
 
 
     } else if (currentPhpFile === "spel4.php") {
+        function gainExp(expAmount, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "sida.php", true);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var currentExp = response.current_exp;
+                    var nextLevelExp = response.next_level_exp;
+                    var level = response.level;
+        
+                    // Format numbers with appropriate units (K, M, G)
+                    function formatNumber(number) {
+                        if (number >= 1000000000) {
+                            return (number / 1000000000).toFixed(1) + 'G';
+                        } else if (number >= 1000000) {
+                            return (number / 1000000).toFixed(1) + 'M';
+                        } else if (number >= 1000) {
+                            return (number / 1000).toFixed(1) + 'K';
+                        } else {
+                            return number;
+                        }
+                    }
+        
+                    var formattedCurrentExp = formatNumber(currentExp);
+                    var formattedNextLevelExp = formatNumber(nextLevelExp);
+        
+                    // Update the EXP bar and text
+                    var progressBar = document.getElementById('expProgress');
+                    var expText = document.getElementById('expText');
+                    progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
+                    expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
+        
+                    // Update the user's level
+                    document.getElementById('level').textContent = level;
+        
+                    // If callback is provided, execute it with EXP data
+                    if (callback) {
+                        callback(currentExp, nextLevelExp, level);
+                    }
+                }
+            };
+        
+            // Send the request to the server with the EXP amount
+            xhr.send("add_exp=true&exp_amount=" + expAmount);
+        }
+
         let startTime = null; // Tracks when the game starts
         let totalElapsedTime = 0; // Tracks total elapsed time in seconds
 
@@ -2623,12 +2671,12 @@ popupOverlay.addEventListener('click', (e) => {
 
         let level = 1;
         let attempts = 3;
-        let timeLeft = 180;
+        let timeLeft = 5;
         let timer;
 
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 180;
+            timeLeft = 5;
             document.getElementById("time_counter").textContent = timeLeft; // Immediate update
             timer = setInterval(() => {
                 timeLeft--;
@@ -2768,13 +2816,13 @@ popupOverlay.addEventListener('click', (e) => {
         
                 const pengar = 10 * userlevel * level;
                 const exp = 10 * userlevel * level;
-        
-                // Update EXP in poängssystem table via backend API
-                await updateUserEXP(username, userlevel, level);
+
+                gainExp(exp);
         
                 const userExists = await checkUserExists(username);
         
                 if (!userExists) {
+                    gainExp(2 * level * userlevel);  
                     await insertUser(username, level, userlevel, averagetime, pengar, exp);
                 } else {
                     const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
@@ -2790,37 +2838,12 @@ popupOverlay.addEventListener('click', (e) => {
                     );
                 }
             }
-        }
-        
-        // Send request to update EXP in the backend (Node.js)
-        async function updateUserEXP(username, userlevel, level) {
-            try {
-                const response = await fetch('http://localhost:3000/update-exp', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        userlevel: userlevel,
-                        level: level,
-                    }),
-                });
-        
-                if (!response.ok) {
-                    throw new Error(`Failed to update EXP: ${response.status}`);
-                }
-        
-                console.log('EXP update request successful');
-            } catch (error) {
-                console.error('Error updating EXP:', error);
-            }
-        }                  
+        }            
 
         function resetGame() {
             level = 1;
             attempts = 3;
-            timeLeft = 180;
+            timeLeft = 5;
             startTime = null;
             clearInterval(timer);
         
