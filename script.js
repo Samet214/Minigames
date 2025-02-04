@@ -1792,6 +1792,36 @@ function handleGameOver() {
                                     // User exists, update stats
                                     updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth);
                                 } else {
+                                    gainExp(experience);
+
+                                    document.getElementById('popup-level').textContent = `Level: ${level}`;
+                                    document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+                                    document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
+                                    document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
+
+                                    let pengar_tjanat = 2 * level * userlevel;
+
+                                    const updateData = {
+                                        username: username,
+                                        pengar_tjanat: pengar_tjanat // Renamed to pengar_tjanat as expected by the backend
+                                    };
+                                    
+                                    // Send the updated data to the backend
+                                    fetch('http://localhost:3000/update-ekonomi', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(updateData),
+                                    })
+                                    .then(response => response.json())
+                                    .then(result => {
+                                        if (result.success) {
+                                            console.log(result.message); // Success message
+                                        } else {
+                                            console.error('Failed to update:', result.message);
+                                        }
+                                    })
+                                    .catch(error => console.error('Error updating ekonomi table:', error));
+
                                     // User does not exist, insert new data into 'colourvision'
                                     fetch('http://localhost:3000/insertIntoColourvision', {
                                         method: 'POST',
@@ -1851,22 +1881,17 @@ function handleGameOver() {
                 .then(response => response.json())
                 .then(data => console.log('Ekonomi updated:', data))
                 .catch(error => console.error('Error updating ekonomi:', error));
-        
-            // Update användarinformation database
-            fetch('http://localhost:3000/updateAnvandarinformation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username,
-                    expToAdd: experience
-                })
-            })
-                .then(response => response.json())
-                .then(data => console.log('Experience updated:', data))
-                .catch(error => console.error('Error updating experience:', error));
+
+            let experience2 = 2 * level * userlevel;
+
+            document.getElementById('popup-level').textContent = `Level: ${level}`;
+            document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+            document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
+            document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
+
+            gainExp(experience2);
         }
-        
-        
+    
 
         // Example usage
         getUserData(username);
