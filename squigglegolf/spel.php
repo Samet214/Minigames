@@ -1446,7 +1446,6 @@ async function handleEnd(reason) {
             console.error('Error checking or updating EXP and Levels:', err);
         }
     }
-}
 
 // Call startTimer() when the game starts
 document.getElementById("playbtn").addEventListener("click", startTimer);
