@@ -435,6 +435,28 @@ const anvandarDb = mysql.createConnection({
   database: 'användarinformation', // "Spel" database name
 });
 
+app.post('/update-exp-levels', async (req, res) => {
+  const { username, newEXP, newLevel, newEXP_GRÄNS } = req.body;
+
+  if (!username || newEXP === undefined || newLevel === undefined || newEXP_GRÄNS === undefined) {
+      return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  try {
+      // Update the EXP, Levels, and EXP_GRÄNS for the given username
+      await anvandarDb.query(
+          `UPDATE poängssystem SET EXP = ?, Levels = ?, EXP_GRÄNS = ? WHERE Namn = ?`,
+          [newEXP, newLevel, newEXP_GRÄNS, username]
+      );
+
+      res.status(200).json({ message: 'EXP, Levels, and EXP_GRÄNS updated successfully' });
+  } catch (error) {
+      console.error('Error updating EXP, Levels, and EXP_GRÄNS:', error);
+      res.status(500).json({ message: 'Failed to update EXP, Levels, and EXP_GRÄNS' });
+  }
+});
+
+
 app.get('/poangssystem', (req, res) => {
   const query = `SELECT * FROM poängssystem;`;
 

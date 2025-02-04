@@ -1242,8 +1242,55 @@ function stopTimer() {
     return timer; // Return the total time elapsed
 }
 
+function gainExp(expAmount, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "sida.php", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            var response = JSON.parse(xhr.responseText);
+            var currentExp = response.current_exp;
+            var nextLevelExp = response.next_level_exp;
+            var level = response.level;
+
+            // Format numbers with appropriate units (K, M, G)
+            function formatNumber(number) {
+                if (number >= 1000000000) {
+                    return (number / 1000000000).toFixed(1) + 'G';
+                } else if (number >= 1000000) {
+                    return (number / 1000000).toFixed(1) + 'M';
+                } else if (number >= 1000) {
+                    return (number / 1000).toFixed(1) + 'K';
+                } else {
+                    return number;
+                }
+            }
+
+            var formattedCurrentExp = formatNumber(currentExp);
+            var formattedNextLevelExp = formatNumber(nextLevelExp);
+
+            // Update the EXP bar and text
+            var progressBar = document.getElementById('expProgress');
+            var expText = document.getElementById('expText');
+            progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
+            expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
+
+            // Update the user's level
+            document.getElementById('level').textContent = level;
+
+            // If callback is provided, execute it with EXP data
+            if (callback) {
+                callback(currentExp, nextLevelExp, level);
+            }
+        }
+    };
+
+    // Send the request to the server with the EXP amount
+    xhr.send("add_exp=true&exp_amount=" + expAmount);
+}
+
 async function handleEnd(reason) {
-    // Check the reason for ending the game
     if (reason === "death") {
         alert("Du dog för många gånger 💀 - 12 slag");
         strokes = 12;
@@ -1257,10 +1304,8 @@ async function handleEnd(reason) {
 
     clickPos = { x: null, y: null };
     mousePos = { x: null, y: null };
-
     totalStrokes += strokes;
 
-    // Record hole score
     let scoreDiv = document.createElement("div");
     document.body.appendChild(document.createElement("br"));
     scoreDiv.innerText = `Hole ${currentHole} score: ${strokes}`;
@@ -1269,7 +1314,7 @@ async function handleEnd(reason) {
 
     let url = canvas.toDataURL();
     let img = new Image();
-    await new Promise((r) => (img.onload = r, (img.src = url)));
+    await new Promise((resolve) => (img.onload = resolve, (img.src = url)));
 
     s_ctx.drawImage(
         img,
@@ -1287,8 +1332,6 @@ async function handleEnd(reason) {
         document.body.appendChild(document.createElement("br"));
 
         let username = "<?php echo $username;?>";
-
-        // Declare levels and networth in a higher scope
         let levels = 0;
         let networth = 0;
 
@@ -1296,7 +1339,7 @@ async function handleEnd(reason) {
             document.getElementById("playbtn").addEventListener("click", startTimer);
 
             // Fetch from poangssystem
-            await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+            await fetch('http://localhost:3000/poangssystem')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     const poangMatch = memoryResponse.find(entry => entry.Namn === username);
@@ -1304,7 +1347,7 @@ async function handleEnd(reason) {
                         levels = poangMatch.Levels; // Assign 'Levels' to the outer variable
 
                         // Fetch from ekonomi
-                        return fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                        return fetch('http://localhost:3000/ekonomi');
                     } else {
       
                     }
@@ -1325,44 +1368,17 @@ async function handleEnd(reason) {
         finalScoreDiv.innerText = `Course total: ${totalStrokes} strokes`;
         document.body.appendChild(finalScoreDiv);
 
-        currentHole += 2;
-
-        // Stop the timer and display the total time taken
-        const timeTaken = stopTimer(); // Stop the timer and get the elapsed time
-        alert(`You finished the entire course in ${timeTaken} seconds, congrats!`);
-        let pengar_tjanat = Math.round(10000 * (levels/(totalStrokes * timeTaken)));
-        let exp_tjanat = Math.round(10000 * (levels/(totalStrokes * timeTaken)));
-        
-        if (currentHole >= 9) {
         const timeTaken = stopTimer();
         const pengar_tjanat = Math.round(10000 * (levels / (totalStrokes * timeTaken)));
         const exp_tjanat = Math.round(10000 * (levels / (totalStrokes * timeTaken)));
 
         networth += pengar_tjanat;
 
-        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+        fetch('http://localhost:3000/update-ekonomi', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: username, // Replace with the actual username variable
-                pengar_tjanat: pengar_tjanat,
-            }),
-        })
-            .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    throw new Error('Failed to update ekonomi');
-                }
-            })
-            .then((data) => {
-                console.log(data.message); // Log success message
-            })
-            .catch((error) => {
-                console.error('Error updating ekonomi:', error); // Log error
-            });
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, pengar_tjanat }),
+        }).catch(err => console.error('Error updating ekonomi:', err));
 
         fetch('http://samet-desktop.adm.huddinge.se:3000/update-netvarde', {
             method: 'POST',
@@ -1392,13 +1408,11 @@ async function handleEnd(reason) {
 
 
         // Send data to the server
-        const response = await fetch('http://samet-desktop.adm.huddinge.se:3000/update-squigglegolf', {
+        const response = await fetch('http://localhost:3000/update-squigglegolf', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                username: "<?php echo $username; ?>",
+                username,
                 totalStrokes,
                 levels,
                 pengar_tjanat,
@@ -1406,16 +1420,33 @@ async function handleEnd(reason) {
                 timeTaken,
                 networth,
             }),
-        });
+        }).catch(err => console.error('Failed to update data:', err));
 
-        if (response.ok) {
-            
-        } else {
-            console.error('Failed to update data', await response.json());
+        // Check if EXP exceeds EXP_GRÄNS
+        try {
+          const memoryResponse = await fetch('http://localhost:3000/poangssystem').then(res => res.json());
+          const userEntry = memoryResponse.find(entry => entry.Namn === username);
+
+          if (userEntry && userEntry.EXP >= userEntry.EXP_GRÄNS) {
+              const newEXP = userEntry.EXP - userEntry.EXP_GRÄNS;
+              const newLevel = userEntry.Levels + 1;
+              const newEXP_GRÄNS = userEntry.EXP_GRÄNS * 2;
+
+              // Update EXP, Level, and double EXP_GRÄNS
+              await fetch('http://localhost:3000/update-exp-levels', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ username, newEXP, newLevel, newEXP_GRÄNS }),
+              });
+
+              console.log(`Level up! ${username} is now at level ${newLevel} with ${newEXP} EXP.`);
+          }
+
+        } catch (err) {
+            console.error('Error checking or updating EXP and Levels:', err);
         }
-
     }
-    }
+}
 
 // Call startTimer() when the game starts
 document.getElementById("playbtn").addEventListener("click", startTimer);
