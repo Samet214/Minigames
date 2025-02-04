@@ -763,9 +763,10 @@ if (currentPhpFile === "game_display.php") {
         clearInterval(timer); // Stop the timer
         endTime = Date.now(); // Record end time
         const totalTimeElapsed = Math.floor((endTime - startTime) / 1000); // Calculate elapsed time in seconds
-    
+
         finalLevel.textContent = level;
         totalTime.textContent = totalTimeElapsed; // Display total time
+        
     
         if (username !== 'guest') {
             fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
@@ -776,176 +777,202 @@ if (currentPhpFile === "game_display.php") {
                     for (const record of memoryResponse) {
                         if (record.username === username) {
                             userExists = true;
-    
-                            const currentGameData = {
-                                nivå: level,
-                                level: record.level,
-                                pengar_tjanat: 2 * level * record.level,
-                                exp_tjanat: 2 * level * record.level,
-                                tid: totalTimeElapsed / level,
-                                netvarde: record.netvarde,
-                            };
-    
-                            gainExp(2 * level * record.level);
-    
-                            record.netvarde += 2 * level * record.level;
-    
-                            finalLevel.textContent = level;
-                            finalXP.textContent = 2 * level * record.level;
-                            finalAP.textContent = 2 * level * record.level;
-                            totalTime.textContent = totalTimeElapsed;
-    
-                            const updatedData = {
-                                username: record.username,
-                                nivå: Math.max(record.nivå, currentGameData.nivå),
-                                level: Math.max(record.level, currentGameData.level),
-                                pengar_tjanat: Math.max(record.pengar_tjanat, currentGameData.pengar_tjanat),
-                                exp_tjanat: Math.max(record.exp_tjanat, currentGameData.exp_tjanat),
-                                tid: Math.min(record.tid, currentGameData.tid),
-                                netvarde: Math.max(record.netvarde, currentGameData.netvarde),
-                            };
-    
-                            return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    updatedData: updatedData,
-                                    currentGameData: currentGameData
-                                }),
-                            })
-                                .then(response => response.json())
-                                .then(result => {
-                                    popup.classList.add('visible');
-                                    overlay.classList.add('visible');
-                                });
+
+                            let userlevel;
+
+                            (async () => {
+                                try {
+                                    // Fetch the response from the API
+                                    const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                    
+                                    // Parse the response as JSON
+                                    const poangssystemData = await poangssystemResponse.json();
+                                    
+                                    // Look for a match in the 'Namn' column
+                                    const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
+                                    
+                                    if (matchedPoangssystemUser) {
+                                        userlevel = matchedPoangssystemUser.Levels;
+                                    } else {
+                                        console.log("User not found in poängssystem.");
+                                    }
+                                } catch (error) {
+                                    console.error("Error fetching data: ", error);
+                                }
+
+                                const currentGameData = {
+                                    nivå: level,
+                                    level: userlevel,
+                                    pengar_tjanat: 2 * level * userlevel,
+                                    exp_tjanat: 2 * level * userlevel,
+                                    tid: totalTimeElapsed / level,
+                                    netvarde: record.netvarde,
+                                };
+
+                                record.netvarde += 2 * level * userlevel;
+
+                                gainExp(2 * level * userlevel);
+
+                                finalLevel.textContent = level;
+                                finalXP.textContent = 2 * level * userlevel; // Calculate XP
+                                finalAP.textContent = 2 * level * userlevel;
+                                totalTime.textContent = totalTimeElapsed; // Display total time
+        
+                                // Compare and update values if needed
+                                const updatedData = {
+                                    username: record.username,
+                                    nivå: Math.max(record.nivå, currentGameData.nivå),
+                                    level: Math.max(record.level, currentGameData.level),
+                                    pengar_tjanat: Math.max(record.pengar_tjanat, currentGameData.pengar_tjanat),
+                                    exp_tjanat: Math.max(record.exp_tjanat, currentGameData.exp_tjanat),
+                                    tid: Math.min(record.tid, currentGameData.tid), // Opposite logic for tid
+                                    netvarde: Math.max(record.netvarde, currentGameData.netvarde),
+                                };
+        
+                                // Send updated data to the backend
+                                return fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        updatedData: updatedData,
+                                        currentGameData: currentGameData
+                                    }),
+                                })
+                                    .then(response => response.json())
+                                    .then(result => {
+                                        // Show popup after successful update
+                                        popup.classList.add('visible');
+                                        overlay.classList.add('visible');
+                                    });
+                            })();
+
+
                         }
                     }
     
-                    (async () => {
-                        let userlevel;
-                        let usernetworth;
-    
-                        try {
-                            const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
-                            const ekonomiData = await ekonomiResponse.json();
-    
-                            const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
-                            
-                            if (matchedEkonomiUser) {
-                                usernetworth = matchedEkonomiUser.networth;
-                            } else {
-                                console.log("User not found in ekonomi.");
-                            }
-    
-                            finalLevel.textContent = level;
-                            finalXP.textContent = 2 * level * userlevel;
-                            finalAP.textContent = 2 * level * userlevel;
-                            totalTime.textContent = totalTimeElapsed;
-    
-                            usernetworth += 2 * level * userlevel;
-    
-                            const dataToInsert = {
-                                username: username,
-                                level: level,
-                                userlevel: userlevel,
-                                usernetworth: usernetworth,
-                                pengar_tjanat: 2 * level * userlevel,
-                                exp_tjanat: 2 * level * userlevel,
-                                tid: totalTimeElapsed / level,
-                                netvarde: usernetworth,
-                            };
-    
-                            gainExp(2 * level * userlevel);
-    
-                            fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
-                            .then(res => res.json())
-                            .then(ekonomiResponse => {
-                                const matchedUser = ekonomiResponse.find(user => user.username === username);
-    
-                                if (matchedUser) {
-                                    const updatedValue = matchedUser.value + (2 * level * userlevel);
-                                    const updatedNetworth = matchedUser.networth + (2 * level * userlevel);
-    
-                                    let pengar_tjanat = 2 * level * userlevel;
-    
-                                    const updateData = {
-                                        username: username,
-                                        pengar_tjanat: pengar_tjanat,
-                                    };
-    
-                                    fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(updateData),
-                                    })
-                                    .then(response => response.json())
-                                    .then(result => {
-                                        if (result.success) {
-                                            popup.classList.add('visible');
-                                            overlay.classList.add('visible');
-                                        } else {
-                                            console.error('Failed to update ekonomi table.');
-                                        }
-                                    })
-                                    .catch(error => console.error('Error updating ekonomi table:', error));
+                    // If the user does not exist, check poangssystem for a match
+                    if (!userExists) {
+                        // Make the function asynchronous
+                        (async () => {
+                            let userlevel;
+                            let usernetworth;
+                    
+                            try {
+                                // Fetch data from the poängssystem endpoint
+                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                const poangssystemData = await poangssystemResponse.json();
+                    
+                                // Look for a match in the 'Namn' column
+                                const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
+                                
+                                if (matchedPoangssystemUser) {
+                                    userlevel = matchedPoangssystemUser.Levels;
                                 } else {
-                                    console.error('User not found in ekonomi table.');
+                                    console.log("User not found in poängssystem.");
                                 }
-                            });
-    
-                            if (!userExists) {
+
+                                popup.classList.add('visible');
+                                overlay.classList.add('visible');
+                                
+                    
+                                // Fetch data from the ekonomi endpoint
+                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                                const ekonomiData = await ekonomiResponse.json();
+                    
+                                // Look for a match in the 'username' column
+                                const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
+                                
+                                if (matchedEkonomiUser) {
+                                    usernetworth = matchedEkonomiUser.networth;
+                                } else {
+                                    console.log("User not found in ekonomi.");
+                                }
+
+                                finalLevel.textContent = level;
+                                finalXP.textContent = 2 * level * userlevel; // Calculate XP
+                                finalAP.textContent = 2 * level * userlevel;
+                                totalTime.textContent = totalTimeElapsed; // Display total time
+
+                                usernetworth += 2 * level * userlevel;
+
+                    
+                                // Prepare data for insertion
+                                const dataToInsert = {
+                                    username: username,
+                                    level: level,
+                                    userlevel: userlevel,
+                                    usernetworth: usernetworth,
+                                    pengar_tjanat: 2 * level * userlevel,
+                                    exp_tjanat: 2 * level * userlevel,
+                                    tid: totalTimeElapsed / level,
+                                    netvarde: usernetworth, // Use the networth from ekonomi table
+                                };
+
+                                fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+                                .then(res => res.json())
+                                .then(ekonomiResponse => {
+                                    // Find the user in the ekonomi table based on username
+                                    const matchedUser = ekonomiResponse.find(user => user.username === username);
+
+                                    if (matchedUser) {
+                                        // Add 2 * level * userlevel to the existing value and networth
+                                        const updatedValue = matchedUser.value + (2 * level * userlevel);
+                                        const updatedNetworth = matchedUser.networth + (2 * level * userlevel);
+
+                                        let pengar_tjanat = 2 * level * userlevel;
+
+                                        // Prepare data to send to the backend to update the user's values
+                                        const updateData = {
+                                            username: username,
+                                            pengar_tjanat: pengar_tjanat // Renamed to pengar_tjanat as expected by the backend
+                                        };
+
+                                        gainExp(pengar_tjanat);
+                                        
+                                        // Send the updated data to the backend
+                                        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(updateData),
+                                        })
+                                        .then(response => response.json())
+                                        .then(result => {
+                                            if (result.success) {
+                                                console.log(result.message); // Success message
+                                            } else {
+                                                console.error('Failed to update:', result.message);
+                                            }
+                                        })
+                                        .catch(error => console.error('Error updating ekonomi table:', error));
+                                        
+                                    } else {
+                                        
+                                    }
+                                })
+                    
+                                // Send the data to the backend to insert into the Spel database
                                 const insertResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(dataToInsert),
                                 });
-                            
+                    
                                 const insertResult = await insertResponse.json();
-                            
+                    
                                 if (insertResult.success) {
-                                    console.log('User data inserted into memory table.');
-                            
-                                    const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
-                                    const ekonomiData = await ekonomiResponse.json();
-                            
-                                    const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
-                            
-                                    if (matchedEkonomiUser) {
-                                        const updatedValue = matchedEkonomiUser.value + (2 * level * userlevel);
-                                        const updatedNetworth = matchedEkonomiUser.networth + (2 * level * userlevel);
-    
-                                        let pengar_tjanat = 2 * level * userlevel;
-                            
-                                        const updateEkonomiData = {
-                                            username: username,
-                                            pengar_tjanat: pengar_tjanat,
-                                        };
-                            
-                                        const updateEkonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify(updateEkonomiData),
-                                        });
-                            
-                                        const updateEkonomiResult = await updateEkonomiResponse.json();
-                            
-                                        if (updateEkonomiResult.success) {
-                                            console.log('Ekonomi table updated successfully.');
-                                        } else {
-                                            console.error('Failed to update ekonomi table.');
-                                        }
-                                    } else {
-                                        console.error('User not found in ekonomi table.');
-                                    }
+                                    popup.classList.add('visible');
+                                    overlay.classList.add('visible');
                                 } else {
-                                    console.error('Failed to insert user data into memory table.');
+                                    
                                 }
+                    
+                                // Log the final data (for debugging purposes)
+                            } catch (error) {
+                                console.error('Error fetching data:', error);
                             }
-    
-                        } catch (error) {
-                            console.error('Error fetching data:', error);
-                        }
-                    })(); 
+                        })(); // Invoke the async function immediately
+                    }
+                    
                 })
                 .catch(error => console.error('Error:', error));
         } else {
