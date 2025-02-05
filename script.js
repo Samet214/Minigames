@@ -63,7 +63,12 @@ let currency = 0; // This will be updated dynamically
 // Fetch the user's networth on page load
 async function fetchUserNetworth() {
     try {
-        const response = await fetch('../php/get_currency.php');
+        let response;
+        if (currentPhpFile === "index.php") {
+            response = await fetch('../minigames/php/get_currency.php');
+        } else {
+            response = await fetch('../php/get_currency.php');
+        }
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -190,6 +195,8 @@ function toggleSidebar() {
 if (currentPhpFile === "game_display.php") {
     
 } else if (currentPhpFile === "index.php") {
+
+    
     
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
@@ -225,6 +232,318 @@ if (currentPhpFile === "game_display.php") {
         hoverCircle.style.opacity = '0'; // Fade out
         hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
     });
+
+    document.getElementById("logo").addEventListener("click", function() {
+        redirect('index.php');
+    });
+    
+    function openModal(gameId) {
+        const gameUrls = {
+            game1: "game_display.php?gameId=game1",
+            game2: "game_display.php?gameId=game2",
+            game3: "game_display.php?gameId=game3",
+            game4: "game_display.php?gameId=game4",
+            game5: "game_display.php?gameId=game5"
+        };
+    
+        if (gameUrls[gameId]) {
+            window.location.href = gameUrls[gameId];
+        } else {
+            
+        }
+    }
+    
+    function closeModal() {
+        const overlay = document.getElementById("overlay");
+        const modal = document.getElementById("modal");
+        overlay.style.animation = "fadeOut 0.5s ease-out forwards";
+        modal.style.animation = "modalResizeOut 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards";
+    
+        setTimeout(() => {
+            overlay.style.display = "none";
+        }, 500);
+    }
+    
+    // Toggle Full-Screen Mode
+    function toggleFullScreen(event) {
+        event.stopPropagation();
+        const modal = document.getElementById("modal");
+        const enterIcon = document.getElementById("enter-fullscreen-icon");
+        const exitIcon = document.getElementById("exit-fullscreen-icon");
+        const gameIframe = document.getElementById("game-iframe");
+    
+        if (!document.fullscreenElement) {
+            modal.requestFullscreen().then(() => {
+                modal.classList.add("full-screen-mode");
+                enterIcon.style.display = "none";
+                exitIcon.style.display = "inline";
+            });
+        } else {
+            document.exitFullscreen().then(() => {
+                modal.classList.remove("full-screen-mode");
+                enterIcon.style.display = "inline";
+                exitIcon.style.display = "none";
+            });
+        }
+    }
+    
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        var toggleButton = document.getElementById("sidebar-toggle");
+    
+        sidebar.classList.toggle("open");
+    
+        // Check if sidebar is open and move the button accordingly
+        if (sidebar.classList.contains("open")) {
+            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+        } else {
+            toggleButton.style.left = "10px"; // Reset to original position
+        }
+    }
+    
+    function toggleProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchBox = document.getElementById('searchInput');
+    
+        document.addEventListener('click', handleOutsideClick);
+    
+        // Ensure profileSquare remains visible without re-toggling
+        if (profileSquare.classList.contains('active')) {
+            closeProfile();
+        } else {
+            profileSquare.classList.add('active');
+            profileSquare.style.display = 'block';
+            profileSquare.style.opacity = '1';
+            profileSquare.style.transform = 'translateY(10px)';
+        }
+    }
+    
+    // Function to close the profile square
+    function closeProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+    
+        profileSquare.style.opacity = '0';
+        profileSquare.style.transform = 'translateY(0px)';
+    
+        // Timeout to wait for the animation to finish before hiding
+        setTimeout(() => {
+            profileSquare.classList.remove('active');
+            profileSquare.style.display = 'none';
+        }, 300); // Match the CSS transition duration
+    
+        // Remove the event listener
+        document.removeEventListener('click', handleOutsideClick);
+    }
+    
+    // Handle clicks outside of the square
+    function handleOutsideClick(event) {
+        const profileSquare = document.getElementById('profileSquare');
+        const searchProfileBtn = document.getElementById('searchProfileBtn');
+        
+        // Check if the click is outside profileSquare and not on result-item or close-button
+        if (
+            !profileSquare.contains(event.target) &&
+            event.target !== searchProfileBtn &&
+            !event.target.classList.contains('result-item') &&
+            !event.target.classList.contains('close-button') &&
+            !event.target.classList.contains('profile-image') &&
+            event.target.id !== 'sidebar-toggle' &&
+            !event.target.classList.contains('messagebutton')
+        ) {
+            closeProfile();
+        }
+    }
+    
+    // Assuming searchProfiles is where you create and display search results
+    function searchProfiles() {
+        const searchInput = document.getElementById('searchInput').value.trim();
+    
+        if (searchInput === '') {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+    
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', '../minigames/php/sida.php?search=' + encodeURIComponent(searchInput), true);
+    
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                console.log(JSON.parse(xhr.responseText));
+                const results = JSON.parse(xhr.responseText);
+                const searchResultsContainer = document.getElementById('searchResults');
+                searchResultsContainer.innerHTML = '';
+        
+                if (results.message) {
+                    const noUserFound = document.createElement('div');
+                    noUserFound.classList.add('result-item');
+                    noUserFound.textContent = results.message;
+                    searchResultsContainer.appendChild(noUserFound);
+                } else {
+                    results.forEach(function(user) {
+                        const profileImage = user.Profil_bild || '../minigames/pfp/default.png';
+                        const resultItem = document.createElement('div');
+                        resultItem.classList.add('result-item');
+        
+                        // Set data attributes for level, exp, and exp threshold
+                        resultItem.dataset.profileImage = profileImage;
+                        resultItem.dataset.level = user.Levels;
+                        resultItem.dataset.exp = user.EXP;
+                        resultItem.dataset.expThreshold = user.EXP_GRÄNS;
+        
+                        const img = document.createElement('img');
+                        img.classList.add('profile-image');
+                        img.src = '../minigames/pfp/' + profileImage;
+        
+                        let username = document.createElement('span');
+                        username.classList.add('username');
+        
+                        function capitalizeFirstLetter(str) {
+                            if (!str) return str; // Handle empty or falsy strings
+                            return str.charAt(0).toUpperCase() + str.slice(1);
+                        }
+        
+                        username.textContent = capitalizeFirstLetter(user.Namn);
+                        username.style.color = "black";
+        
+                        resultItem.appendChild(img);
+                        resultItem.appendChild(username); // Append username correctly
+                        searchResultsContainer.appendChild(resultItem);
+                    });
+                }
+            }
+        };
+        
+    
+        xhr.send();
+    }
+
+    
+    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
+        const searchResultsContainer = document.getElementById('searchResults');
+    
+        // Clear previous results
+        searchResultsContainer.innerHTML = '';
+    
+        // Create a new container for the selected profile
+        const selectedProfileContainer = document.createElement('div');
+        selectedProfileContainer.style.display = 'flex';
+        selectedProfileContainer.style.alignItems = 'center';
+        selectedProfileContainer.style.flexDirection = 'column';
+        selectedProfileContainer.style.textAlign = 'center';
+    
+        // Add profile picture and username
+        const profileCircle = document.createElement('img');
+        profileCircle.src = '../pfp/' + profileImageSrc;
+        profileCircle.classList.add('selected-profile-circle');
+    
+        const username = document.createElement('span');
+        username.classList.add('username2');
+        username.textContent = userName;
+        
+    
+        // Create the level section with EXP details as plain text
+        const levelSection = document.createElement('div');
+        levelSection.classList.add('level-section2');
+        levelSection.innerHTML = `
+            <h4>Level <span>${userLevel}</span></h4>
+            <div class="exp-bar2">
+                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
+            </div>
+            <p>${userExp} / ${expThreshold} EXP</p>
+        `;
+    
+        // Append elements to the new profile container
+        selectedProfileContainer.appendChild(profileCircle);
+        selectedProfileContainer.appendChild(username);
+        selectedProfileContainer.appendChild(levelSection);
+    
+        // Append to the search results container
+        searchResultsContainer.appendChild(selectedProfileContainer);
+    
+        // Add the close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            searchResultsContainer.innerHTML = '';
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
+            searchProfiles(); // Reload the search results
+        });
+        selectedProfileContainer.appendChild(closeButton);
+    }
+    
+    function openMessageContainer() {
+        const searchResultsContainer = document.getElementById('searchResults');
+        searchResultsContainer.innerHTML = ''; // Clear any previous content
+    
+        // Create and configure the "Close" button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'X';
+        closeButton.classList.add('close-button');
+        closeButton.addEventListener('click', function() {
+            // Return to the search input and reload search results
+            document.getElementById('searchInput').style.display = 'block'; // Show the search box
+            searchResultsContainer.innerHTML = ''; // Clear the message container
+            searchProfiles(); // Reload the search results
+        });
+    
+        // Message display area
+        const messageDisplay = document.createElement('div');
+        messageDisplay.classList.add('message-display');
+    
+        // Input field for composing new messages
+        const messageInput = document.createElement('input');
+        messageInput.type = 'text';
+        messageInput.classList.add('message-input');
+        messageInput.placeholder = 'Write a message...';
+    
+        // "Send" button for sending messages
+        const sendButton = document.createElement('button');
+        sendButton.textContent = 'Send';
+        sendButton.classList.add('send-button');
+    
+        // Append elements to display the message UI
+        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
+        searchResultsContainer.appendChild(closeButton);
+        searchResultsContainer.appendChild(messageDisplay);
+        searchResultsContainer.appendChild(messageInput);
+        searchResultsContainer.appendChild(sendButton);
+    }
+    
+    
+    // Event listener for handling profile and message interactions
+    document.addEventListener('click', function(event) {
+        const searchResultsContainer = document.getElementById('searchResults');
+        const searchBox = document.getElementById('searchInput');
+    
+        // Check if a profile item or profile image is clicked
+        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
+            const clickedItem = event.target.closest('.result-item');
+            const profileImageSrc = clickedItem.dataset.profileImage;
+            const userName = clickedItem.querySelector('.username').textContent;
+            const userLevel = clickedItem.dataset.level;
+            const userExp = clickedItem.dataset.exp;
+            const expThreshold = clickedItem.dataset.expThreshold;
+    
+            // Hide the search box
+            searchBox.style.display = 'none';
+    
+            // Display the selected profile with its details
+            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+        }
+    
+        // Check if the "Meddelande" (Message) button is clicked
+        if (event.target.classList.contains('messagebutton')) {
+            openMessageContainer();
+        }
+    });
+    
+    // Dismiss messages automatically after 5 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.message').forEach(msg => {
+            msg.style.display = 'none';
+        });
+    }, 5000);
 
 } else if (currentPhpFile === "login.php") {
     
@@ -427,10 +746,11 @@ if (currentPhpFile === "game_display.php") {
     
         xhr.onload = function() {
             if (xhr.status === 200) {
+                console.log(JSON.parse(xhr.responseText));
                 const results = JSON.parse(xhr.responseText);
                 const searchResultsContainer = document.getElementById('searchResults');
                 searchResultsContainer.innerHTML = '';
-    
+        
                 if (results.message) {
                     const noUserFound = document.createElement('div');
                     noUserFound.classList.add('result-item');
@@ -438,26 +758,33 @@ if (currentPhpFile === "game_display.php") {
                     searchResultsContainer.appendChild(noUserFound);
                 } else {
                     results.forEach(function(user) {
-                        const profileImage = user.Profil_bild || 'default.png';
+                        const profileImage = user.Profil_bild || '../pfp/default.png';
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('result-item');
-    
+        
                         // Set data attributes for level, exp, and exp threshold
                         resultItem.dataset.profileImage = profileImage;
                         resultItem.dataset.level = user.Levels;
                         resultItem.dataset.exp = user.EXP;
                         resultItem.dataset.expThreshold = user.EXP_GRÄNS;
-    
+        
                         const img = document.createElement('img');
                         img.classList.add('profile-image');
                         img.src = '../pfp/' + profileImage;
-    
-                        const username = document.createElement('span');
+        
+                        let username = document.createElement('span');
                         username.classList.add('username');
-                        username.textContent = user.Namn;
-    
+        
+                        function capitalizeFirstLetter(str) {
+                            if (!str) return str; // Handle empty or falsy strings
+                            return str.charAt(0).toUpperCase() + str.slice(1);
+                        }
+        
+                        username.textContent = capitalizeFirstLetter(user.Namn);
+                        username.style.color = "black";
+        
                         resultItem.appendChild(img);
-                        resultItem.appendChild(username);
+                        resultItem.appendChild(username); // Append username correctly
                         searchResultsContainer.appendChild(resultItem);
                     });
                 }
@@ -3734,10 +4061,11 @@ popupOverlay.addEventListener('click', (e) => {
     
         xhr.onload = function() {
             if (xhr.status === 200) {
+                console.log(JSON.parse(xhr.responseText));
                 const results = JSON.parse(xhr.responseText);
                 const searchResultsContainer = document.getElementById('searchResults');
                 searchResultsContainer.innerHTML = '';
-    
+        
                 if (results.message) {
                     const noUserFound = document.createElement('div');
                     noUserFound.classList.add('result-item');
@@ -3745,26 +4073,33 @@ popupOverlay.addEventListener('click', (e) => {
                     searchResultsContainer.appendChild(noUserFound);
                 } else {
                     results.forEach(function(user) {
-                        const profileImage = user.Profil_bild || 'default.png';
+                        const profileImage = user.Profil_bild || '../pfp/default.png';
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('result-item');
-    
+        
                         // Set data attributes for level, exp, and exp threshold
                         resultItem.dataset.profileImage = profileImage;
                         resultItem.dataset.level = user.Levels;
                         resultItem.dataset.exp = user.EXP;
                         resultItem.dataset.expThreshold = user.EXP_GRÄNS;
-    
+        
                         const img = document.createElement('img');
                         img.classList.add('profile-image');
                         img.src = '../pfp/' + profileImage;
-    
-                        const username = document.createElement('span');
+        
+                        let username = document.createElement('span');
                         username.classList.add('username');
-                        username.textContent = user.Namn;
-    
+        
+                        function capitalizeFirstLetter(str) {
+                            if (!str) return str; // Handle empty or falsy strings
+                            return str.charAt(0).toUpperCase() + str.slice(1);
+                        }
+        
+                        username.textContent = capitalizeFirstLetter(user.Namn);
+                        username.style.color = "black";
+        
                         resultItem.appendChild(img);
-                        resultItem.appendChild(username);
+                        resultItem.appendChild(username); // Append username correctly
                         searchResultsContainer.appendChild(resultItem);
                     });
                 }

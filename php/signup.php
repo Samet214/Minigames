@@ -27,7 +27,7 @@ if (isset($_GET['status']) && $_GET['status'] === 'exists') {
 // Handle form submission
 if (isset($_POST['submit'])) {
     // Establish connection
-    $conn = Användarinformation();
+    $conn = Anvandarinformation();
 
     // Lowercase username and password
     $username = strtolower($_POST['username']);

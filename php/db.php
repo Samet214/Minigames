@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 0);
 
-function Användarinformation() {
+function Anvandarinformation() {
     // Default database settings
     $servername = "localhost";
     $dbname = "användarinformation"; // Database for user information

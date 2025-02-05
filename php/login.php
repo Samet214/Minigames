@@ -20,7 +20,7 @@ $next_level_exp = 100;
 include 'db.php';
 
 if (isset($_POST['submit'])) {
-    $conn = Användarinformation();
+    $conn = Anvandarinformation();
 
     $username = strtolower(trim($_POST['username']));
     $password = strtolower(trim($_POST['password']));

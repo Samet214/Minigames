@@ -576,6 +576,874 @@ html[data-page="index"] #currency-amount {
     margin-right: 8px;
 }
 
+html[data-page="index"] html, html[data-page="index"] body {
+margin: 0;
+padding: 0;
+font-family: Arial, sans-serif;
+background-color: #131A20;
+color: white;
+height: 100%;
+}
+
+html[data-page="index"] #currency-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333; /* Dark background for the bar */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    width: 100px;
+    position: relative;
+}
+
+html[data-page="index"] * {
+scrollbar-width: none; /* Firefox */
+-ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html[data-page="index"] #currency-icon {
+    position: absolute;
+    height: 35px;
+    right: 0px;
+}
+
+html[data-page="index"] *::-webkit-scrollbar {
+display: none; /* Chrome, Safari, Edge */
+}
+
+/* Header Section */
+html[data-page="index"] #header {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+display: flex;
+justify-content: space-between; /* Space between elements */
+align-items: center;
+padding: 0 20px;
+height: 80px;
+background-color: #0D1117;
+z-index: 1000; /* Ensures it's always on top */
+animation: fadeIn 1s ease-in forwards;
+}
+
+html[data-page="index"] #logo {
+cursor: pointer;
+height: 48px; /* Circle height */
+width: 48px;  /* Circle width */
+margin-top: 25px;
+transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+}
+
+html[data-page="index"] #logo:hover {
+transform: scale(1.1) translateY(-3px); /* Scale up and move up */
+}
+
+/* Sidebar Toggle Button */
+html[data-page="index"] #sidebar-toggle {
+position: fixed;
+top: 100px; /* Adjust this to be just below the header */
+left: 10px;
+font-size: 30px;
+cursor: pointer;
+background-color: black;
+color: white;
+padding: 10px;
+border-radius: 5px;
+z-index: 999; /* Ensure it's above other elements except the header */
+transition: left 0.5s;
+animation: fadeIn 1s ease-in forwards;;
+}
+
+/* Sidebar */
+html[data-page="index"] .sidebar {
+position: fixed;
+top: 81px; /* Adjust this so the sidebar stays below the header */
+left: 0;
+width: 0; /* Initial width is 0 */
+height: calc(100% - 80px); /* 100% height minus header height */
+background-color: black;
+color: white;
+overflow-x: hidden;
+transition: width 0.5s;
+padding-top: 20px;
+box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+z-index: 998; /* Below the toggle button */
+animation: fadeIn 1s ease-in forwards;
+}
+
+/* Profile Section */
+html[data-page="index"] .profile-section {
+display: flex;
+align-items: center;
+padding: 20px;
+border-bottom: 1px solid white;
+}
+
+html[data-page="index"] .username {
+display: flex;
+align-items: flex-start; /* Align items to the start */
+color: white;
+}
+
+html[data-page="index"] .profile-circle {
+width: 68px;
+height: 68px;
+border-radius: 50%;
+background-position: center;
+background-size: cover;
+background-repeat: no-repeat;
+margin-right: 10px;
+}
+
+html[data-page="index"] .buttons {
+display: flex; /* Ensures buttons stay side by side */
+gap: 20px; /* Space between buttons */
+}
+
+html[data-page="index"] #signin, html[data-page="index"] #login {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 0.9em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 120px;
+height: 40px;
+}
+
+/* Hover Effect */
+html[data-page="index"] #signin:hover, html[data-page="index"] #login:hover {
+background-color: #293845; /* Slightly lighter on hover */
+border-color: #FFEB3B; /* Maintain the yellow border */
+box-shadow: 0px 8px 20px rgba(255, 235, 59, 0.6); /* More intense shadow on hover */
+transform: translateY(-3px); /* Small lift effect */
+}
+
+/* Active Effect */
+html[data-page="index"] #signin:active, html[data-page="index"] #login:active {
+background-color: #17202B; /* Darker on click */
+transform: translateY(1px);
+box-shadow: 0px 4px 12px rgba(255, 235, 59, 0.2); /* Less intense shadow when clicked */
+}
+
+html[data-page="index"] #circle-container {
+position: relative;
+display: inline-block;
+}
+
+html[data-page="index"] #hover-circle {
+position: absolute;
+top: 45%;
+left: 50%;
+transform: translate(-50%, -50%); /* Center the circle */
+height: 60px; /* Circle height */
+width: 55px;  /* Circle width */
+border-radius: 50%; /* Makes it a circle */
+border-color: rgba(0, 255, 255, 0.8);
+border-width: 5px;
+border-style: solid; /* Ensure the border appears */
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.6),
+0 0 45px rgba(0, 255, 255, 0.5),
+0 0 60px rgba(0, 255, 255, 0.4);
+opacity: 0; /* Start invisible */
+z-index: -1; /* Ensure it's behind the logo */
+transition: opacity 0.5s ease, box-shadow 0.5s ease; /* Transition for opacity and box-shadow */
+}
+
+html[data-page="index"] #circle-container:hover #hover-circle {
+opacity: 1; /* Make it visible when hovering */
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.8),
+0 0 30px rgba(0, 255, 255, 0.7),
+0 0 45px rgba(0, 255, 255, 0.6); /* Intense glow on hover */
+}
+
+@keyframes neonPulse {
+0%, 100% {
+box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4);
+}
+50% {
+box-shadow: 0 0 30px rgba(0, 255, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6), 0 0 90px rgba(0, 255, 255, 0.5);
+}
+}
+
+html[data-page="index"] #logo-title {
+display: flex;
+align-items: center; /* Aligns logo and title vertically */
+gap: 10px; /* Space between logo and title */
+}
+
+html[data-page="index"] #container1 {
+display: flex;
+justify-content: space-between; /* Distributes logo/title and buttons evenly */
+align-items: center; /* Centers items vertically */
+padding: 20px;
+box-sizing: border-box;
+width: 100%;
+}
+
+html[data-page="index"] #container1 h1 {
+font-size: 2.5em;
+color: #FFD700;
+text-shadow: 3px 3px 10px rgba(255, 215, 0, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.7);
+letter-spacing: 3px;
+text-transform: uppercase;
+margin: 0;
+display: inline-block; /* Keeps the text centered */
+}
+
+/* Game Section */
+html[data-page="index"] .game-section {
+display: flex;
+justify-content: center;
+gap: 20px;
+flex-wrap: wrap;
+padding-top: 100px;
+padding: 40px 20px;
+}
+
+/* Game Container Styling */
+html[data-page="index"] .game-container {
+background: linear-gradient(135deg, #0D1117 0%, #1E2A38 100%); /* Darker gradient matching the background */
+color: #FFFFFF;
+border-radius: 15px;
+padding: 20px;
+width: 350px;
+text-align: center;
+box-shadow: 0 10px 20px rgba(0, 255, 255, 0.3); /* Adjusted shadow to cyan to match neon theme */
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+margin-top: 50px;
+}
+
+html[data-page="index"] .game-container:hover {
+transform: scale(1.05);
+box-shadow: 0 15px 25px rgba(0, 255, 255, 0.4); /* Cyan shadow on hover for a neon effect */
+}
+
+html[data-page="index"] .game-container img {
+width: 100%;
+height: auto;
+border-radius: 10px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+html[data-page="index"] .game-container h2 {
+font-size: 1.5em;
+margin: 15px 0;
+font-weight: 700;
+color: #FFEB3B; /* Yellow color to match the header text */
+text-shadow: 1px 2px 4px rgba(255, 215, 0, 0.5);
+}
+
+html[data-page="index"] .game-container p {
+font-size: 1em;
+margin: 10px 0;
+color: #BBB; /* Softer white for a more subdued text appearance */
+line-height: 1.4;
+}
+
+html[data-page="index"] .game-container button {
+background-color: #00FFFF; /* Cyan button color to fit neon theme */
+color: black;
+border: none;
+padding: 12px 25px;
+border-radius: 8px;
+cursor: pointer;
+font-weight: bold;
+transition: background-color 0.3s, box-shadow 0.3s;
+box-shadow: 0px 6px 15px rgba(0, 255, 255, 0.4); /* Cyan glow effect */
+}
+
+html[data-page="index"] .game-container html[data-page="index"] button:hover {
+background-color: #00BFBF; /* Darker cyan on hover */
+box-shadow: 0px 8px 20px rgba(0, 255, 255, 0.6);
+}
+
+html[data-page="index"] #add-currency {
+background-color: #007bff; /* Blue button */
+color: white;
+border: none;
+border-radius: 50%;
+width: 25px;
+height: 25px;
+font-size: 16px;
+cursor: pointer;
+margin-right: 8px;
+}
+
+html[data-page="index"] #currency-amount {
+font-size: 18px;
+margin-right: 8px;
+}
+
+
+/* Overlay styling */
+html[data-page="index"] #overlay {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.7);
+z-index: 999;
+}
+
+html[data-page="index"] #modal {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background: white;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+border-radius: 8px;
+z-index: 1000;
+overflow: hidden;
+width: 90vw; /* 90% of the viewport width */
+height: 90vh; /* 90% of the viewport height */
+display: flex;
+flex-direction: column;
+}
+
+/* Example button to open the modal */
+html[data-page="index"] .open-modal-button {
+display: inline-block;
+padding: 10px 20px;
+background-color: #007BFF;
+color: white;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+}
+
+
+/* Existing fade-in animation for overlay */
+@keyframes fadeIn {
+0% { opacity: 0; }
+100% { opacity: 1; }
+}
+
+/* Fade-out animation for overlay */
+@keyframes fadeOut {
+0% { opacity: 1; }
+100% { opacity: 0; }
+}
+
+/* Resizing animation for modal opening */
+@keyframes modalResizeIn {
+0% { transform: translate(-50%, -50%) scale(0.5); }
+100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Reverse resizing animation for modal closing */
+@keyframes modalResizeOut {
+0% { transform: translate(-50%, -50%) scale(1); }
+100% { transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* Apply initial styles */
+html[data-page="index"] #overlay {
+display: none; /* Start hidden */
+animation: fadeIn 1.5s ease-out forwards;
+}
+
+html[data-page="index"] #modal {
+animation: modalResizeIn 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+margin-top: 30px;
+}
+
+html[data-page="index"] #modal h2 {
+color: black;
+}
+
+html[data-page="index"] #modal p {
+color: black;
+}
+
+html[data-page="index"] #full-screen-button {
+position: absolute;
+top: 10px;
+right: 10px;
+padding: 3px 3px;
+font-size: 14px;
+background-color: transparent;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+html[data-page="index"] #modal-content {
+flex: 1;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+
+html[data-page="index"] .full-screen-mode {
+display: flex;
+align-items: center;
+justify-content: center;
+height: 100vh;
+width: 100vw;
+margin: 0;
+border-radius: 0;
+}
+
+html[data-page="index"] #rectbutton {
+fill: white;
+border: 2px solid black;
+}
+
+html[data-page="index"] #game-iframe {
+flex: 1;
+width: 100%;
+height: 100%;
+border: none;
+display: block;
+}
+
+html[data-page="index"] .full-screen-mode #game-iframe {
+width: 100vw;
+height: 100vh;
+}
+
+html[data-page="index"] #indexknapp {
+position: fixed;
+padding: 15px 30px;
+background-color: #4CAF50; /* Green background */
+color: white; /* White text */
+border: none; /* Remove default border */
+border-radius: 8px; /* Rounded corners */
+cursor: pointer; /* Pointer on hover */
+font-size: 16px; /* Increase font size */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+top: 50px;
+
+}
+
+html[data-page="index"] nav ul {
+list-style: none;
+display: flex;
+gap: 15px;
+}
+
+html[data-page="index"] nav ul li a {
+color: white;
+text-decoration: none;
+font-size: 18px;
+}
+
+html[data-page="index"] ::-webkit-scrollbar {
+display: none; /* Hide the scrollbar */
+}
+
+html[data-page="index"] #sidebar-toggle {
+position: fixed;
+top: 90px;
+left: 10px;
+font-size: 30px;
+cursor: pointer;
+background-color: black;
+color: white;
+padding: 10px;
+border-radius: 5px;
+z-index: 1000;
+transition: left 0.5s;
+}
+
+/* Sidebar */
+html[data-page="index"] .sidebar {
+height: 100%;
+width: 0;
+position: fixed;
+top: 80px;
+left: 0;
+background-color: black;
+color: white;
+overflow-x: hidden;
+transition: width 0.5s;
+padding-top: 20px;
+box-shadow: 3px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+html[data-page="index"] .sidebar.open {
+width: 250px;
+}
+
+/* Profile Section */
+html[data-page="index"] .profile-section {
+display: flex;
+align-items: center;
+padding: 20px;
+border-bottom: 1px solid white;
+}
+
+/* Level Section */
+html[data-page="index"] .level-section {
+padding: 20px;
+text-align: center;
+}
+
+html[data-page="index"] .level-section h4 {
+margin: 0;
+color: #ffcc00;
+}
+
+html[data-page="index"] .exp-bar {
+width: 100%;
+height: 15px;
+background-color: #333;
+border-radius: 10px;
+margin: 10px 0;
+}
+
+html[data-page="index"] .exp-progress {
+height: 100%;
+background-color: #ffcc00;
+border-radius: 10px;
+}
+
+html[data-page="index"] .exp-bar2 {
+width: 350%;
+height: 15px;
+background-color: #333;
+border-radius: 10px;
+margin: 10px auto; /* Center the element horizontally */
+transform: translateX(-37%);
+}
+
+
+html[data-page="index"] .exp-progress2 {
+height: 100%;
+background-color: #ffcc00;
+border-radius: 10px;
+}
+
+/* Level Text */
+html[data-page="index"] .level-section p {
+margin: 0;
+color: white;
+}
+
+html[data-page="index"] #a-tag1 {
+color: white;
+text-decoration: none;
+margin-left: 90px;
+}
+
+/* Position the button to the top right of the screen */
+html[data-page="index"] .search-profile-btn-container {
+position: fixed;
+top: 20px;
+right: 150px;
+z-index: 1000; /* Ensure it stays on top */
+}
+
+html[data-page="index"] #searchResults {
+margin-top: 10px;
+}
+
+/* Styling for the button */
+html[data-page="index"] #searchProfileBtn {
+background-color: #1E2A38; /* Darker background that blends with the site but contrasts enough */
+color: #FFFFFF; /* White text for strong contrast */
+padding: 10px 20px;
+border: 2px solid #FFEB3B; /* Yellow border to add visibility */
+border-radius: 8px; /* Softer button shape */
+cursor: pointer;
+font-size: 0.7em;
+font-weight: bold;
+transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+box-shadow: 0px 6px 15px rgba(255, 235, 59, 0.4); /* Softer glow effect with yellow */
+width: 120px;
+height: 40px;
+}
+
+html[data-page="index"] #searchProfileBtn:hover {
+background-color: #00ccff; /* Brighter blue on hover */
+transform: translateY(-5px); /* Move the button up slightly on hover */
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4), 0 0 20px #00ffea, 0 0 35px #00ffea; /* Enhance glow on hover */
+}
+
+html[data-page="index"] #searchProfileBtn:active {
+transform: translateY(0); /* Reset position when pressed */
+box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 15px #00ffea, 0 0 25px #00ffea; /* Reset glow when pressed */
+}
+
+/* White square hidden by default */
+html[data-page="index"] .profile-square {
+width: 300px;
+height: 270px;
+background-color: white;
+position: fixed;
+top: 70px; /* Below the button */
+right: 9px;
+display: none; /* Initially hidden */
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+border-radius: 10px;
+z-index: 999; /* High z-index to overlay other elements */
+opacity: 0; /* Start as invisible */
+transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth fade and movement */
+}
+
+/* Visible state for the square */
+html[data-page="index"] .profile-square.active {
+display: block;
+opacity: 1;
+transform: translateY(10px); /* Slight move-in effect */
+}
+
+/* Search container */
+html[data-page="index"] .search-container {
+position: relative;
+width: 90%;
+left: 15px;
+}
+
+/* Search input box */
+html[data-page="index"] #searchInput {
+width: 80%;
+padding: 10px 40px 10px 10px; /* Space for the search icon */
+font-size: 14px;
+border: 2px solid #1e90ff; /* Match the button's color */
+border-radius: 5px;
+outline: none;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+transition: border-color 0.3s ease; /* Smooth border color transition */
+margin-top: 20px;
+}
+
+/* Change border color on focus */
+html[data-page="index"] #searchInput:focus {
+border-color: #00ccff;
+}
+
+html[data-page="index"] .username {
+display: flex;
+align-items: flex-start; /* Align items to the start */
+}
+
+html[data-page="index"] .profile-circle {
+width: 68px; /* Adjust size as needed */
+height: 68px; /* Adjust size as needed */
+border-radius: 50%; /* Makes the image circular */
+background-position: center;
+background-size: cover; /* Ensures the image covers the circle */
+background-repeat: no-repeat;
+cursor: pointer;
+margin-top: -27px;
+margin-right: 10px;
+margin-left: -10px;
+}
+
+
+html[data-page="index"] .username h3 {
+font-size: 1.5em; /* Larger font size for better visibility */
+font-family: Arial, sans-serif; /* Font family for a modern look */
+margin-top: -10px; /* Move the username text up */
+}
+
+html[data-page="index"] .result-item {
+display: flex;
+align-items: center;
+border-bottom: 1px solid #ddd;
+margin: 4px 0;
+width: 90%;
+margin-left: 5%;
+padding: 4px 0;
+transition: background-color 0.3s ease, font-size 0.3s ease;
+}
+
+html[data-page="index"] .result-item:hover {
+font-size: 1.05em;
+background-color: #f9f9f9;
+border-radius: 8px;
+cursor: pointer;
+}
+
+html[data-page="index"] .profile-image {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+object-fit: cover;
+border: 2px solid black;
+margin-right: 8px;
+transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+/* Apply hover effect to profile-image when result-item is hovered */
+html[data-page="index"] .result-item:hover html[data-page="index"] .profile-image {
+transform: scale(1.1);
+border-color: #007bff;
+}
+
+html[data-page="index"] .result-item:hover html[data-page="index"] .username {
+color: #007bff; /* Light blue on hover */
+}
+
+html[data-page="index"] .search-results {
+max-height: 180px;
+overflow-y: auto;
+background-color: white;
+padding: 8px;
+border-radius: 8px;
+}
+
+html[data-page="index"] .close-button {
+background-color: transparent;
+border: none;
+font-size: 20px;
+font-weight: bold;
+cursor: pointer;
+position: absolute;
+top: 10px;
+right: 10px;
+}
+
+html[data-page="index"] .circle-profile {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+border: 2px solid black;
+margin-left: 40%;
+}
+
+html[data-page="index"] .selected-profile-container {
+display: flex;
+flex-direction: column;
+align-items: center; /* Center items horizontally */
+text-align: center; /* Center text */
+}
+
+html[data-page="index"] .selected-profile-circle {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+transition: transform 0.3s ease-in, box-shadow 0.3s ease-in, translate 0.3s ease-in;
+}
+
+html[data-page="index"] .selected-profile-circle:hover {
+transform: scale(1.05);
+transform: translateY(-3px);
+box-shadow: 0px 0px 10px #ffcc00;
+border-radius: 50%;
+}
+
+html[data-page="index"] .selected-profile-circle:hover {
+transform: scale(1.05);
+transform: translateY(-3px);
+box-shadow: 0px 0px 10px #ffcc00;
+border-radius: 50%;
+}
+
+html[data-page="index"] .username2 {
+margin-top: 10px; /* Space between image and text */
+font-size: 20px;
+font-family: Arial, Helvetica, sans-serif;
+font-weight: bold;
+text-transform: capitalize;
+color: black;
+}
+
+html[data-page="index"] .level-section2 p {
+color: black; /* Or your preferred text color */
+position: absolute; /* Absolute positioning */
+top: 0; /* Position it at the top of the parent container */
+left: 50%; /* Center horizontally */
+transform: translateX(-50%); /* Center horizontally */
+z-index: 10; /* Higher z-index to ensure it's on top */
+margin-top: 190px;
+}
+
+html[data-page="index"] .level-section2 h4 {
+color: #ffcc00;
+margin-bottom: 0px;
+margin-top: 10px;
+}
+
+html[data-page="index"] .messagebutton {
+position: absolute;
+width: 120px;
+height: 43px;
+background-color: #007bff; /* Classic blue */
+color: white;
+top: 215px;
+left: 20px;
+border: none; /* Optional: remove border for a cleaner look */
+border-radius: 5px; /* Optional: add slight rounding to corners */
+transition: background-color 0.3s, transform 0.3s; /* Smooth transition */
+}
+
+html[data-page="index"] .messagebutton:hover {
+background-color: #0056b3; /* Darker tone of blue on hover */
+transform: translateY(-3px) scale(1.03); /* Combined transform for smoother effect */
+}
+
+
+/* Input field for writing messages */
+html[data-page="index"] .message-input {
+width: calc(100% - 90px); /* Leave space for the button */
+padding: 10px;
+border-radius: 20px;
+border: 1px solid #dcdcdc;
+font-size: 14px;
+outline: none;
+box-sizing: border-box;
+transition: all 0.3s;
+}
+
+/* Input focus state */
+html[data-page="index"] .message-input:focus {
+border-color: #8ab4f8; /* Light blue on focus */
+box-shadow: 0 0 5px rgba(138, 180, 248, 0.5);
+}
+
+/* Send button */
+html[data-page="index"] .send-button {
+margin-top: 180px;
+padding: 10px 20px;
+background-color: #4CAF50; /* Green background */
+color: #fff;
+border: none;
+border-radius: 20px;
+cursor: pointer;
+font-size: 14px;
+font-weight: bold;
+margin-left: 10px;
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Send button hover and active states */
+html[data-page="index"] .send-button:hover {
+background-color: #45A049; /* Darker green on hover */
+}
+
+html[data-page="index"] .send-button:active {
+transform: scale(0.98); /* Slightly shrink on click */
+}
+
+/* Close button styling */
+html[data-page="index"] .close-button {
+position: absolute;
+top: 10px;
+right: 10px;
+background-color: transparent;
+border: none;
+font-size: 18px;
+color: #888;
+cursor: pointer;
+transition: color 0.2s ease;
+}
+
+html[data-page="index"] .close-button:hover {
+color: #333;
+}
+
 /*login.php*/
 
 /* General Resets */
@@ -4605,7 +5473,6 @@ color: white;
 html[data-page="topplista"] #a-tag1 {
 color: white;
 text-decoration: none;
-margin-left: 90px;
 }
 
 /* Position the button to the top right of the screen */

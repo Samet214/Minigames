@@ -5,7 +5,7 @@ ini_set('display_errors', 0);
 
 include 'db.php';
 
-$conn = Användarinformation();
+$conn = Anvandarinformation();
 
 $username = $_SESSION['username'];
 
@@ -173,7 +173,7 @@ if (isset($_GET['search'])) {
 ?>
 
 <?php
-$conn = Användarinformation();
+$conn = Anvandarinformation();
 
 $query = "SELECT Levels, EXP, EXP_GRÄNS FROM poängssystem WHERE Namn = ?";
 $stmt = $conn->prepare($query);
@@ -225,7 +225,6 @@ $conn->close();
                 <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
                     <button id="signin" onclick="redirect('signup.php')">Registrera</button>
                     <button id="login" onclick="redirect('login.php')">Logga in</button>
-                    <button id="searchProfileBtn" onclick="toggleProfile()">Sök profiler</button>
                 </div>
             <?php else: ?>
                 <nav style="margin-right: 600px;">

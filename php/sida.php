@@ -5,7 +5,7 @@ ini_set('display_errors', 0);
 
 include 'db.php';
 
-$conn = Användarinformation();
+$conn = Anvandarinformation();
 
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
@@ -181,7 +181,7 @@ if (isset($_GET['search'])) {
 ?>
 
 <?php
-$conn = Användarinformation();
+$conn = Anvandarinformation();
 
 $query = "SELECT Levels, EXP, EXP_GRÄNS FROM poängssystem WHERE Namn = ?";
 $stmt = $conn->prepare($query);
