@@ -42,6 +42,7 @@ if (isset($_SESSION['username'])) {
             <p>Tid: <span id="popup-tid"></span></p>
             <p>Pengar tjänat: <span id="popup-pengar"></span></p>
             <p>Exp tjänat: <span id="popup-exp"></span></p>
+            <!-- The "Buy Attempts" button will be added here dynamically -->
         </div>
     </div>
 

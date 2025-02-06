@@ -4310,6 +4310,22 @@ html[data-page="spel3"] #popup-close:hover {
     }
 }
 
+html[data-page="spel3"] #buy-attempts-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    display: none; /* Hidden by default */
+}
+
+html[data-page="spel3"] #buy-attempts-button:hover {
+    background-color: #45a049;
+}
+
 /*spel4.php*/
 
 html[data-page="spel4"] #menu_button_container {
@@ -4619,6 +4635,67 @@ html[data-page="spel4"] #close-popup {
 
 html[data-page="spel4"] #close-popup:hover {
     color: red;
+}
+
+html[data-page="spel4"] #popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    z-index: 1000; /* Ensure the overlay is on top */
+}
+
+html[data-page="spel4"] #popup-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+html[data-page="spel4"] #popup {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+    transform: translateY(-100%);
+    transition: transform 0.4s ease-out;
+    width: 300px;
+    z-index: 1001; /* Ensure the popup is on top of the overlay */
+}
+
+html[data-page="spel4"] #popup-overlay.show #popup {
+    transform: translateY(0);
+}
+
+html[data-page="spel4"] #buy-attempts-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px; /* Space above the button */
+    width: 100%; /* Full width of the popup */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+html[data-page="spel4"] #buy-attempts-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+    transform: scale(1.05); /* Slight scale effect on hover */
+}
+
+html[data-page="spel4"] #buy-attempts-button:active {
+    transform: scale(1); /* Reset scale when clicked */
 }
 
 
