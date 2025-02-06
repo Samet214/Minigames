@@ -41,26 +41,6 @@ ekonomiDb.connect((err) => {
   }
 });
 
-app.post('/update-ekonomi-revive', async (req, res) => {
-  const { username, cost } = req.body;
-  
-  try {
-      const data = await fs.readJson('ekonomi.json');
-      const userIndex = data.findIndex(u => u.username === username);
-      
-      if (userIndex === -1) return res.json({ success: false });
-      if (data[userIndex].Value < cost) return res.json({ success: false });
-      
-      data[userIndex].Value -= cost;
-      data[userIndex].Spent = (+data[userIndex].Spent || 0) + +cost;
-      
-      await fs.writeJson('ekonomi.json', data);
-      res.json({ success: true });
-  } catch (error) {
-      res.status(500).json({ success: false });
-  }
-});
-
 // Route to fetch all data from the "memory" table in the "Spel" database
 app.get('/memory', async (req, res) => {
   const query = 'SELECT * FROM memory';
@@ -627,6 +607,30 @@ app.get('/anvandare', (req, res) => {
   });
 });
 
+app.post('/update-ekonomi2', (req, res) => {
+  const { username, cost } = req.body;
+
+  const updateQuery = `
+      UPDATE ekonomi 
+      SET value = value - ?, 
+          spent = spent + ?
+      WHERE username = ?
+  `;
+
+  ekonomiDb.query(updateQuery, [cost, cost, username], (err, result) => {
+      if (err) {
+          console.error('Error updating ekonomi2:', err);
+          return res.status(500).json({ success: false, message: 'Database update failed' });
+      }
+
+      if (result.affectedRows > 0) {
+          res.json({ success: true, message: 'Purchase successful' });
+      } else {
+          res.status(404).json({ success: false, message: 'User not found' });
+      }
+  });
+});
+
 
 
 app.post('/updateUserStats', (req, res) => {
@@ -1000,28 +1004,6 @@ app.post('/updateUserStats', (req, res) => {
               });
           });
       });
-  });
-});
-
-app.post('/update-ekonomi2', (req, res) => {
-  const { username, pengar_tjanat } = req.body;
-
-  if (!username || pengar_tjanat == null) {
-      return res.status(400).json({ error: "Missing username or pengar_tjanat" });
-  }
-
-  const query = `
-      UPDATE ekonomi 
-      SET value = value + ?, networth = networth + ?
-      WHERE username = ?
-  `;
-
-  ekonomiDb.query(query, [pengar_tjanat, pengar_tjanat, username], (err, result) => {
-      if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Database update failed" });
-      }
-      res.json({ message: "Ekonomi updated successfully", affectedRows: result.affectedRows });
   });
 });
 

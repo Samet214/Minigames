@@ -16,6 +16,22 @@ if (isset($_SESSION['username'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Game</title>
     <link href="../style.css" rel="stylesheet" type="text/css">
+    <style>
+        /* Add custom styles for the buy attempts button */
+        #buy-attempts-button {
+            padding: 10px 20px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        #buy-attempts-button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" data-username="<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>"></div>
@@ -40,25 +56,6 @@ if (isset($_SESSION['username'])) {
         </div>
     </div>
 
-    <div id="revive-popup" class="popup">
-        <div class="popup-content">
-            <h2>Buy More Attempts?</h2>
-            <p>Do you want to pay <span id="revive-cost">100</span> AP-coins to get 3 more attempts?</p>
-            <div class="popup-buttons">
-                <button id="revive-yes">Yes</button>
-                <button id="revive-no">No</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="pay-popup" class="popup">
-        <div class="popup-content">
-            <p>You ran out of attempts! Do you want to spend <span id="continue-price">X</span> AP-coins to continue?</p>
-            <button id="pay-yes">Yes</button>
-            <button id="pay-no">No</button>
-        </div>
-    </div>
-
     <div class="overlay" id="overlay"></div>
     <div class="popup" id="popup">
         <button class="close-btn" id="close-popup">&times;</button>
@@ -67,6 +64,7 @@ if (isset($_SESSION['username'])) {
         <p>Tid: <span id="total-time"></span> seconds</p>
         <p>Experience Points (XP) Gained: <span id="final-xp"></span></p>
         <p>Arcade Point Coins (AP) Gained: <span id="final-money"></span></p>
+        <button id="buy-attempts-button" style="display: none;">Buy 3 Attempts (Cost: 10 AP)</button>
     </div>
 
     <script src="../script.js"></script>
