@@ -40,6 +40,25 @@ if (isset($_SESSION['username'])) {
         </div>
     </div>
 
+    <div id="revive-popup" class="popup">
+        <div class="popup-content">
+            <h2>Buy More Attempts?</h2>
+            <p>Do you want to pay <span id="revive-cost">100</span> AP-coins to get 3 more attempts?</p>
+            <div class="popup-buttons">
+                <button id="revive-yes">Yes</button>
+                <button id="revive-no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pay-popup" class="popup">
+        <div class="popup-content">
+            <p>You ran out of attempts! Do you want to spend <span id="continue-price">X</span> AP-coins to continue?</p>
+            <button id="pay-yes">Yes</button>
+            <button id="pay-no">No</button>
+        </div>
+    </div>
+
     <div class="overlay" id="overlay"></div>
     <div class="popup" id="popup">
         <button class="close-btn" id="close-popup">&times;</button>

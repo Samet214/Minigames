@@ -41,6 +41,26 @@ ekonomiDb.connect((err) => {
   }
 });
 
+app.post('/update-ekonomi-revive', async (req, res) => {
+  const { username, cost } = req.body;
+  
+  try {
+      const data = await fs.readJson('ekonomi.json');
+      const userIndex = data.findIndex(u => u.username === username);
+      
+      if (userIndex === -1) return res.json({ success: false });
+      if (data[userIndex].Value < cost) return res.json({ success: false });
+      
+      data[userIndex].Value -= cost;
+      data[userIndex].Spent = (+data[userIndex].Spent || 0) + +cost;
+      
+      await fs.writeJson('ekonomi.json', data);
+      res.json({ success: true });
+  } catch (error) {
+      res.status(500).json({ success: false });
+  }
+});
+
 // Route to fetch all data from the "memory" table in the "Spel" database
 app.get('/memory', async (req, res) => {
   const query = 'SELECT * FROM memory';

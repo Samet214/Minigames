@@ -195,9 +195,6 @@ function toggleSidebar() {
 if (currentPhpFile === "game_display.php") {
     
 } else if (currentPhpFile === "index.php") {
-
-    
-    
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
         var toggleButton = document.getElementById("sidebar-toggle");
@@ -301,13 +298,30 @@ if (currentPhpFile === "game_display.php") {
         }
     }
     
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the username from the data attribute
+        const username = document.getElementById("php-file-info").getAttribute("data-username");
+    
+        // Print the username in the console
+        console.log("Logged in user:", username);
+    
+        // If you want to display it somewhere on the page
+        const usernameElement = document.getElementById("display-username");
+        if (usernameElement) {
+            usernameElement.textContent = username;
+        }
+    
+        // Disable profile picture click for guests
+        const profileCircle = document.querySelector(".profile-circle");
+        if (username.toLowerCase() === "guest") {
+            profileCircle.style.pointerEvents = "none";  // Disable clicks
+            profileCircle.style.cursor = "default";  // Change cursor to default
+        }
+    });
+    
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
-        const searchBox = document.getElementById('searchInput');
     
-        document.addEventListener('click', handleOutsideClick);
-    
-        // Ensure profileSquare remains visible without re-toggling
         if (profileSquare.classList.contains('active')) {
             closeProfile();
         } else {
@@ -574,6 +588,40 @@ if (currentPhpFile === "game_display.php") {
         hoverCircle.style.opacity = '0'; // Fade out
         hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the username from the data attribute
+        const username = document.getElementById("php-file-info").getAttribute("data-username");
+    
+        // Print the username in the console
+        console.log("Logged in user:", username);
+    
+        // If you want to display it somewhere on the page
+        const usernameElement = document.getElementById("display-username");
+        if (usernameElement) {
+            usernameElement.textContent = username;
+        }
+    
+        // Disable profile picture click for guests
+        const profileCircle = document.querySelector(".profile-circle");
+        if (username.toLowerCase() === "guest") {
+            profileCircle.style.pointerEvents = "none";  // Disable clicks
+            profileCircle.style.cursor = "default";  // Change cursor to default
+        }
+    });
+    
+    function toggleProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+    
+        if (profileSquare.classList.contains('active')) {
+            closeProfile();
+        } else {
+            profileSquare.classList.add('active');
+            profileSquare.style.display = 'block';
+            profileSquare.style.opacity = '1';
+            profileSquare.style.transform = 'translateY(10px)';
+        }
+    }
     
 } else if (currentPhpFile === "sida.php") {
 
@@ -608,12 +656,47 @@ if (currentPhpFile === "game_display.php") {
         hoverCircle.style.opacity = '0'; // Fade out
         hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the username from the data attribute
+        const username = document.getElementById("php-file-info").getAttribute("data-username");
+    
+        // Print the username in the console
+        console.log("Logged in user:", username);
+    
+        // If you want to display it somewhere on the page
+        const usernameElement = document.getElementById("display-username");
+        if (usernameElement) {
+            usernameElement.textContent = username;
+        }
+    
+        // Disable profile picture click for guests
+        const profileCircle = document.querySelector(".profile-circle");
+        if (username.toLowerCase() === "guest") {
+            profileCircle.style.pointerEvents = "none";  // Disable clicks
+            profileCircle.style.cursor = "default";  // Change cursor to default
+        }
+    });
+    
+    function toggleProfile() {
+        const profileSquare = document.getElementById('profileSquare');
+    
+        if (profileSquare.classList.contains('active')) {
+            closeProfile();
+        } else {
+            profileSquare.classList.add('active');
+            profileSquare.style.display = 'block';
+            profileSquare.style.opacity = '1';
+            profileSquare.style.transform = 'translateY(10px)';
+        }
+    }
     
 } else if (currentPhpFile === "spel.php") {
 
     document.getElementById("logo").addEventListener("click", function() {
         redirect('../index.php');
     });
+    
     
     function openModal(gameId) {
         const gameUrls = {
@@ -678,14 +761,31 @@ if (currentPhpFile === "game_display.php") {
             toggleButton.style.left = "10px"; // Reset to original position
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the username from the data attribute
+        const username = document.getElementById("php-file-info").getAttribute("data-username");
+    
+        // Print the username in the console
+        console.log("Logged in user:", username);
+    
+        // If you want to display it somewhere on the page
+        const usernameElement = document.getElementById("display-username");
+        if (usernameElement) {
+            usernameElement.textContent = username;
+        }
+    
+        // Disable profile picture click for guests
+        const profileCircle = document.querySelector(".profile-circle");
+        if (username.toLowerCase() === "guest") {
+            profileCircle.style.pointerEvents = "none";  // Disable clicks
+            profileCircle.style.cursor = "default";  // Change cursor to default
+        }
+    });
     
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
-        const searchBox = document.getElementById('searchInput');
     
-        document.addEventListener('click', handleOutsideClick);
-    
-        // Ensure profileSquare remains visible without re-toggling
         if (profileSquare.classList.contains('active')) {
             closeProfile();
         } else {
@@ -1084,6 +1184,7 @@ if (currentPhpFile === "game_display.php") {
         timeDisplay.textContent = timeRemaining;
     }
 
+    
 
     function endGame() {
         canInteract = false;
@@ -2998,12 +3099,12 @@ popupOverlay.addEventListener('click', (e) => {
 
         let level = 1;
         let attempts = 3;
-        let timeLeft = 5;
+        let timeLeft = 180;
         let timer;
 
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 5;
+            timeLeft = 180;
             document.getElementById("time_counter").textContent = timeLeft; // Immediate update
             timer = setInterval(() => {
                 timeLeft--;
@@ -3170,7 +3271,7 @@ popupOverlay.addEventListener('click', (e) => {
         function resetGame() {
             level = 1;
             attempts = 3;
-            timeLeft = 5;
+            timeLeft = 180;
             startTime = null;
             clearInterval(timer);
         
@@ -3994,13 +4095,30 @@ popupOverlay.addEventListener('click', (e) => {
         }
     }
     
+    document.addEventListener("DOMContentLoaded", function() {
+        // Get the username from the data attribute
+        const username = document.getElementById("php-file-info").getAttribute("data-username");
+    
+        // Print the username in the console
+        console.log("Logged in user:", username);
+    
+        // If you want to display it somewhere on the page
+        const usernameElement = document.getElementById("display-username");
+        if (usernameElement) {
+            usernameElement.textContent = username;
+        }
+    
+        // Disable profile picture click for guests
+        const profileCircle = document.querySelector(".profile-circle");
+        if (username.toLowerCase() === "guest") {
+            profileCircle.style.pointerEvents = "none";  // Disable clicks
+            profileCircle.style.cursor = "default";  // Change cursor to default
+        }
+    });
+    
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
-        const searchBox = document.getElementById('searchInput');
     
-        document.addEventListener('click', handleOutsideClick);
-    
-        // Ensure profileSquare remains visible without re-toggling
         if (profileSquare.classList.contains('active')) {
             closeProfile();
         } else {

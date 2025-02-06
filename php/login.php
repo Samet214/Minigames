@@ -165,7 +165,7 @@ if (isset($errorMessage)) {
     </p>
 </div>
 
-<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>"></div>
+<div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" data-username="<?php echo htmlspecialchars($username); ?>"></div>
 <script src="../script.js"></script>
 </body>
 </html>
