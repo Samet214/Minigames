@@ -3440,8 +3440,9 @@ popupOverlay.addEventListener('click', (e) => {
                 if (modes[currentMode].text === "Memory - Topplista") {
                     const memoryEndpoint = "http://samet-desktop.adm.huddinge.se:3000/memory";
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch both datasets
+                    // Fetch all datasets
                     Promise.all([
                         fetch(memoryEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Memory data");
@@ -3450,9 +3451,13 @@ popupOverlay.addEventListener('click', (e) => {
                         fetch(ekonomiEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
                             return response.json();
+                        }),
+                        fetch(poangssystemEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Poängssystem data");
+                            return response.json();
                         })
                     ])
-                    .then(([memoryData, ekonomiData]) => {
+                    .then(([memoryData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
                             tile.innerHTML = ""; // Clear previous content
                 
@@ -3490,6 +3495,18 @@ popupOverlay.addEventListener('click', (e) => {
                 
                             let dataToSort = [...memoryData];
                 
+                            if (columnKey === "level") {
+                                dataToSort = memoryData.map(user => {
+                                    const poangUser = poangssystemData.find(p => p.Namn === user.username);
+                            
+                                    return {
+                                        ...user,
+                                        level: poangUser && poangUser.Levels !== undefined ? poangUser.Levels : "N/A" // Default if not found
+                                    };
+                                });
+                            }
+                            
+                
                             if (columnKey === "netvarde") {
                                 // Merge networth from ekonomi into memory data
                                 dataToSort = memoryData.map(user => {
@@ -3521,7 +3538,7 @@ popupOverlay.addEventListener('click', (e) => {
                                     leftSpan.style.textAlign = "left";
                 
                                     const rightSpan = document.createElement("span");
-                                    rightSpan.textContent = row[columnKey] !== undefined ? `${row[columnKey]}` : "-";
+                                    rightSpan.textContent = row[columnKey] !== undefined ? row[columnKey] : "-";
                                     rightSpan.style.flex = "0";
                                     rightSpan.style.textAlign = "right";
                 
@@ -3535,13 +3552,14 @@ popupOverlay.addEventListener('click', (e) => {
                         });
                     })
                     .catch((error) => {
-                        console.error("Error fetching Memory data:", error);
+                        console.error("Error fetching data:", error);
                     });
                 } else if (modes[currentMode].text === "Squigglegolf - Topplista") {
                     const squigglegolfEndpoint = "http://samet-desktop.adm.huddinge.se:3000/squigglegolf";
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch both datasets
+                    // Fetch all datasets
                     Promise.all([
                         fetch(squigglegolfEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Squigglegolf data");
@@ -3550,9 +3568,13 @@ popupOverlay.addEventListener('click', (e) => {
                         fetch(ekonomiEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
                             return response.json();
+                        }),
+                        fetch(poangssystemEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Poängssystem data");
+                            return response.json();
                         })
                     ])
-                    .then(([squigglegolfData, ekonomiData]) => {
+                    .then(([squigglegolfData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
                             tile.innerHTML = ""; // Clear previous content
                             
@@ -3601,8 +3623,19 @@ popupOverlay.addEventListener('click', (e) => {
                                 });
                             }
                 
+                            if (columnKey === "level") {
+                                // Merge Levels from poängssystem using Namn
+                                dataToSort = squigglegolfData.map(user => {
+                                    const poangUser = poangssystemData.find(p => p.Namn === user.username);
+                                    return {
+                                        ...user,
+                                        level: poangUser && poangUser.Levels !== undefined ? poangUser.Levels : "N/A"
+                                    };
+                                });
+                            }
+                
                             // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
-                            const isAscending = index === 0 || index === 2; // Ascending for index 0 and 2
+                            const isAscending = index === 0 || index === 2;
                             dataToSort
                                 .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
                                 .forEach((row, rank) => {
@@ -3631,16 +3664,17 @@ popupOverlay.addEventListener('click', (e) => {
                 
                             container.appendChild(innerTile);
                             tile.appendChild(container);
-                            });
-                        })
-                        .catch((error) => {
-                            console.error("Error fetching Squigglegolf data:", error);
                         });
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching Squigglegolf data:", error);
+                    });
                 } else if (modes[currentMode].text === "Colourvision - Topplista") {
                     const colourvisionEndpoint = "http://samet-desktop.adm.huddinge.se:3000/colourvision";
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch both datasets
+                    // Fetch all datasets
                     Promise.all([
                         fetch(colourvisionEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Colourvision data");
@@ -3649,12 +3683,16 @@ popupOverlay.addEventListener('click', (e) => {
                         fetch(ekonomiEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
                             return response.json();
+                        }),
+                        fetch(poangssystemEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Poängssystem data");
+                            return response.json();
                         })
                     ])
-                    .then(([colourvisionData, ekonomiData]) => {
+                    .then(([colourvisionData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
                             tile.innerHTML = ""; // Clear previous content
-                            
+                
                             const container = document.createElement("div");
                             container.style.display = "flex";
                             container.style.flexDirection = "column";
@@ -3700,6 +3738,17 @@ popupOverlay.addEventListener('click', (e) => {
                                 });
                             }
                 
+                            if (columnKey === "level") {
+                                // Merge Levels from poängssystem using Namn
+                                dataToSort = colourvisionData.map(user => {
+                                    const poangUser = poangssystemData.find(p => p.Namn === user.username);
+                                    return {
+                                        ...user,
+                                        level: poangUser && poangUser.Levels !== undefined ? poangUser.Levels : "N/A"
+                                    };
+                                });
+                            }
+                
                             // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
                             const isAscending = index === 2; // Ascending for "tid"
                             dataToSort
@@ -3732,208 +3781,240 @@ popupOverlay.addEventListener('click', (e) => {
                             tile.appendChild(container);
                         });
                     })
-                        .catch((error) => {
-                            console.error("Error fetching Colourvision data:", error);
-                        });
-                    } else if (modes[currentMode].text === "Maze Runner - Topplista") {
-                        const mazerunnerEndpoint = "http://samet-desktop.adm.huddinge.se:3000/mazerunner";
-                        const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
-                    
-                        // Fetch both datasets
-                        Promise.all([
-                            fetch(mazerunnerEndpoint).then(response => {
-                                if (!response.ok) throw new Error("Failed to fetch Mazerunner data");
-                                return response.json();
-                            }),
-                            fetch(ekonomiEndpoint).then(response => {
-                                if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
-                                return response.json();
-                            })
-                        ])
-                        .then(([mazerunnerData, ekonomiData]) => {
-                            tiles.forEach((tile, index) => {
-                                tile.innerHTML = ""; // Clear previous content
-                                
-                                const container = document.createElement("div");
-                                container.style.display = "flex";
-                                container.style.flexDirection = "column";
-                                container.style.alignItems = "center";
-                                container.style.height = "100%";
-                                container.style.width = "100%";
-                    
-                                const outerText = document.createElement("div");
-                                outerText.textContent = modes[currentMode].tileTexts[index];
-                                outerText.style.textAlign = "center";
-                                outerText.style.marginBottom = "10px";
-                                outerText.style.fontWeight = "bold";
-                                container.appendChild(outerText);
-                    
-                                const innerTile = document.createElement("div");
-                                innerTile.classList.add("inner-tile");
-                                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
-                                innerTile.style.color = "white";
-                                innerTile.style.padding = "10px";
-                                innerTile.style.height = "85%";
-                                innerTile.style.width = "90%";
-                                innerTile.style.overflowY = "auto";
-                                innerTile.style.maxHeight = "100%";
-                                innerTile.style.borderRadius = "5px";
-                                innerTile.style.display = "flex";
-                                innerTile.style.flexDirection = "column";
-                                innerTile.style.justifyContent = "flex-start";
-                    
-                                // Define column keys
-                                const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
-                                const columnKey = columnKeys[index];
-                    
-                                let dataToSort = [...mazerunnerData];
-                    
-                                if (columnKey === "netvarde") {
-                                    // Merge networth from ekonomi into mazerunner data
-                                    dataToSort = mazerunnerData.map(user => {
-                                        const ekonomiUser = ekonomiData.find(e => e.username === user.username);
-                                        return {
-                                            ...user,
-                                            netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
-                                        };
-                                    });
-                                }
-                    
-                                // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
-                                const isAscending = index === 2; // Ascending for "tid"
-                                dataToSort
-                                    .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
-                                    .forEach((row, rank) => {
-                                        const div = document.createElement("div");
-                                        div.style.display = "flex";
-                                        div.style.justifyContent = "space-between";
-                                        div.style.margin = "5px 0";
-                                        div.style.padding = "10px";
-                                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                                        div.style.borderRadius = "3px";
-                    
-                                        const leftSpan = document.createElement("span");
-                                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                                        leftSpan.style.flex = "1";
-                                        leftSpan.style.textAlign = "left";
-                    
-                                        const rightSpan = document.createElement("span");
-                                        rightSpan.textContent = `${row[columnKey]}`;
-                                        rightSpan.style.flex = "0";
-                                        rightSpan.style.textAlign = "right";
-                    
-                                        div.appendChild(leftSpan);
-                                        div.appendChild(rightSpan);
-                                        innerTile.appendChild(div);
-                                    });
-                    
-                                container.appendChild(innerTile);
-                                tile.appendChild(container);
-                            });
+                    .catch((error) => {
+                        console.error("Error fetching Colourvision data:", error);
+                    });
+                } else if (modes[currentMode].text === "Maze Runner - Topplista") {
+                    const mazerunnerEndpoint = "http://samet-desktop.adm.huddinge.se:3000/mazerunner";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
+                
+                    // Fetch all datasets
+                    Promise.all([
+                        fetch(mazerunnerEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Mazerunner data");
+                            return response.json();
+                        }),
+                        fetch(ekonomiEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
+                            return response.json();
+                        }),
+                        fetch(poangssystemEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Poängssystem data");
+                            return response.json();
                         })
-                        .catch((error) => {
-                            console.error("Error fetching Mazerunner data:", error);
+                    ])
+                    .then(([mazerunnerData, ekonomiData, poangssystemData]) => {
+                        tiles.forEach((tile, index) => {
+                            tile.innerHTML = ""; // Clear previous content
+                
+                            const container = document.createElement("div");
+                            container.style.display = "flex";
+                            container.style.flexDirection = "column";
+                            container.style.alignItems = "center";
+                            container.style.height = "100%";
+                            container.style.width = "100%";
+                
+                            const outerText = document.createElement("div");
+                            outerText.textContent = modes[currentMode].tileTexts[index];
+                            outerText.style.textAlign = "center";
+                            outerText.style.marginBottom = "10px";
+                            outerText.style.fontWeight = "bold";
+                            container.appendChild(outerText);
+                
+                            const innerTile = document.createElement("div");
+                            innerTile.classList.add("inner-tile");
+                            innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
+                            innerTile.style.color = "white";
+                            innerTile.style.padding = "10px";
+                            innerTile.style.height = "85%";
+                            innerTile.style.width = "90%";
+                            innerTile.style.overflowY = "auto";
+                            innerTile.style.maxHeight = "100%";
+                            innerTile.style.borderRadius = "5px";
+                            innerTile.style.display = "flex";
+                            innerTile.style.flexDirection = "column";
+                            innerTile.style.justifyContent = "flex-start";
+                
+                            // Define column keys
+                            const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
+                            const columnKey = columnKeys[index];
+                
+                            let dataToSort = [...mazerunnerData];
+                
+                            if (columnKey === "netvarde") {
+                                // Merge networth from ekonomi into mazerunner data
+                                dataToSort = mazerunnerData.map(user => {
+                                    const ekonomiUser = ekonomiData.find(e => e.username === user.username);
+                                    return {
+                                        ...user,
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                    };
+                                });
+                            }
+                
+                            if (columnKey === "level") {
+                                // Merge Levels from poängssystem using Namn
+                                dataToSort = mazerunnerData.map(user => {
+                                    const poangUser = poangssystemData.find(p => p.Namn === user.username);
+                                    return {
+                                        ...user,
+                                        level: poangUser && poangUser.Levels !== undefined ? poangUser.Levels : "N/A"
+                                    };
+                                });
+                            }
+                
+                            // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
+                            const isAscending = index === 2; // Ascending for "tid"
+                            dataToSort
+                                .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
+                                .forEach((row, rank) => {
+                                    const div = document.createElement("div");
+                                    div.style.display = "flex";
+                                    div.style.justifyContent = "space-between";
+                                    div.style.margin = "5px 0";
+                                    div.style.padding = "10px";
+                                    div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                                    div.style.borderRadius = "3px";
+                
+                                    const leftSpan = document.createElement("span");
+                                    leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
+                                    leftSpan.style.flex = "1";
+                                    leftSpan.style.textAlign = "left";
+                
+                                    const rightSpan = document.createElement("span");
+                                    rightSpan.textContent = `${row[columnKey]}`;
+                                    rightSpan.style.flex = "0";
+                                    rightSpan.style.textAlign = "right";
+                
+                                    div.appendChild(leftSpan);
+                                    div.appendChild(rightSpan);
+                                    innerTile.appendChild(div);
+                                });
+                
+                            container.appendChild(innerTile);
+                            tile.appendChild(container);
                         });
-                    } else if (modes[currentMode].text === "Biljard - Topplista") {
-                        const biljardEndpoint = "http://samet-desktop.adm.huddinge.se:3000/biljard";
-                        const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
-                    
-                        // Fetch both datasets
-                        Promise.all([
-                            fetch(biljardEndpoint).then(response => {
-                                if (!response.ok) throw new Error("Failed to fetch Biljard data");
-                                return response.json();
-                            }),
-                            fetch(ekonomiEndpoint).then(response => {
-                                if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
-                                return response.json();
-                            })
-                        ])
-                        .then(([biljardData, ekonomiData]) => {
-                            tiles.forEach((tile, index) => {
-                                tile.innerHTML = ""; // Clear previous content
-                                
-                                const container = document.createElement("div");
-                                container.style.display = "flex";
-                                container.style.flexDirection = "column";
-                                container.style.alignItems = "center";
-                                container.style.height = "100%";
-                                container.style.width = "100%";
-                    
-                                const outerText = document.createElement("div");
-                                outerText.textContent = modes[currentMode].tileTexts[index];
-                                outerText.style.textAlign = "center";
-                                outerText.style.marginBottom = "10px";
-                                outerText.style.fontWeight = "bold";
-                                container.appendChild(outerText);
-                    
-                                const innerTile = document.createElement("div");
-                                innerTile.classList.add("inner-tile");
-                                innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
-                                innerTile.style.color = "white";
-                                innerTile.style.padding = "10px";
-                                innerTile.style.height = "85%";
-                                innerTile.style.width = "90%";
-                                innerTile.style.overflowY = "auto";
-                                innerTile.style.maxHeight = "100%";
-                                innerTile.style.borderRadius = "5px";
-                                innerTile.style.display = "flex";
-                                innerTile.style.flexDirection = "column";
-                                innerTile.style.justifyContent = "flex-start";
-                    
-                                // Define column keys
-                                const columnKeys = ["slag", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
-                                const columnKey = columnKeys[index];
-                    
-                                let dataToSort = [...biljardData];
-                    
-                                if (columnKey === "netvarde") {
-                                    // Merge networth from ekonomi into biljard data
-                                    dataToSort = biljardData.map(user => {
-                                        const ekonomiUser = ekonomiData.find(e => e.username === user.username);
-                                        return {
-                                            ...user,
-                                            netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
-                                        };
-                                    });
-                                }
-                    
-                                // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
-                                const isAscending = index === 0 || index === 2; // Ascending for index 0 and 2
-                                dataToSort
-                                    .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
-                                    .forEach((row, rank) => {
-                                        const div = document.createElement("div");
-                                        div.style.display = "flex";
-                                        div.style.justifyContent = "space-between";
-                                        div.style.margin = "5px 0";
-                                        div.style.padding = "10px";
-                                        div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                                        div.style.borderRadius = "3px";
-                    
-                                        const leftSpan = document.createElement("span");
-                                        leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
-                                        leftSpan.style.flex = "1";
-                                        leftSpan.style.textAlign = "left";
-                    
-                                        const rightSpan = document.createElement("span");
-                                        rightSpan.textContent = `${row[columnKey]}`;
-                                        rightSpan.style.flex = "0";
-                                        rightSpan.style.textAlign = "right";
-                    
-                                        div.appendChild(leftSpan);
-                                        div.appendChild(rightSpan);
-                                        innerTile.appendChild(div);
-                                    });
-                    
-                                container.appendChild(innerTile);
-                                tile.appendChild(container);
-                            });
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching Mazerunner data:", error);
+                    });
+                } else if (modes[currentMode].text === "Biljard - Topplista") {
+                    const biljardEndpoint = "http://samet-desktop.adm.huddinge.se:3000/biljard";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
+                
+                    // Fetch all datasets
+                    Promise.all([
+                        fetch(biljardEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Biljard data");
+                            return response.json();
+                        }),
+                        fetch(ekonomiEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Ekonomi data");
+                            return response.json();
+                        }),
+                        fetch(poangssystemEndpoint).then(response => {
+                            if (!response.ok) throw new Error("Failed to fetch Poängssystem data");
+                            return response.json();
                         })
-                        .catch((error) => {
-                            console.error("Error fetching Biljard data:", error);
+                    ])
+                    .then(([biljardData, ekonomiData, poangssystemData]) => {
+                        tiles.forEach((tile, index) => {
+                            tile.innerHTML = ""; // Clear previous content
+                
+                            const container = document.createElement("div");
+                            container.style.display = "flex";
+                            container.style.flexDirection = "column";
+                            container.style.alignItems = "center";
+                            container.style.height = "100%";
+                            container.style.width = "100%";
+                
+                            const outerText = document.createElement("div");
+                            outerText.textContent = modes[currentMode].tileTexts[index];
+                            outerText.style.textAlign = "center";
+                            outerText.style.marginBottom = "10px";
+                            outerText.style.fontWeight = "bold";
+                            container.appendChild(outerText);
+                
+                            const innerTile = document.createElement("div");
+                            innerTile.classList.add("inner-tile");
+                            innerTile.style.backgroundColor = "rgba(22, 20, 20, 0.7)";
+                            innerTile.style.color = "white";
+                            innerTile.style.padding = "10px";
+                            innerTile.style.height = "85%";
+                            innerTile.style.width = "90%";
+                            innerTile.style.overflowY = "auto";
+                            innerTile.style.maxHeight = "100%";
+                            innerTile.style.borderRadius = "5px";
+                            innerTile.style.display = "flex";
+                            innerTile.style.flexDirection = "column";
+                            innerTile.style.justifyContent = "flex-start";
+                
+                            // Define column keys
+                            const columnKeys = ["slag", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
+                            const columnKey = columnKeys[index];
+                
+                            let dataToSort = [...biljardData];
+                
+                            if (columnKey === "netvarde") {
+                                // Merge networth from ekonomi into biljard data
+                                dataToSort = biljardData.map(user => {
+                                    const ekonomiUser = ekonomiData.find(e => e.username === user.username);
+                                    return {
+                                        ...user,
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                    };
+                                });
+                            }
+                
+                            if (columnKey === "level") {
+                                // Merge Levels from poängssystem using Namn
+                                dataToSort = biljardData.map(user => {
+                                    const poangUser = poangssystemData.find(p => p.Namn === user.username);
+                                    return {
+                                        ...user,
+                                        level: poangUser && poangUser.Levels !== undefined ? poangUser.Levels : "N/A"
+                                    };
+                                });
+                            }
+                
+                            // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
+                            const isAscending = index === 0 || index === 2;
+                            dataToSort
+                                .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
+                                .forEach((row, rank) => {
+                                    const div = document.createElement("div");
+                                    div.style.display = "flex";
+                                    div.style.justifyContent = "space-between";
+                                    div.style.margin = "5px 0";
+                                    div.style.padding = "10px";
+                                    div.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                                    div.style.borderRadius = "3px";
+                
+                                    const leftSpan = document.createElement("span");
+                                    leftSpan.textContent = `${rank + 1}. ${row.username.charAt(0).toUpperCase()}${row.username.slice(1)}`;
+                                    leftSpan.style.flex = "1";
+                                    leftSpan.style.textAlign = "left";
+                
+                                    const rightSpan = document.createElement("span");
+                                    rightSpan.textContent = `${row[columnKey]}`;
+                                    rightSpan.style.flex = "0";
+                                    rightSpan.style.textAlign = "right";
+                
+                                    div.appendChild(leftSpan);
+                                    div.appendChild(rightSpan);
+                                    innerTile.appendChild(div);
+                                });
+                
+                            container.appendChild(innerTile);
+                            tile.appendChild(container);
                         });
-                    } else {
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching Biljard data:", error);
+                    });
+                } else {
                     const numberOfDivs = userCounts[modes[currentMode].text.toLowerCase().split(" - ")[0]] || 0;
                     for (let i = 1; i <= numberOfDivs; i++) {
                         const div = document.createElement("div");
