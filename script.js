@@ -1089,7 +1089,7 @@ if (currentPhpFile === "game_display.php") {
     closePopupButton.addEventListener('click', closePopup);
     overlay.addEventListener('click', () => {
         if (popup.classList.contains('visible')) {
-            closePopup();
+            window.location.reload();
         }
     });
 
@@ -1782,6 +1782,9 @@ popupOverlay.addEventListener('click', (e) => {
 
 
     } else if (currentPhpFile === "spel4.php") {
+        let baseCost = 50; // Base cost for buying attempts
+        let currentCost = baseCost; // Initialize current cost
+
         function gainExp(expAmount, callback) {
             var xhr = new XMLHttpRequest();
             xhr.open("POST", "sida.php", true);
@@ -2499,11 +2502,9 @@ popupOverlay.addEventListener('click', (e) => {
                     attempts--;
                     updateHUD();
                     if (attempts > 0) {
-
-                        player.generateNewMaze();
-                        startTimer(); // Reset the timer
+                        // ... (reset maze, timer, etc.)
                     } else {
-                        showPopup(); // Show the popup instead of an alert
+                        showPopup(); // <-- Trigger popup on zero attempts
                     }
                 }
             }
@@ -2511,19 +2512,19 @@ popupOverlay.addEventListener('click', (e) => {
 
         let level = 1;
         let attempts = 3;
-        let timeLeft = 180;
+        let timeLeft = 5;
         let timer;
 
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 180;
-            document.getElementById("time_counter").textContent = timeLeft; // Immediate update
+            timeLeft = 5;
+            updateHUD();
             timer = setInterval(() => {
                 timeLeft--;
-                document.getElementById("time_counter").textContent = timeLeft;
+                updateHUD();
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    showPopup(); // Show the popup instead of an alert
+                    showPopup(); // <-- Trigger popup on timeout
                 }
             }, 1000);
         }
@@ -2557,18 +2558,6 @@ popupOverlay.addEventListener('click', (e) => {
                 visibility: visible;
             }
 
-            #popup {
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                position: relative;
-                width: 300px;
-                text-align: center;
-                transform: translateY(-100vh); /* Start off-screen */
-                transition: transform 0.5s ease-in-out;
-            }
-
             #popupOverlay.visible #popup {
                 transform: translateY(0); /* Bring it to the center */
             }
@@ -2584,7 +2573,7 @@ popupOverlay.addEventListener('click', (e) => {
                 color: black;
             }
 
-            #popup button {
+            #closePopup {
                 position: absolute;
                 top: 10px;
                 right: 10px;
@@ -2592,6 +2581,14 @@ popupOverlay.addEventListener('click', (e) => {
                 border: none;
                 font-size: 1.2em;
                 cursor: pointer;
+            }
+
+            #closePopup:hover {
+                color: #e00; /* Red color when hovered */
+            }
+
+            #buy-attempts-button {
+                margin-left: 40px;
             }
         `;
         document.head.appendChild(style);
@@ -2605,7 +2602,7 @@ popupOverlay.addEventListener('click', (e) => {
             // Create the popup overlay and content
             const popupOverlay = document.createElement('div');
             popupOverlay.id = 'popupOverlay';
-            
+        
             if (!username) {
                 popupOverlay.innerHTML = `
                     <div id="popup">
@@ -2616,7 +2613,7 @@ popupOverlay.addEventListener('click', (e) => {
                     </div>
                 `;
             }
-            
+        
             if (username) {
                 const userlevel = await fetchUserLevel(username);
                 popupOverlay.innerHTML = `
@@ -2627,10 +2624,20 @@ popupOverlay.addEventListener('click', (e) => {
                         <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
                         <p>EXP Earned: ${10 * userlevel * level}</p>
                         <p>Money Earned: ${10 * userlevel * level}</p>
+                        <button id="buy-attempts-button">Buy 3 Attempts (Cost: <span id="cost">50</span> AP)</button>
+                    </div>
+                `;
+            } else {
+                popupOverlay.innerHTML = `
+                    <div id="popup">
+                        <button id="closePopup">&times;</button>
+                        <h2>Game Over</h2>
+                        <p>Level Reached: ${level}</p>
+                        <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
                     </div>
                 `;
             }
-            
+        
             document.body.appendChild(popupOverlay);
         
             // Show the popup with animation
@@ -2645,8 +2652,7 @@ popupOverlay.addEventListener('click', (e) => {
             // Close the popup when clicking outside or on the X button
             popupOverlay.addEventListener('click', (e) => {
                 if (e.target.id === 'popupOverlay' || e.target.id === 'closePopup') {
-                    popupOverlay.remove();
-                    resetGame();
+                    window.location.reload();
                 }
             });
         
@@ -2656,7 +2662,7 @@ popupOverlay.addEventListener('click', (e) => {
         
                 const pengar = 10 * userlevel * level;
                 const exp = 10 * userlevel * level;
-
+        
                 gainExp(exp);
         
                 const userExists = await checkUserExists(username);
@@ -2678,14 +2684,86 @@ popupOverlay.addEventListener('click', (e) => {
                     );
                 }
             }
-        }            
+
+            if (username) {
+                const buyButton = document.getElementById('buy-attempts-button');
+                buyButton.style.display = 'block'; // Always show if user is logged in
+
+                // Function to update the button text with the current cost
+                const updateButtonText = () => {
+                    document.getElementById('cost').textContent = currentCost;
+                };
+
+                updateButtonText(); // Initial update
+
+                // Handle button click
+                buyButton.addEventListener('click', () => {
+                    fetch("http://localhost:3000/ekonomi")
+                        .then(res => res.json())
+                        .then(data => {
+                            // Find the user in the fetched data
+                            const user = data.find(user => user.username === username);
+                            
+                            if (!user) {
+                                alert("User not found!");
+                                return;
+                            }
+                
+                            const userBalance = user.value;
+                            console.log(userBalance);
+                
+                            if (userBalance >= currentCost) {
+                                // Deduct AP and grant attempts
+                                fetch('http://localhost:3000/update-ekonomi2', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        username: username,
+                                        cost: currentCost // Deduct cost
+                                    })
+                                }).then(() => {
+                                    // Reset game state
+                                    attempts = 3;
+                                    timeLeft = 5;
+                                    startTime = Date.now();
+                
+                                    // Reset player and monster positions
+                                    player.position = { row: Maze.rows - 2, col: Maze.cols - 2 };
+                                    monster.resetPosition();
+
+                                    currentCost *= 2;
+                
+                                    // Restart UI and timer
+                                    const popupOverlay = document.getElementById('popupOverlay');
+                                    if (popupOverlay) popupOverlay.remove();
+                                    updateHUD();
+                                    startTimer();
+                                    player.enableMovement();
+                                    updateButtonText(); // Update the button text with the new cost
+                                });
+                            } else {
+                                alert("Not enough AP!");
+                            }
+                        });
+                });                
+            }
+            // Function to update the button text with the current cost
+            function updateBuyAttemptsButton() {
+                const buyButton = document.getElementById('buy-attempts-button');
+                if (buyButton) {
+                    buyButton.textContent = `Buy 3 Attempts (Cost: ${currentCost} AP)`;
+                }
+            }
+        }
 
         function resetGame() {
-            level = 1;
             attempts = 3;
-            timeLeft = 180;
-            startTime = null;
+            timeLeft = 5;
+            startTime = Date.now();
             clearInterval(timer);
+        
+            // Reset the cost for buying attempts
+            currentCost = baseCost;
         
             if (monster) {
                 monster.stopHunting();
@@ -2699,9 +2777,7 @@ popupOverlay.addEventListener('click', (e) => {
                 player.updatePlayerPosition();
             }
         
-            document.getElementById("start_page").style.display = "flex";
-            document.getElementById("maze_container").style.display = "none";
-            document.getElementById("game_hud").style.display = "none";
+            updateHUD();
         }
         
 
@@ -2797,6 +2873,12 @@ popupOverlay.addEventListener('click', (e) => {
                 startTimer(); // Start the countdown timer
             }
         });
+
+        if (attempts <= 0) {
+            const buyAttemptsButton = document.getElementById('buy-attempts-button');
+            buyAttemptsButton.style.display = 'block';
+            updateBuyAttemptsButton();
+        }
         
 } else if (currentPhpFile === "topplista.php") {
     document.addEventListener("DOMContentLoaded", function () {
