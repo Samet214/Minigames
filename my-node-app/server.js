@@ -631,18 +631,17 @@ app.post('/update-ekonomi2', (req, res) => {
   });
 });
 
-
-
-app.post('/updateUserStats', (req, res) => {
+app.post('/updateUserStats', async (req, res) => {
   const { username, level, userlevel, averagetime, money, experience, userNetWorth } = req.body;
 
   const checkUserQuery = 'SELECT * FROM colourvision WHERE username = ?';
 
-  spelDb.query(checkUserQuery, [username], (err, results) => {
-      if (err) {
-          console.error('Error checking user:', err);
-          return res.status(500).json({ error: 'Database error' });
-      }
+  try {
+      console.log("Checking user in the database...");
+
+      const [results] = await spelDb.query(checkUserQuery, [username]);
+
+      console.log("Hey"); // Now it should log if the query executes
 
       if (results.length > 0) {
           // User exists, update based on conditions
@@ -661,13 +660,8 @@ app.post('/updateUserStats', (req, res) => {
               WHERE username = ?
           `;
 
-          spelDb.query(updateQuery, [newLevel, newUserLevel, newTime, newMoney, newExperience, newNetworth, username], (updateErr) => {
-              if (updateErr) {
-                  console.error('Error updating user:', updateErr);
-                  return res.status(500).json({ error: 'Failed to update user' });
-              }
-              res.json({ message: 'User stats updated successfully' });
-          });
+          await spelDb.query(updateQuery, [newLevel, newUserLevel, newTime, newMoney, newExperience, newNetworth, username]);
+          res.json({ message: 'User stats updated successfully' });
 
       } else {
           // User does not exist, insert new record
@@ -676,16 +670,16 @@ app.post('/updateUserStats', (req, res) => {
               VALUES (?, ?, ?, ?, ?, ?, ?)
           `;
 
-          spelDb.query(insertQuery, [username, level, userlevel, averagetime, money, experience, userNetWorth], (insertErr) => {
-              if (insertErr) {
-                  console.error('Error inserting user:', insertErr);
-                  return res.status(500).json({ error: 'Failed to insert user' });
-              }
-              res.json({ message: 'User inserted successfully' });
-          });
+          await spelDb.query(insertQuery, [username, level, userlevel, averagetime, money, experience, userNetWorth]);
+          res.json({ message: 'User inserted successfully' });
       }
-  });
+
+  } catch (err) {
+      console.error('Database error:', err);
+      res.status(500).json({ error: 'Database error' });
+  }
 });
+
 
 async function updateSquiggleGolfTable(username, totalStrokes, timeTaken, levels, networth, pengar_tjanat, exp_tjanat) {
     const connection = await mysql.createConnection({

@@ -1115,7 +1115,7 @@ if (currentPhpFile === "game_display.php") {
 
     // Add event listener for the "Buy Attempts" button
     buyAttemptsButton.addEventListener('click', () => {
-        fetch('http://localhost:3000/ekonomi')
+        fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
             .then(res => res.json())
             .then(ekonomiResponse => {
                 const matchedUser = ekonomiResponse.find(user => user.username === username);
@@ -1125,7 +1125,7 @@ if (currentPhpFile === "game_display.php") {
                         cost: currentCost
                     };
 
-                    fetch('http://localhost:3000/update-ekonomi2', {
+                    fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi2', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(updateData),
@@ -1265,7 +1265,7 @@ if (currentPhpFile === "game_display.php") {
         totalTime.textContent = totalTimeElapsed;
     
         if (username !== 'guest') {
-            fetch('http://localhost:3000/memory')
+            fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     let userExists = false;
@@ -1276,7 +1276,7 @@ if (currentPhpFile === "game_display.php") {
     
                             (async () => {
                                 try {
-                                    const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
+                                    const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
                                     const poangssystemData = await poangssystemResponse.json();
     
                                     const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
@@ -1310,7 +1310,7 @@ if (currentPhpFile === "game_display.php") {
                                         netvarde: Math.max(record.netvarde, currentGameData.netvarde),
                                     };
     
-                                    await fetch('http://localhost:3000/update-memory', {
+                                    await fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ updatedData, currentGameData }),
@@ -1326,15 +1326,15 @@ if (currentPhpFile === "game_display.php") {
                         }
                     }
     
-                    if (!userExists) {
+                    if (userExists === false) {
                         (async () => {
                             try {
-                                const poangssystemResponse = await fetch('http://localhost:3000/poangssystem');
+                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
                                 const poangssystemData = await poangssystemResponse.json();
                                 const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
                                 const userlevel = matchedPoangssystemUser ? matchedPoangssystemUser.Levels : 1;
     
-                                const ekonomiResponse = await fetch('http://localhost:3000/ekonomi');
+                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
                                 const ekonomiData = await ekonomiResponse.json();
                                 const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
                                 let usernetworth = matchedEkonomiUser ? matchedEkonomiUser.networth : 0;
@@ -1350,30 +1350,29 @@ if (currentPhpFile === "game_display.php") {
                                     username: username,
                                     level: level,
                                     userlevel: userlevel,
-                                    usernetworth: usernetworth,
                                     pengar_tjanat: 2 * level * userlevel,
                                     exp_tjanat: 2 * level * userlevel,
                                     tid: totalTimeElapsed / level,
                                     netvarde: usernetworth,
                                 };
+
+
+                                console.log("Hey")
     
-                                await fetch('http://localhost:3000/insert-memory', {
+                                gainExp(2 * level * userlevel);
+    
+                                grantRewards();
+
+                                popup.classList.add('visible');
+                                overlay.classList.add('visible');
+                                buyAttemptsButton.style.display = 'block';
+    
+                                await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(dataToInsert),
                                 });
-    
-                                gainExp(2 * level * userlevel);
-    
-                                await fetch('http://localhost:3000/update-ekonomi2', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ username, pengar_tjanat: 2 * level * userlevel }),
-                                });
-    
-                                popup.classList.add('visible');
-                                overlay.classList.add('visible');
-                                buyAttemptsButton.style.display = 'block';
+
                             } catch (error) {
                                 console.error('Error fetching data:', error);
                             }
@@ -1413,14 +1412,14 @@ if (currentPhpFile === "game_display.php") {
     function grantRewards() {
         if (username === 'guest') return;
     
-        fetch('http://localhost:3000/poangssystem')
+        fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
             .then(res => res.json())
             .then(poangssystemData => {
                 const userlevel = poangssystemData.find(u => u.Namn === username)?.Levels || 1;
                 const reward = 2 * level * userlevel;
     
                 // Update ekonomi
-                fetch('http://localhost:3000/update-ekonomi', {
+                fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, pengar_tjanat: reward })
@@ -1430,1004 +1429,356 @@ if (currentPhpFile === "game_display.php") {
             });
     }
     
-} else if (currentPhpFile === "spel2.php") {
-    const { Engine, Render, Runner, World, Bodies, Body, Events } = Matter;
-
-// Canvas and Engine Setup
-const canvas = document.getElementById('drawingCanvas');
-const width = innerWidth;
-const height = innerHeight;
-
-const engine = Engine.create();
-const world = engine.world;
-engine.gravity.y = 4; // Adjust gravity strength
-
-let allLines = [];
-let undoneLines = [];
-let isOnSurface = false; // Tracks if the ball is on a surface
-let jumpAllowed = true; // Allows jump only if the ball is on a surface
-const initialJumpHeight = -5; // Initial jump height
-let currentJumpHeight = initialJumpHeight;
-let jumpHoldTime = 0; // How long the spacebar has been held down
-const hamburger = document.getElementById('hamburger');
-const buttonContainer = document.getElementById('buttonContainer');
-
-// By default, the button container is hidden
-buttonContainer.style.display = 'none';
-
-// Toggle visibility when the hamburger button is clicked
-hamburger.addEventListener('click', () => {
-    if (buttonContainer.style.display === 'none') {
-        buttonContainer.style.display = 'flex'; // Show the container
-    } else {
-        buttonContainer.style.display = 'none'; // Hide the container
-    }
-});
-
-document.getElementById('menuButton').addEventListener('click', () => {
-    // Switch to Starting Page
-    document.getElementById('gameCanvasContainer').style.display = 'none';
-    document.getElementById('startingScreen').style.display = 'flex';
-
-    // Reset canvas and other game state if needed
-    const canvas = document.getElementById('drawingCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    saveCurrentMode('startingPage');
-});
-
-document.getElementById('storyModeButton').addEventListener('click', () => {
-    // Reset game screen layout
-    document.getElementById('startingScreen').style.display = 'none';
-    document.getElementById('gameCanvasContainer').style.display = 'block';
-
-    // Ensure canvas is updated for the current mode
-    updateCanvasSize();
-    localStorage.setItem('currentMode', 'storyMode');
-});
-
-// Prevent the spacebar from toggling the button
-hamburger.addEventListener('keydown', (event) => {
-    if (event.code === 'Space') {
-        event.preventDefault(); // Stop the default space key action
-    }
-});
-
-
-const render = Render.create({
-    canvas: canvas,
-    engine: engine,
-    options: {
-        width: width,
-        height: height,
-        wireframes: false,
-        background: 'white',
-    },
-});
-Render.run(render);
-const runner = Runner.create();
-Runner.run(runner, engine);
-
-// Create Ball
-const ballRadius = 50;
-const ball = Bodies.circle(800, 200, ballRadius, {
-    restitution: 0.3, // No bounce
-    frictionAir: 0, // No air resistance
-    render: {
-        fillStyle: 'red',
-    },
-});
-World.add(world, ball);
-
-// Create Static Ground
-// Ground
-const ground = Bodies.rectangle(width / 2, height + 10, width, 20, { // Position shifted outside
-    isStatic: true,
-    restitution: 0.3, // No bounce
-    render: {
-        fillStyle: 'black',
-    },
-});
-World.add(world, ground);
-
-// Create Static Boundaries
-const ceiling = Bodies.rectangle(width / 2, -10, width, 20, { // Position shifted outside
-    isStatic: true,
-    render: { fillStyle: 'black' },
-});
-const leftWall = Bodies.rectangle(-10, height / 2, 20, height, { // Position shifted outside
-    isStatic: true,
-    render: { fillStyle: 'black' },
-});
-const rightWall = Bodies.rectangle(width + 10, height / 2, 20, height, { // Position shifted outside
-    isStatic: true,
-    render: { fillStyle: 'black' },
-});
-World.add(world, [ceiling, leftWall, rightWall]);
-
-
-// User-Drawn Lines
-let lines = [];
-let isDrawing = false;
-let points = [];
-let inactivityTimeout; // Timeout to monitor inactivity
-const inactivityDuration = 100; // Duration to detect inactivity
-
-canvas.addEventListener('mousedown', (e) => {
-    isDrawing = true;
-    points = [{ x: e.offsetX, y: e.offsetY }];
-    clearTimeout(inactivityTimeout); // Clear inactivity timeout when drawing starts
-});
-
-canvas.addEventListener('mousemove', (e) => {
-    if (isDrawing) {
-        clearTimeout(inactivityTimeout); // Reset inactivity timeout on movement
-
-        const lastPoint = points[points.length - 1];
-        const currentPoint = { x: e.offsetX, y: e.offsetY };
-
-        const dx = currentPoint.x - lastPoint.x;
-        const dy = currentPoint.y - lastPoint.y;
-        const distance = Math.sqrt(dx ** 2 + dy ** 2);
-
-        if (distance > 10) {
-            const angle = Math.atan2(dy, dx);
-            const segment = Bodies.rectangle(
-                (lastPoint.x + currentPoint.x) / 2,
-                (lastPoint.y + currentPoint.y) / 2,
-                distance,
-                5,
-                {
-                    isStatic: true,
-                    angle: angle,
-                    render: {
-                        fillStyle: 'rgba(0, 0, 255, 0.5)', // Blue with opacity
-                    },
-                }
-            );
-
-            // Highlight and reset the last two segments
-            const highlightDuration = 100; // Highlight duration
-            if (lines.length > 0) {
-                const recentSegments = lines.slice(-2);
-                recentSegments.forEach(segment => {
-                    segment.render.fillStyle = 'rgba(0, 0, 255, 0.5)';
-                    setTimeout(() => {
-                        segment.render.fillStyle = 'black'; // Reset to black
-                    }, highlightDuration);
-                });
-            }
-
-            // Reset all other segments to black immediately
-            lines.forEach(segment => {
-                if (!lines.slice(-2).includes(segment)) {
-                    segment.render.fillStyle = 'black';
-                }
-            });
-
-            World.add(world, segment);
-            lines.push(segment);
-            points.push(currentPoint);
-        }
-
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, width, height);
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        points.forEach((point) => ctx.lineTo(point.x, point.y));
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Restart inactivity detection timeout
-        inactivityTimeout = setTimeout(() => {
-            lines.forEach(segment => {
-                segment.render.fillStyle = 'black'; // Reset all segments to black
-            });
-        }, inactivityDuration);
-    }
-});
-
-canvas.addEventListener('mouseup', () => {
-    if (isDrawing) {
-        isDrawing = false;
-
-        if (points.length > 1) {
-            const lineSegments = [];
-            for (let i = 0; i < points.length - 1; i++) {
-                const startPoint = points[i];
-                const endPoint = points[i + 1];
-                const length = Math.sqrt((endPoint.x - startPoint.x) ** 2 + (endPoint.y - startPoint.y) ** 2);
-                const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
-
-                const segment = Bodies.rectangle(
-                    (startPoint.x + endPoint.x) / 2,
-                    (startPoint.y + endPoint.y) / 2,
-                    length,
-                    5,
-                    {
-                        isStatic: true,
-                        angle: angle,
-                        render: { fillStyle: 'black' },
-                    }
-                );
-
-                World.add(world, segment);
-                lineSegments.push(segment);
-            }
-
-            if (lineSegments.length > 0) {
-                allLines.push(lineSegments);
-                lines.push(...lineSegments);
-                saveLines(); // Save after adding new lines
-            }
-        }
-
-        points = [];
-        undoneLines = [];
-        saveLines(); // Save the completed drawing
-        clearTimeout(inactivityTimeout); // Clear inactivity timeout on mouse release
-    }
-});
-
-// Save/Undo/Redo/Reset Functions
-document.getElementById('undoButton').addEventListener('click', () => {
-    if (allLines.length > 0) {
-            const lastLine = allLines.pop();
-            undoneLines.push(lastLine);
-
-            // Clear the Matter.js world and re-add all remaining elements
-            World.clear(world);
-            World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
-            allLines.forEach((lineGroup) => {
-                lineGroup.forEach((segment) => {
-                    World.add(world, segment);
-                });
-            });
-
-            saveLines(); // Save updated state
-        }
-});
-
-
-
-
-
-document.getElementById('redoButton').addEventListener('click', () => {
-    if (undoneLines.length > 0) {
-        // Retrieve the last undone line group
-        const restoredLine = undoneLines.pop();
-        allLines.push(restoredLine);
-
-        // Add each segment back to the world
-        restoredLine.forEach((segment) => World.add(world, segment));
-
-        // Update the lines array
-        lines.push(...restoredLine);
-
-        // Clear and redraw the canvas
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, width, height);
-
-        // Force a full redraw of the Matter.js world
-        Render.world(render);
-
-        saveLines(); // Save the updated state
-    }
-});
-
-
-
-document.getElementById('resetButton').addEventListener('click', () => {
-    World.clear(world);
-    World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
-    lines = [];
-    allLines = [];
-    undoneLines = [];
-    localStorage.removeItem('savedLines');
-});
-
-
-// Ball Movement
-let isMovingLeft = false;
-let isMovingRight = false;
-
-let spacebarPressTime = null; // Store the time when spacebar is pressed
-const maxHoldTime = 0.3;  // Maximum time (in seconds) for jump hold
-const minJumpHeight = -10;  // Minimum jump height
-const maxJumpHeight = -35; // Maximum jump height
-let auraStrength = 0; // Aura intensity
-
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') isMovingLeft = true;
-    if (e.key === 'ArrowRight') isMovingRight = true;
-
-    if (e.key === ' ' && jumpAllowed && isOnSurface) {
-        if (!spacebarPressTime) {
-            spacebarPressTime = Date.now(); // Record when the spacebar was pressed
-        }
-    }
-    
-    if (e.ctrlKey && e.key === 'x') {
-        // Ctrl + X to clear the canvas
-        e.preventDefault(); // Prevent default browser behavior
-        World.clear(world);
-        World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
-        lines = [];
-        allLines = [];
-        undoneLines = [];
-        localStorage.removeItem('savedLines');
-    } else if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
-        // Ctrl + Z to undo
-        e.preventDefault(); // Prevent default browser behavior
-        if (allLines.length > 0) {
-            const lastLine = allLines.pop();
-            undoneLines.push(lastLine);
-
-            // Clear the Matter.js world and re-add all remaining elements
-            World.clear(world);
-            World.add(world, [ball, ground, ceiling, leftWall, rightWall]);
-            allLines.forEach((lineGroup) => {
-                lineGroup.forEach((segment) => {
-                    World.add(world, segment);
-                });
-            });
-
-            saveLines(); // Save updated state
-        }
-    } else if (e.ctrlKey && (e.key === 'Z' || (e.key === 'z' && e.shiftKey))) {
-        // Ctrl + Shift + Z to redo
-        e.preventDefault(); // Prevent default browser behavior
-        if (undoneLines.length > 0) {
-            const restoredLine = undoneLines.pop();
-            allLines.push(restoredLine);
-
-            // Add restored segments back to the Matter.js world
-            restoredLine.forEach((segment) => World.add(world, segment));
-
-            saveLines(); // Save updated state
-        }
-    }
-});
-
-
-window.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft') isMovingLeft = false;
-    if (e.key === 'ArrowRight') isMovingRight = false;
-
-    if (e.key === ' ') {
-        if (spacebarPressTime && isOnSurface) {
-            const holdDuration = (Date.now() - spacebarPressTime) / 1000; // ms to seconds
-            const clampedDuration = Math.min(holdDuration, maxHoldTime); // Cap duration
-            const jumpHeight =
-                minJumpHeight +
-                (clampedDuration / maxHoldTime) * (maxJumpHeight - minJumpHeight);
-
-            Body.setVelocity(ball, { x: ball.velocity.x, y: jumpHeight });
-            jumpAllowed = false; // Prevent consecutive jumps
-            spacebarPressTime = null; // Reset for next jump
-            auraStrength = 0; // Reset aura strength
-        }
-    }
-});
-
-
-Events.on(engine, 'beforeUpdate', () => {
-    const force = 0.02;
-    if (isMovingLeft) Body.applyForce(ball, ball.position, { x: -force, y: 0 });
-    if (isMovingRight) Body.applyForce(ball, ball.position, { x: force, y: 0 });
-    if (spacebarPressTime) {
-        const holdDuration = (Date.now() - spacebarPressTime) / 1000; // Get hold duration
-        const clampedDuration = Math.min(holdDuration, maxHoldTime); // Cap at max hold time
-        auraStrength = clampedDuration / maxHoldTime; // Normalize aura strength (0 to 1)
-    } else if (auraStrength > 0) {
-        auraStrength = Math.max(auraStrength - 0.05, 0); // Gradually reduce aura strength
-    }
-
-    // Multi-layer fiery aura effect
-    const ctx = canvas.getContext('2d');
-
-    // Define vibrant aura colors
-    const colors = [
-        `rgba(255, 255, 0, ${auraStrength * 0.8})`, // Bright yellow
-        `rgba(255, 165, 0, ${auraStrength * 0.6})`, // Orange
-        `rgba(255, 69, 0, ${auraStrength * 0.4})`,  // Fiery red
-        `rgba(255, 0, 0, ${auraStrength * 0.2})`    // Dim red
-    ];
-
-    const auraRadius = 50 + 40 * auraStrength; // Aura size scales with strength
-
-    // Draw the aura as a radial gradient around the ball
-    const gradient = ctx.createRadialGradient(
-        ball.position.x, ball.position.y, 0,
-        ball.position.x, ball.position.y, auraRadius
-    );
-
-    gradient.addColorStop(0, colors[0]); // Inner yellow
-    gradient.addColorStop(0.4, colors[1]); // Mid orange
-    gradient.addColorStop(0.7, colors[2]); // Outer fiery red
-    gradient.addColorStop(1, colors[3]); // Faint outer edge
-
-    ctx.save(); // Save the current state of the canvas
-    ctx.globalCompositeOperation = 'lighter'; // Additive blending for glow effect
-
-    ctx.beginPath();
-    ctx.arc(ball.position.x, ball.position.y, auraRadius, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    ctx.restore(); // Restore the canvas state
-});
-
-// Keep Ball in Bounds
-Events.on(engine, 'afterUpdate', () => {
-    if (ball.position.y > height + 100) {
-        Body.setPosition(ball, { x: 100, y: 100 });
-        Body.setVelocity(ball, { x: 0, y: 0 });
-    }
-});
-
-function saveLines() {
-    const savedLines = allLines.map(lineGroup =>
-        lineGroup.map(line => ({
-            start: { x: line.vertices[0].x, y: line.vertices[0].y },
-            end: { x: line.vertices[1].x, y: line.vertices[1].y },
-        }))
-    );
-    localStorage.setItem('savedLines', JSON.stringify(savedLines));
-}
-
-function saveCurrentMode(mode) {
-    localStorage.setItem('currentMode', mode);
-}
-
-function loadCurrentMode() {
-    return localStorage.getItem('currentMode') || 'startingPage';
-}
-
-function updateCanvasSize() {
-    const newWidth = window.innerWidth;
-    const newHeight = window.innerHeight - 3.2;
-
-    // Update canvas dimensions
-    canvas.width = newWidth - 2;
-    canvas.height = newHeight - 2;
-
-    // Update Matter.js world boundaries
-    Body.setPosition(ground, { x: newWidth / 2, y: newHeight + 10 });
-    Body.setVertices(ground, [
-        { x: 0, y: newHeight },
-        { x: newWidth, y: newHeight },
-        { x: newWidth, y: newHeight + 20 },
-        { x: 0, y: newHeight + 20 },
-    ]);
-
-    Body.setPosition(ceiling, { x: newWidth / 2, y: -10 });
-    Body.setVertices(ceiling, [
-        { x: 0, y: 0 },
-        { x: newWidth, y: 0 },
-        { x: newWidth, y: -20 },
-        { x: 0, y: -20 },
-    ]);
-
-    Body.setPosition(leftWall, { x: -10, y: newHeight / 2 });
-    Body.setVertices(leftWall, [
-        { x: 0, y: 0 },
-        { x: -20, y: 0 },
-        { x: -20, y: newHeight },
-        { x: 0, y: newHeight },
-    ]);
-
-    Body.setPosition(rightWall, { x: newWidth + 10, y: newHeight / 2 });
-    Body.setVertices(rightWall, [
-        { x: newWidth, y: 0 },
-        { x: newWidth + 20, y: 0 },
-        { x: newWidth + 20, y: newHeight },
-        { x: newWidth, y: newHeight },
-    ]);
-
-    // Update render dimensions
-    render.options.width = newWidth;
-    render.options.height = newHeight;
-}
-
-// Initialize canvas size on load
-updateCanvasSize();
-
-// Add resize event listener
-window.addEventListener('resize', updateCanvasSize);
-
-window.addEventListener('load', () => {
-    const savedLines = JSON.parse(localStorage.getItem('savedLines') || '[]');
-    savedLines.forEach(lineGroup => {
-        const restoredLineGroup = lineGroup.map(lineData => {
-            const start = lineData.start;
-            const end = lineData.end;
-            const length = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
-            const angle = Math.atan2(end.y - start.y, end.x - start.x);
-
-            const segment = Bodies.rectangle(
-                (start.x + end.x) / 2,
-                (start.y + end.y) / 2,
-                length,
-                5, // Thickness
-                {
-                    isStatic: true,
-                    angle: angle,
-                    render: {
-                        fillStyle: 'black',
-                    },
-                }
-            );
-            World.add(world, segment);
-            return segment;
-        });
-        allLines.push(restoredLineGroup);
-        lines.push(...restoredLineGroup); // Update single-segment list
-    });
-
-    const savedMode = loadCurrentMode();
-
-    if (savedMode === 'storyMode') {
-        // Show the game canvas and hide the starting screen
-        document.getElementById('startingScreen').style.display = 'none';
-        document.getElementById('gameCanvasContainer').style.display = 'block';
-    } else {
-        // Show the starting screen and hide the game canvas
-        document.getElementById('startingScreen').style.display = 'block';
-        document.getElementById('gameCanvasContainer').style.display = 'none';
-    }
-});
-
-
-// Add event listeners for buttons
-document.getElementById('storyModeButton').addEventListener('click', () => {
-    // Hide the starting screen and show the game canvas
-    document.getElementById('startingScreen').style.display = 'none';
-    document.getElementById('gameCanvasContainer').style.display = 'block';
-    saveCurrentMode('storyMode');
-});
-
-const surfacesInContact = new Set();
-
-// Detect collisions to check if the ball is on a surface
-Events.on(engine, 'collisionStart', (event) => {
-    event.pairs.forEach((pair) => {
-        const { bodyA, bodyB } = pair;
-        
-        if (bodyA === ball || bodyB === ball) {
-            const otherBody = bodyA === ball ? bodyB : bodyA;
-
-            // Check if the other body is a valid surface
-            if (otherBody === ground || allLines.some(lineGroup => lineGroup.includes(otherBody))) {
-                surfacesInContact.add(otherBody); // Add to the set of surfaces
-                isOnSurface = true; // Ball is on a surface
-                jumpAllowed = true; // Enable jumping
-            }
-        }
-    });
-});
-
-Events.on(engine, 'collisionEnd', (event) => {
-    event.pairs.forEach((pair) => {
-        const { bodyA, bodyB } = pair;
-
-        if (bodyA === ball || bodyB === ball) {
-            const otherBody = bodyA === ball ? bodyB : bodyA;
-
-            // Check if the other body is a surface
-            if (surfacesInContact.has(otherBody)) {
-                surfacesInContact.delete(otherBody); // Remove from the set of surfaces
-
-                // Update isOnSurface only if no more surfaces are in contact
-                if (surfacesInContact.size === 0) {
-                    isOnSurface = false;
-                }
-            }
-        }
-    });
-});
 } else if (currentPhpFile === "spel3.php") {
     const gridContainer = document.getElementById('grid-container');
-    const levelInfo = document.getElementById('level-info');
-    const timerDisplay = document.getElementById('timer');
-    const attemptsDisplay = document.getElementById('attempts');
-    const startButton = document.getElementById('start-button');
-    const gameOverPopup = document.getElementById('game-over-popup');
-    const popupCloseButton = document.getElementById('popup-close');
-    const popupOverlay = document.getElementById('popup-overlay');
-    const buyAttemptsButton = document.getElementById('buy-attempts-button');
-    const username = phpFileInfoElement.dataset.username;
+const levelInfo = document.getElementById('level-info');
+const timerDisplay = document.getElementById('timer');
+const attemptsDisplay = document.getElementById('attempts');
+const startButton = document.getElementById('start-button');
+const gameOverPopup = document.getElementById('game-over-popup');
+const popupCloseButton = document.getElementById('popup-close');
+const popupOverlay = document.getElementById('popup-overlay');
+const username = phpFileInfoElement.dataset.username;
 
-    let level = 1;
-    let attempts = 3;
-    let timer = 10;
-    let timerInterval;
-    let startTime;
-    let totalTimePlayed = 0;
-    let targetBoxIndex = null;
-    let colorDifference = 50;
-    let originalColors = [];
-    let gameStarted = false;
-    let baseCost = 50;
-    let currentCost = baseCost;
+let level = 1;
+let attempts = 3;
+let timer = 10;
+let timerInterval;
+let startTime; // To track time played for the current level
+let totalTimePlayed = 0; // Total time played across all levels
+let targetBoxIndex = null;
+let colorDifference = 50; // Starting difference in RGB values
+let originalColors = []; // Store original colors of boxes
+let gameStarted = false; // Flag to check if the game has started
 
-    // Function to update the "Buy Attempts" button text
-    function updateBuyAttemptsButton() {
-        buyAttemptsButton.textContent = `Buy Attempts (${currentCost} AP)`;
-        buyAttemptsButton.style.display = 'block';
+function generateRandomColor() {
+    return {
+        r: Math.floor(Math.random() * 256),
+        g: Math.floor(Math.random() * 256),
+        b: Math.floor(Math.random() * 256),
+    };
+}
+
+function adjustColor(color, adjustment) {
+    return {
+        r: Math.max(0, Math.min(255, color.r + adjustment)),
+        g: Math.max(0, Math.min(255, color.g + adjustment)),
+        b: Math.max(0, Math.min(255, color.b + adjustment)),
+    };
+}
+
+function rgbToCss(rgb) {
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+}
+
+function createGrid() {
+    gridContainer.innerHTML = '';
+    originalColors = []; // Clear colors each time grid is created
+
+    for (let i = 0; i < 16; i++) {
+        const box = document.createElement('div');
+        box.className = 'grid-box';
+        box.style.pointerEvents = ''; // Reset interaction
+        box.classList.remove('disabled'); // Reset disabled state
+        box.addEventListener('click', () => handleBoxClick(box, i));
+        gridContainer.appendChild(box);
     }
+}
 
-    // Event listener for the "Buy Attempts" button
-    buyAttemptsButton.addEventListener('click', () => {
-        fetch('http://localhost:3000/ekonomi')
-            .then(res => res.json())
-            .then(ekonomiResponse => {
-                const matchedUser = ekonomiResponse.find(user => user.username === username);
-                if (matchedUser && matchedUser.value >= currentCost) {
-                    const updateData = {
-                        username: username,
-                        cost: currentCost
-                    };
+function startGame() {
+    gameStarted = true; // Game starts
+    levelInfo.style.display = 'block';
+    document.getElementById('info-container').style.display = 'block';
+    startButton.style.display = 'none';
 
-                    fetch('http://localhost:3000/update-ekonomi2', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updateData),
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            attempts += 3;
-                            updateStats();
-                            popupOverlay.style.display = 'none';
-                            gameOverPopup.style.opacity = '0';
-                            startGame();
+    levelInfo.textContent = `Level: ${level}`;
+    attempts = 3;
+    attemptsDisplay.textContent = `Attempts: ${attempts}`;
+    timer = 10 + (level - 1) * 5;
+    timerDisplay.textContent = `Time Left: ${timer}s`;
 
-                            // Double the cost for the next purchase
-                            currentCost *= 2;
-                            updateBuyAttemptsButton();
-                        }
-                    });
-                } else {
-                    alert(`Not enough AP coins! You need ${currentCost} AP.`);
-                }
-            });
+    startTime = Date.now(); // Reset start time for the current level
+
+    const baseColor = generateRandomColor();
+    const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
+    const targetColor = adjustColor(baseColor, adjustment);
+
+    targetBoxIndex = Math.floor(Math.random() * 16);
+
+    const boxes = document.querySelectorAll('.grid-box');
+    boxes.forEach((box, index) => {
+        const color = index === targetBoxIndex ? targetColor : baseColor;
+        box.style.backgroundColor = rgbToCss(color);
+        originalColors[index] = rgbToCss(color); // Store each box's color
     });
 
-    function generateRandomColor() {
-        return {
-            r: Math.floor(Math.random() * 256),
-            g: Math.floor(Math.random() * 256),
-            b: Math.floor(Math.random() * 256),
-        };
-    }
-
-    function adjustColor(color, adjustment) {
-        return {
-            r: Math.max(0, Math.min(255, color.r + adjustment)),
-            g: Math.max(0, Math.min(255, color.g + adjustment)),
-            b: Math.max(0, Math.min(255, color.b + adjustment)),
-        };
-    }
-
-    function rgbToCss(rgb) {
-        return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-    }
-
-    function createGrid() {
-        gridContainer.innerHTML = '';
-        originalColors = [];
-    
-        for (let i = 0; i < 16; i++) {
-            const box = document.createElement('div');
-            box.className = 'grid-box';
-            box.style.pointerEvents = '';
-            box.classList.remove('disabled');
-            box.addEventListener('click', () => handleBoxClick(box, i));
-            gridContainer.appendChild(box);
-        }
-    }
-
-    function startGame() {
-        gameStarted = true;
-        levelInfo.style.display = 'block';
-        document.getElementById('info-container').style.display = 'block';
-        startButton.style.display = 'none';
-    
-        levelInfo.textContent = `Level: ${level}`;
-        attempts = 3;
-        attemptsDisplay.textContent = `Attempts: ${attempts}`;
-        timer = 10 + (level - 1) * 5;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timer--;
         timerDisplay.textContent = `Time Left: ${timer}s`;
-    
-        startTime = Date.now();
-    
-        const baseColor = generateRandomColor();
-        const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
-        const targetColor = adjustColor(baseColor, adjustment);
-    
-        targetBoxIndex = Math.floor(Math.random() * 16);
-    
-        const boxes = document.querySelectorAll('.grid-box');
-        boxes.forEach((box, index) => {
-            const color = index === targetBoxIndex ? targetColor : baseColor;
-            box.style.backgroundColor = rgbToCss(color);
-            originalColors[index] = rgbToCss(color);
-        });
-    
+        if (timer <= 0) {
+            handleGameOver();
+        }
+    }, 1000);
+}
+
+function handleBoxClick(box, index) {
+    if (!gameStarted || box.classList.contains('clicked')) return; // Ignore clicks if game hasn't started or box is already clicked
+
+    if (index === targetBoxIndex) {
+        box.style.backgroundColor = 'green';
+        box.style.transform = 'scale(1.2)';
+        box.classList.add('clicked'); // Mark the box as clicked
         clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timer--;
-            timerDisplay.textContent = `Time Left: ${timer}s`;
-            if (timer <= 0) {
-                handleGameOver();
-            }
-        }, 1000);
-    }
 
-    function handleBoxClick(box, index) {
-        if (!gameStarted || box.classList.contains('clicked')) return;
-    
-        if (index === targetBoxIndex) {
-            box.style.backgroundColor = 'green';
-            box.style.transform = 'scale(1.2)';
-            box.classList.add('clicked');
-            clearInterval(timerInterval);
-    
-            const boxes = document.querySelectorAll('.grid-box');
-            boxes.forEach((b) => {
-                b.classList.add('disabled');
-                b.style.pointerEvents = 'none';
-            });
-    
-            totalTimePlayed += (Date.now() - startTime) / 1000;
-    
-            setTimeout(() => {
-                level++;
-                colorDifference = Math.max(5, colorDifference - 5);
-                createGrid();
-                startGame();
-            }, 1000);
-        } else {
-            box.style.backgroundColor = 'red';
-            box.style.transform = 'scale(1.2)';
-            box.classList.add('clicked');
-            attempts--;
-            attemptsDisplay.textContent = `Attempts: ${attempts}`;
-    
-            setTimeout(() => {
-                box.style.transform = 'scale(1)';
-                box.style.backgroundColor = originalColors[index];
-                box.classList.remove('clicked');
-            }, 500);
-    
-            if (attempts <= 0) {
-                handleGameOver();
-            }
+        // Disable all other boxes immediately
+        const boxes = document.querySelectorAll('.grid-box');
+        boxes.forEach((b) => {
+            b.classList.add('disabled');
+            b.style.pointerEvents = 'none'; // Disable interaction
+        });
+
+        // Add the time played in the current level to totalTimePlayed
+        totalTimePlayed += (Date.now() - startTime) / 1000;
+
+        setTimeout(() => {
+            level++;
+            colorDifference = Math.max(5, colorDifference - 5);
+            createGrid();
+            startGame();
+        }, 1000);
+    } else {
+        box.style.backgroundColor = 'red';
+        box.style.transform = 'scale(1.2)';
+        box.classList.add('clicked'); // Mark the box as clicked
+        attempts--;
+        attemptsDisplay.textContent = `Attempts: ${attempts}`;
+
+        setTimeout(() => {
+            box.style.transform = 'scale(1)';
+            box.style.backgroundColor = originalColors[index]; // Revert to original color
+            box.classList.remove('clicked'); // Allow the box to be clicked again if the game continues
+        }, 500);
+
+        if (attempts <= 0) {
+            handleGameOver();
         }
     }
+}
 
-    function updateStats() {
-        attemptsDisplay.textContent = `Attempts: ${attempts}`;
-        timerDisplay.textContent = `Time Left: ${timer}s`;
-    }
-
-    function handleGameOver() {
-        if (username != "guest") {
-            gameStarted = false; // Stop the game
-            clearInterval(timerInterval);
-            
-            buyAttemptsButton.style.display = 'block';
-            // Add the time played in the current level to totalTimePlayed
-            totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
-
-            function getUserLevel(username) {
-                return fetch('http://localhost:3000/poangssystem') // Ensure the correct URL
-                    .then(response => response.json()) // Convert the response to JSON
-                    .then(data => {
-                        // Loop through the data and find the match for level
-                        for (const user of data) {
-                            if (user.Namn === username) {
-                                return user.Levels; // Return the level when found
-                            }
-                        }
-                        // If no match is found
-                        return 'User not found';
-                    })
-                    .catch(error => {
-                        console.error('Error fetching level data:', error); // Handle any errors
-                        return null; // Return null in case of error
-                    });
-            }
-
-            function getUserNetWorth(username) {
-                return fetch('http://localhost:3000/netvarde') // Ensure the correct URL
-                    .then(response => response.json()) // Convert the response to JSON
-                    .then(data => {
-                        // Loop through the data and find the match for networth
-                        for (const user of data) {
-                            if (user.username === username) { // Match with 'username' column
-                                return user.networth; // Return the networth when found
-                            }
-                        }
-                        // If no match is found
-                        return 'Networth not found';
-                    })
-                    .catch(error => {
-                        console.error('Error fetching networth data:', error); // Handle any errors
-                        return null; // Return null in case of error
-                    });
-            }
-
-            // Function to get both user level and networth in parallel
-            function getUserData(username) {
-                // Fetch level and net worth in parallel using Promise.all
-                Promise.all([getUserLevel(username), getUserNetWorth(username)])
-                    .then(([userlevel, userNetWorth]) => {
-                        if (userlevel !== null && userlevel !== undefined && userNetWorth !== null && userNetWorth !== undefined) {
-                            const experience = 2 * level * userlevel;
-                            const money = 2 * level * userlevel;
-                            let averagetime = totalTimePlayed / level; // Use totalTimePlayed for average time calculation
-            
-                            // Fetch all data from the 'colourvision' table
-                            fetch('http://localhost:3000/colourvision')
-                                .then(response => response.json())
-                                .then(data => {
-                                    // Check if the username exists in the fetched data
-                                    const userExists = data.some(user => user.username === username);
-            
-                                    if (userExists) {
-                                        // User exists, update stats
-                                        updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth);
-                                    } else {
-                                        gainExp(experience);
-
-                                        document.getElementById('popup-level').textContent = `Level: ${level}`;
-                                        document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
-                                        document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
-                                        document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
-
-                                        let pengar_tjanat = 2 * level * userlevel;
-
-                                        const updateData = {
-                                            username: username,
-                                            pengar_tjanat: pengar_tjanat // Renamed to pengar_tjanat as expected by the backend
-                                        };
-                                        
-                                        // Send the updated data to the backend
-                                        fetch('http://localhost:3000/update-ekonomi', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify(updateData),
-                                        })
-                                        .then(response => response.json())
-                                        .then(result => {
-                                            if (result.success) {
-                                                console.log(result.message); // Success message
-                                            } else {
-                                                console.error('Failed to update:', result.message);
-                                            }
-                                        })
-                                        .catch(error => console.error('Error updating ekonomi table:', error));
-
-                                        // User does not exist, insert new data into 'colourvision'
-                                        fetch('http://localhost:3000/insertIntoColourvision', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({
-                                                username,
-                                                level,
-                                                userlevel,
-                                                tid: averagetime,
-                                                pengar_tjanat: money,
-                                                exp_tjanat: experience,
-                                                netvarde: userNetWorth
-                                            })
-                                        })
-                                            .then(response => response.json())
-                                            .then(data => console.log('User inserted into colourvision:', data))
-                                            .catch(error => console.error('Error inserting into colourvision:', error));
-                                    }
-                                })
-                                .catch(error => console.error('Error fetching colourvision data:', error));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error getting user data:', error);
-                    });
-            }
-            
-            function updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth) {
-                // Update user stats in the API
-                fetch('http://localhost:3000/updateUserStats', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username,
-                        level,
-                        userlevel,
-                        averagetime,
-                        money,
-                        experience,
-                        userNetWorth
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => console.log('User stats updated:', data))
-                    .catch(error => console.error('Error updating user stats:', error));
-            
-                // Update ekonomi database
-                fetch('http://localhost:3000/updateEkonomi', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username,
-                        moneyToAdd: money,
-                        netWorthToAdd: money // Assuming net worth increases by the same money value
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => console.log('Ekonomi updated:', data))
-                    .catch(error => console.error('Error updating ekonomi:', error));
-
-                let experience2 = 2 * level * userlevel;
-
-                document.getElementById('popup-level').textContent = `Level: ${level}`;
-                document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
-                document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
-                document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
-
-                gainExp(experience2);
-            }
+function handleGameOver() {
+    if (username != "guest") {
+        gameStarted = false; // Stop the game
+        clearInterval(timerInterval);
         
 
-            // Example usage
-            getUserData(username);
+        // Add the time played in the current level to totalTimePlayed
+        totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
 
-            popupOverlay.style.display = 'block';
-
-            // Add a slight delay before setting the animation state for smoothness
-            setTimeout(() => {
-                gameOverPopup.style.opacity = '1';
-                gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-            }, 100);
-        } else if (username == "guest") {
-            gameStarted = false; // Stop the game
-            clearInterval(timerInterval);
-
-            // Add the time played in the current level to totalTimePlayed
-            totalTimePlayed += Math.floor((Date.now() - startTime) / 1000);
-
-            // Update popup content
-            document.getElementById('popup-level').textContent = `Level: ${level}`;
-            document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`; // Display total time played
-
-            // Show the popup
-            popupOverlay.style.display = 'block';
-
-            // Add a slight delay before setting the animation state for smoothness
-            setTimeout(() => {
-                gameOverPopup.style.opacity = '1';
-                gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-            }, 100);
+        function getUserLevel(username) {
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem') // Ensure the correct URL
+                .then(response => response.json()) // Convert the response to JSON
+                .then(data => {
+                    // Loop through the data and find the match for level
+                    for (const user of data) {
+                        if (user.Namn === username) {
+                            return user.Levels; // Return the level when found
+                        }
+                    }
+                    // If no match is found
+                    return 'User not found';
+                })
+                .catch(error => {
+                    console.error('Error fetching level data:', error); // Handle any errors
+                    return null; // Return null in case of error
+                });
         }
-    }
 
-    // Close the popup
-    function closePopup() {
-        popupOverlay.style.display = 'none';
-        location.reload();
-    }
+        function getUserNetWorth(username) {
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde') // Ensure the correct URL
+                .then(response => response.json()) // Convert the response to JSON
+                .then(data => {
+                    // Loop through the data and find the match for networth
+                    for (const user of data) {
+                        if (user.username === username) { // Match with 'username' column
+                            return user.networth; // Return the networth when found
+                        }
+                    }
+                    // If no match is found
+                    return 'Networth not found';
+                })
+                .catch(error => {
+                    console.error('Error fetching networth data:', error); // Handle any errors
+                    return null; // Return null in case of error
+                });
+        }
 
-    // Initialize grid and attach event listeners
-    createGrid();
-    startButton.addEventListener('click', startGame);
-    popupCloseButton.addEventListener('click', closePopup);
-    popupOverlay.addEventListener('click', (e) => {
-        if (e.target === popupOverlay) closePopup(); // Close popup on outside click
-    });
+        function updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth) {
+            fetch('http://samet-desktop.adm.huddinge.se:3000/updateUserStats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    level,
+                    userlevel,
+                    averagetime,
+                    money,
+                    experience,
+                    userNetWorth
+                })
+            })
+                .then(response => response.json())
+                .then(data => console.log('User stats updated:', data))
+                .catch(error => console.error('Error updating user stats:', error));
+
+            // Update ekonomi database
+            fetch('http://samet-desktop.adm.huddinge.se:3000/updateEkonomi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username,
+                    moneyToAdd: money,
+                    netWorthToAdd: money // Assuming net worth increases by the same money value
+                })
+            })
+                .then(response => response.json())
+                .then(data => console.log('Ekonomi updated:', data))
+                .catch(error => console.error('Error updating ekonomi:', error));
+
+            let experience2 = 2 * level * userlevel;
+
+            document.getElementById('popup-level').textContent = `Level: ${level}`;
+            document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+            document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
+            document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
+
+            gainExp(experience2);
+        }
+
+        // Function to get both user level and networth in parallel
+        function getUserData(username) {
+            // Fetch level and net worth in parallel using Promise.all
+            Promise.all([getUserLevel(username), getUserNetWorth(username)])
+                .then(([userlevel, userNetWorth]) => {
+                    if (userlevel !== null && userlevel !== undefined && userNetWorth !== null && userNetWorth !== undefined) {
+                        const experience = 2 * level * userlevel;
+                        const money = 2 * level * userlevel;
+                        let averagetime = totalTimePlayed / level; // Use totalTimePlayed for average time calculation
+        
+                        // Fetch all data from the 'colourvision' table
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/colourvision')
+                            .then(response => response.json())
+                            .then(data => {
+                                // Check if the username exists in the fetched data
+                                const userExists = data.some(user => user.username === username);
+        
+                                if (userExists) {
+                                    updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth);
+                                } else {
+                                    gainExp(experience);
+
+                                    document.getElementById('popup-level').textContent = `Level: ${level}`;
+                                    document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+                                    document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
+                                    document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
+
+                                    let pengar_tjanat = 2 * level * userlevel;
+
+                                    const updateData = {
+                                        username: username,
+                                        pengar_tjanat: pengar_tjanat // Renamed to pengar_tjanat as expected by the backend
+                                    };
+                                    
+                                    // Send the updated data to the backend
+                                    fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(updateData),
+                                    })
+                                    .then(response => response.json())
+                                    .then(result => {
+                                        if (result.success) {
+                                            console.log(result.message); // Success message
+                                        } else {
+                                            console.error('Failed to update:', result.message);
+                                        }
+                                    })
+                                    .catch(error => console.error('Error updating ekonomi table:', error));
+
+                                    // User does not exist, insert new data into 'colourvision'
+                                    fetch('http://samet-desktop.adm.huddinge.se:3000/insertIntoColourvision', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            username,
+                                            level,
+                                            userlevel,
+                                            tid: averagetime,
+                                            pengar_tjanat: money,
+                                            exp_tjanat: experience,
+                                            netvarde: userNetWorth
+                                        })
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => console.log('User inserted into colourvision:', data))
+                                        .catch(error => console.error('Error inserting into colourvision:', error));
+                                }
+                            })
+                            .catch(error => console.error('Error fetching colourvision data:', error));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting user data:', error);
+                });
+        }
+    
+
+        // Example usage
+        getUserData(username);
+
+        // Show the popup
+        popupOverlay.style.display = 'block';
+
+        // Add a slight delay before setting the animation state for smoothness
+        setTimeout(() => {
+            gameOverPopup.style.opacity = '1';
+            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+        }, 100);
+    } else if (username == "guest") {
+        gameStarted = false; // Stop the game
+        clearInterval(timerInterval);
+
+        // Add the time played in the current level to totalTimePlayed
+        totalTimePlayed += Math.floor((Date.now() - startTime) / 1000);
+
+        // Update popup content
+        document.getElementById('popup-level').textContent = `Level: ${level}`;
+        document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`; // Display total time played
+
+        // Show the popup
+        popupOverlay.style.display = 'block';
+
+        // Add a slight delay before setting the animation state for smoothness
+        setTimeout(() => {
+            gameOverPopup.style.opacity = '1';
+            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+        }, 100);
+    }
+}
+
+// Close the popup
+function closePopup() {
+    popupOverlay.style.display = 'none';
+    location.reload(); // Refresh the page to restart the game
+}
+
+// Initialize grid and attach event listeners
+createGrid();
+startButton.addEventListener('click', startGame);
+popupCloseButton.addEventListener('click', closePopup);
+popupOverlay.addEventListener('click', (e) => {
+    if (e.target === popupOverlay) closePopup(); // Close popup on outside click
+});
 
 
     } else if (currentPhpFile === "spel4.php") {
@@ -3245,139 +2596,56 @@ Events.on(engine, 'collisionEnd', (event) => {
         `;
         document.head.appendChild(style);
 
-        const buyAttemptsButton = document.createElement('button');
-        buyAttemptsButton.id = 'buy-attempts-button';
-        buyAttemptsButton.textContent = `Buy Attempts (50 AP)`;
-        buyAttemptsButton.style.display = 'none'; // Hidden by default
-        document.getElementById('popup').appendChild(buyAttemptsButton);
-
-        let baseCost = 50;
-        let currentCost = baseCost;
-
-        // Function to update the "Buy Attempts" button text
-        function updateBuyAttemptsButton() {
-            buyAttemptsButton.textContent = `Buy Attempts (${currentCost} AP)`;
-            buyAttemptsButton.style.display = 'block';
-        }
-
-    buyAttemptsButton.addEventListener('click', async () => {
-        try {
-            // Fetch the user's current AP balance
-            const ekonomiResponse = await fetch('http://localhost:3000/ekonomi');
-            const ekonomiData = await ekonomiResponse.json();
-            const matchedUser = ekonomiData.find(user => user.username === username);
-
-            if (matchedUser && matchedUser.value >= currentCost) {
-                // Deduct the cost from the user's AP
-                const updateData = {
-                    username: username,
-                    cost: currentCost
-                };
-
-                const updateResponse = await fetch('http://localhost:3000/update-ekonomi2', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updateData),
-                });
-
-                const updateResult = await updateResponse.json();
-
-                if (updateResult.success) {
-                    // Reset attempts to 3
-                    attempts = 3;
-                    updateHUD();
-
-                    // Reset the timer to 180 seconds
-                    timeLeft = 180;
-                    document.getElementById("time_counter").textContent = timeLeft;
-
-                    // Reset monster and player positions
-                    if (monster) {
-                        monster.stopHunting();
-                        monster.resetPosition();
-                    }
-
-                    if (player) {
-                        player.position = { row: Maze.rows - 2, col: Maze.cols - 2 };
-                        player.hasKey = false;
-                        player.updatePlayerPosition();
-                    }
-
-                    // Close the popup
-                    document.getElementById('popup-overlay').classList.remove('show');
-
-                    // Double the cost for the next purchase
-                    currentCost *= 2;
-                    updateBuyAttemptsButton();
-
-                    // Restart the timer
-                    startTimer();
-                } else {
-                    alert("Failed to update AP balance. Please try again.");
-                }
-            } else {
-                alert(`Not enough AP coins! You need ${currentCost} AP.`);
-            }
-        } catch (error) {
-            console.error("Error purchasing attempts:", error);
-            alert("An error occurred while processing your request. Please try again.");
-        }
-    });
-
-
         async function showPopup() {
             // Calculate total elapsed time
             const endTime = Date.now();
             const elapsedTimeInSeconds = Math.floor((endTime - startTime) / 1000);
             const averagetime = elapsedTimeInSeconds / level;
         
-            // Get the popup overlay and popup elements
-            const popupOverlay = document.getElementById('popup-overlay');
-            const popup = document.getElementById('popup');
-        
-            // Update the popup content
+            // Create the popup overlay and content
+            const popupOverlay = document.createElement('div');
+            popupOverlay.id = 'popupOverlay';
+            
             if (!username) {
-                popup.innerHTML = `
-                    <button id="close-popup">&times;</button>
-                    <h2>Game Over</h2>
-                    <p>Level Reached: ${level}</p>
-                    <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
-                `;
-            } else {
-                const userlevel = await fetchUserLevel(username);
-                popup.innerHTML = `
-                    <button id="close-popup">&times;</button>
-                    <h2>Game Over</h2>
-                    <p>Level Reached: ${level}</p>
-                    <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
-                    <p>EXP Earned: ${10 * userlevel * level}</p>
-                    <p>Money Earned: ${10 * userlevel * level}</p>
+                popupOverlay.innerHTML = `
+                    <div id="popup">
+                        <button id="closePopup">&times;</button>
+                        <h2>Game Over</h2>
+                        <p>Level Reached: ${level}</p>
+                        <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
+                    </div>
                 `;
             }
-        
-            // Append the "Buy Attempts" button to the popup
-            const buyAttemptsButton = document.createElement('button');
-            buyAttemptsButton.id = 'buy-attempts-button';
-            buyAttemptsButton.textContent = `Buy Attempts (${currentCost} AP)`;
-            buyAttemptsButton.style.display = 'block';
-            popup.appendChild(buyAttemptsButton);
+            
+            if (username) {
+                const userlevel = await fetchUserLevel(username);
+                popupOverlay.innerHTML = `
+                    <div id="popup">
+                        <button id="closePopup">&times;</button>
+                        <h2>Game Over</h2>
+                        <p>Level Reached: ${level}</p>
+                        <p>Time Taken: ${elapsedTimeInSeconds} seconds</p>
+                        <p>EXP Earned: ${10 * userlevel * level}</p>
+                        <p>Money Earned: ${10 * userlevel * level}</p>
+                    </div>
+                `;
+            }
+            
+            document.body.appendChild(popupOverlay);
         
             // Show the popup with animation
-            popupOverlay.classList.add('show');
+            setTimeout(() => {
+                popupOverlay.classList.add('visible');
+            }, 10);
         
             // Freeze the game state
             clearInterval(timer); // Stop the countdown timer
             if (monster) monster.stopHunting(); // Stop the monster
         
             // Close the popup when clicking outside or on the X button
-            document.getElementById('close-popup').addEventListener('click', () => {
-                popupOverlay.classList.remove('show');
-                resetGame();
-            });
-        
             popupOverlay.addEventListener('click', (e) => {
-                if (e.target === popupOverlay) {
-                    popupOverlay.classList.remove('show');
+                if (e.target.id === 'popupOverlay' || e.target.id === 'closePopup') {
+                    popupOverlay.remove();
                     resetGame();
                 }
             });
@@ -3388,13 +2656,13 @@ Events.on(engine, 'collisionEnd', (event) => {
         
                 const pengar = 10 * userlevel * level;
                 const exp = 10 * userlevel * level;
-        
+
                 gainExp(exp);
         
                 const userExists = await checkUserExists(username);
         
                 if (!userExists) {
-                    gainExp(2 * level * userlevel);
+                    gainExp(2 * level * userlevel);  
                     await insertUser(username, level, userlevel, averagetime, pengar, exp);
                 } else {
                     const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
@@ -3410,7 +2678,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                     );
                 }
             }
-        }
+        }            
 
         function resetGame() {
             level = 1;
@@ -3418,10 +2686,6 @@ Events.on(engine, 'collisionEnd', (event) => {
             timeLeft = 180;
             startTime = null;
             clearInterval(timer);
-        
-            // Reset the cost for buying attempts
-            currentCost = baseCost;
-            updateBuyAttemptsButton();
         
             if (monster) {
                 monster.stopHunting();
@@ -3586,9 +2850,9 @@ Events.on(engine, 'collisionEnd', (event) => {
                 innerTile.style.justifyContent = "flex-start";
     
                 if (modes[currentMode].text === "Memory - Topplista") {
-                    const memoryEndpoint = "http://localhost:3000/memory";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
-                    const poangssystemEndpoint = "http://localhost:3000/poangssystem";
+                    const memoryEndpoint = "http://samet-desktop.adm.huddinge.se:3000/memory";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
                     // Fetch all datasets
                     Promise.all([
@@ -3661,7 +2925,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser && ekonomiUser.networth !== undefined ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser && ekonomiUser.value !== undefined ? ekonomiUser.value : 0 // Default to 0 if not found
                                     };
                                 });
                             }
@@ -3703,9 +2967,9 @@ Events.on(engine, 'collisionEnd', (event) => {
                         console.error("Error fetching data:", error);
                     });
                 } else if (modes[currentMode].text === "Squigglegolf - Topplista") {
-                    const squigglegolfEndpoint = "http://localhost:3000/squigglegolf";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
-                    const poangssystemEndpoint = "http://localhost:3000/poangssystem";
+                    const squigglegolfEndpoint = "http://samet-desktop.adm.huddinge.se:3000/squigglegolf";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
                     // Fetch all datasets
                     Promise.all([
@@ -3766,7 +3030,7 @@ Events.on(engine, 'collisionEnd', (event) => {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser ? ekonomiUser.value : 0 // Default to 0 if not found
                                     };
                                 });
                             }
@@ -3818,9 +3082,9 @@ Events.on(engine, 'collisionEnd', (event) => {
                         console.error("Error fetching Squigglegolf data:", error);
                     });
                 } else if (modes[currentMode].text === "Colourvision - Topplista") {
-                    const colourvisionEndpoint = "http://localhost:3000/colourvision";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
-                    const poangssystemEndpoint = "http://localhost:3000/poangssystem";
+                    const colourvisionEndpoint = "http://samet-desktop.adm.huddinge.se:3000/colourvision";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
                     // Fetch all datasets
                     Promise.all([
@@ -3933,9 +3197,9 @@ Events.on(engine, 'collisionEnd', (event) => {
                         console.error("Error fetching Colourvision data:", error);
                     });
                 } else if (modes[currentMode].text === "Maze Runner - Topplista") {
-                    const mazerunnerEndpoint = "http://localhost:3000/mazerunner";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
-                    const poangssystemEndpoint = "http://localhost:3000/poangssystem";
+                    const mazerunnerEndpoint = "http://samet-desktop.adm.huddinge.se:3000/mazerunner";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
                     // Fetch all datasets
                     Promise.all([
@@ -4048,9 +3312,9 @@ Events.on(engine, 'collisionEnd', (event) => {
                         console.error("Error fetching Mazerunner data:", error);
                     });
                 } else if (modes[currentMode].text === "Biljard - Topplista") {
-                    const biljardEndpoint = "http://localhost:3000/biljard";
-                    const ekonomiEndpoint = "http://localhost:3000/ekonomi";
-                    const poangssystemEndpoint = "http://localhost:3000/poangssystem";
+                    const biljardEndpoint = "http://samet-desktop.adm.huddinge.se:3000/biljard";
+                    const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
+                    const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
                     // Fetch all datasets
                     Promise.all([
@@ -4186,31 +3450,31 @@ Events.on(engine, 'collisionEnd', (event) => {
     
         function fetchLeaderboardData() {
             Promise.all([
-                fetch("http://localhost:3000/user-counts").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch user counts");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/niva").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/niva").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory levels");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/levels").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/levels").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory levels");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/tid").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/tid").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory time");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/pengar").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/pengar").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory money data");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/memory/exp").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/memory/exp").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch memory EXP data");
                     return res.json();
                 }),
-                fetch("http://localhost:3000/get-networth").then(res => {
+                fetch("http://samet-desktop.adm.huddinge.se:3000/get-networth").then(res => {
                     if (!res.ok) throw new Error("Failed to fetch ekonomi net worth data");
                     return res.json();
                 })
