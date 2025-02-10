@@ -1285,10 +1285,10 @@ if (currentPhpFile === "game_display.php") {
                                     const currentGameData = {
                                         nivå: level,
                                         level: userlevel,
-                                        pengar_tjanat: 2 * level * userlevel,
-                                        exp_tjanat: 2 * level * userlevel,
+                                        pengar_tjanat: 2 * level * (userlevel - 1),
+                                        exp_tjanat: 2 * level * (userlevel - 1),
                                         tid: totalTimeElapsed / level,
-                                        netvarde: (record.netvarde || 0) + 2 * level * userlevel,
+                                        netvarde: (record.netvarde || 0) + 2 * level * (userlevel - 1),
                                     };
     
                                     record.netvarde = currentGameData.netvarde;
@@ -1339,27 +1339,24 @@ if (currentPhpFile === "game_display.php") {
                                 const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
                                 let usernetworth = matchedEkonomiUser ? matchedEkonomiUser.networth : 0;
     
-                                usernetworth += 2 * level * userlevel;
+                                usernetworth += 2 * level * (userlevel - 1);
     
                                 finalLevel.textContent = level;
-                                finalXP.textContent = 2 * level * userlevel;
-                                finalAP.textContent = 2 * level * userlevel;
+                                finalXP.textContent = 2 * level * (userlevel - 1);
+                                finalAP.textContent = 2 * level * (userlevel - 1);
                                 totalTime.textContent = totalTimeElapsed;
     
                                 const dataToInsert = {
                                     username: username,
                                     level: level,
                                     userlevel: userlevel,
-                                    pengar_tjanat: 2 * level * userlevel,
-                                    exp_tjanat: 2 * level * userlevel,
+                                    pengar_tjanat: 2 * level * (userlevel - 1),
+                                    exp_tjanat: 2 * level * (userlevel - 1),
                                     tid: totalTimeElapsed / level,
                                     netvarde: usernetworth,
                                 };
-
-
-                                console.log("Hey")
     
-                                gainExp(2 * level * userlevel);
+                                gainExp(2 * level * (userlevel - 1));
     
                                 grantRewards();
 
@@ -1416,7 +1413,7 @@ if (currentPhpFile === "game_display.php") {
             .then(res => res.json())
             .then(poangssystemData => {
                 const userlevel = poangssystemData.find(u => u.Namn === username)?.Levels || 1;
-                const reward = 2 * level * userlevel;
+                const reward = 2 * level * (userlevel - 1);
     
                 // Update ekonomi
                 fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
@@ -1674,6 +1671,13 @@ function handleGameOver() {
         
                                 if (userExists) {
                                     updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth);
+                                    popupOverlay.style.display = 'block';
+
+                                    // Add a slight delay before setting the animation state for smoothness
+                                    setTimeout(() => {
+                                        gameOverPopup.style.opacity = '1';
+                                        gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
+                                    }, 100);
                                 } else {
                                     gainExp(experience);
 
@@ -1743,7 +1747,7 @@ function handleGameOver() {
         setTimeout(() => {
             gameOverPopup.style.opacity = '1';
             gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-        }, 100);
+        }, 500);
     } else if (username == "guest") {
         gameStarted = false; // Stop the game
         clearInterval(timerInterval);
@@ -1754,15 +1758,6 @@ function handleGameOver() {
         // Update popup content
         document.getElementById('popup-level').textContent = `Level: ${level}`;
         document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`; // Display total time played
-
-        // Show the popup
-        popupOverlay.style.display = 'block';
-
-        // Add a slight delay before setting the animation state for smoothness
-        setTimeout(() => {
-            gameOverPopup.style.opacity = '1';
-            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-        }, 100);
     }
 }
 
@@ -1843,7 +1838,7 @@ popupOverlay.addEventListener('click', (e) => {
         async function fetchUserLevel(username) {
             try {
                 // Fetch all data from the poangssystem endpoint
-                const response = await fetch(`http://localhost:3000/poangssystem`);
+                const response = await fetch(`http://samet-desktop.adm.huddinge.se:3000/poangssystem`);
                 const data = await response.json();
         
                 // Check if the response is an array
@@ -1870,7 +1865,7 @@ popupOverlay.addEventListener('click', (e) => {
 
         async function checkUserExists(username) {
             try {
-                const response = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
+                const response = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner?username=${username}`);
                 const data = await response.json();
                 return data.length > 0; // Ensure this returns true if the user exists
             } catch (error) {
@@ -1885,7 +1880,7 @@ popupOverlay.addEventListener('click', (e) => {
                 const exp_tjanat = 10 * userlevel * level;
         
                 // Insert user into mazerunner table
-                const mazerunnerResponse = await fetch("http://localhost:3000/mazerunner", {
+                const mazerunnerResponse = await fetch("http://samet-desktop.adm.huddinge.se:3000/mazerunner", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -1905,7 +1900,7 @@ popupOverlay.addEventListener('click', (e) => {
                 }
         
                 // Check if the user exists in ekonomi
-                const ekonomiCheckResponse = await fetch(`http://localhost:3000/ekonomi?username=${username}`);
+                const ekonomiCheckResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi?username=${username}`);
                 if (!ekonomiCheckResponse.ok) {
                     throw new Error(`HTTP error! Status: ${ekonomiCheckResponse.status}`);
                 }
@@ -1913,7 +1908,7 @@ popupOverlay.addEventListener('click', (e) => {
         
                 if (ekonomiData.length > 0) {
                     // User exists, update ekonomi
-                    const ekonomiUpdateResponse = await fetch(`http://localhost:3000/ekonomi`, {
+                    const ekonomiUpdateResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                         method: "PUT",
                         headers: {
                             "Content-Type": "application/json",
@@ -1930,7 +1925,7 @@ popupOverlay.addEventListener('click', (e) => {
                     }
                 } else {
                     // User does not exist, insert into ekonomi
-                    const ekonomiInsertResponse = await fetch(`http://localhost:3000/ekonomi`, {
+                    const ekonomiInsertResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -1959,7 +1954,7 @@ popupOverlay.addEventListener('click', (e) => {
               const exp_tjanat = 10 * userlevel * level;
           
               // Update mazerunner table
-              const mazerunnerResponse = await fetch(`http://localhost:3000/mazerunner`, {
+              const mazerunnerResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner`, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
@@ -1979,7 +1974,7 @@ popupOverlay.addEventListener('click', (e) => {
               }
           
               // Update ekonomi table (adds pengar_tjanat to value and networth)
-              const ekonomiResponse = await fetch(`http://localhost:3000/ekonomi`, {
+              const ekonomiResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
@@ -2671,7 +2666,7 @@ popupOverlay.addEventListener('click', (e) => {
                     gainExp(2 * level * userlevel);  
                     await insertUser(username, level, userlevel, averagetime, pengar, exp);
                 } else {
-                    const currentData = await fetch(`http://localhost:3000/mazerunner?username=${username}`);
+                    const currentData = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner?username=${username}`);
                     const existingData = await currentData.json();
         
                     await updateUser(
@@ -2698,7 +2693,7 @@ popupOverlay.addEventListener('click', (e) => {
 
                 // Handle button click
                 buyButton.addEventListener('click', () => {
-                    fetch("http://localhost:3000/ekonomi")
+                    fetch("http://samet-desktop.adm.huddinge.se:3000/ekonomi")
                         .then(res => res.json())
                         .then(data => {
                             // Find the user in the fetched data
@@ -2714,7 +2709,7 @@ popupOverlay.addEventListener('click', (e) => {
                 
                             if (userBalance >= currentCost) {
                                 // Deduct AP and grant attempts
-                                fetch('http://localhost:3000/update-ekonomi2', {
+                                fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi2', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({

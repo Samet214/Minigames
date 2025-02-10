@@ -3980,6 +3980,7 @@ html[data-page="spel1"] .game-container {
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    margin-top: 12%;
 }
 html[data-page="spel1"] .level {
     font-size: 2.5em;
@@ -4087,8 +4088,8 @@ html[data-page="spel1"] button:active {
 }
 html[data-page="spel1"] .popup {
     position: fixed;
-    top: -100%;
-    left: 50%;
+    top: -150%;
+    left: 10%;
     transform: translateX(-50%);
     background: white;
     padding: 30px;
@@ -4099,7 +4100,7 @@ html[data-page="spel1"] .popup {
     z-index: 1000;
 }
 html[data-page="spel1"] .popup.visible {
-    top: 30%;
+    top: -55%;
 }
 html[data-page="spel1"] .popup .close-btn {
     background: none;
@@ -4174,6 +4175,10 @@ html[data-page="spel1"] .popup-buttons {
     display: flex;
     gap: 10px;
     margin-top: 15px;
+}
+
+html[data-page="spel1"] #buy-attempts-button {
+    margin-left: 10%;
 }
 
 /*spel3.php*/

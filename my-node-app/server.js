@@ -647,6 +647,8 @@ app.post('/updateUserStats', async (req, res) => {
           // User exists, update based on conditions
           const existingUser = results[0];
 
+          console.log("hey");
+
           const newLevel = level > existingUser.nivå ? level : existingUser.nivå;
           const newUserLevel = userlevel > existingUser.level ? userlevel : existingUser.level;
           const newTime = averagetime < existingUser.tid ? averagetime : existingUser.tid;
@@ -659,6 +661,7 @@ app.post('/updateUserStats', async (req, res) => {
               SET nivå = ?, level = ?, tid = ?, pengar_tjanat = ?, exp_tjanat = ?, netvarde = ?
               WHERE username = ?
           `;
+          
 
           await spelDb.query(updateQuery, [newLevel, newUserLevel, newTime, newMoney, newExperience, newNetworth, username]);
           res.json({ message: 'User stats updated successfully' });
