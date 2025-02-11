@@ -51,7 +51,7 @@ if (isset($_POST['submit'])) {
                 $errorMessage = "Fel användarnamn eller lösenord.";
             }
         } else {
-            $errorMessage = "Användarkonto ej skapat.";
+            $errorMessage = "Användare finns inte.";
         }
 
         $stmt->close();

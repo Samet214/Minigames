@@ -3110,6 +3110,7 @@ font-family: Arial, sans-serif;
 background-color: #131A20;
 color: white;
 height: 100%;
+overflow: hidden; /* Disables scrolling */
 }
 
 html[data-page="spel"] #currency-bar {
@@ -4189,7 +4190,7 @@ html[data-page="spel1"] .popup-buttons {
 
 html[data-page="spel1"] #buy-attempts-button {
     position: relative;
-    left: 7%;
+    left: 15%;
 }
 
 /*spel3.php*/
