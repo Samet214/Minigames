@@ -1285,10 +1285,10 @@ if (currentPhpFile === "game_display.php") {
                                     const currentGameData = {
                                         nivå: level,
                                         level: userlevel,
-                                        pengar_tjanat: 2 * level * (userlevel - 1),
-                                        exp_tjanat: 2 * level * (userlevel - 1),
+                                        pengar_tjanat: 2 * (level - 1) * userlevel,
+                                        exp_tjanat: 2 * (level - 1) * userlevel,
                                         tid: totalTimeElapsed / level,
-                                        netvarde: (record.netvarde || 0) + 2 * level * (userlevel - 1),
+                                        netvarde: (record.netvarde || 0) + 2 * (level - 1) * userlevel,
                                     };
     
                                     record.netvarde = currentGameData.netvarde;
@@ -1339,24 +1339,24 @@ if (currentPhpFile === "game_display.php") {
                                 const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
                                 let usernetworth = matchedEkonomiUser ? matchedEkonomiUser.networth : 0;
     
-                                usernetworth += 2 * level * (userlevel - 1);
+                                usernetworth += 2 * (level - 1) * userlevel;
     
                                 finalLevel.textContent = level;
-                                finalXP.textContent = 2 * level * (userlevel - 1);
-                                finalAP.textContent = 2 * level * (userlevel - 1);
+                                finalXP.textContent = 2 * (level - 1) * userlevel;
+                                finalAP.textContent = 2 * (level - 1) * userlevel;
                                 totalTime.textContent = totalTimeElapsed;
     
                                 const dataToInsert = {
                                     username: username,
                                     level: level,
                                     userlevel: userlevel,
-                                    pengar_tjanat: 2 * level * (userlevel - 1),
-                                    exp_tjanat: 2 * level * (userlevel - 1),
+                                    pengar_tjanat: 2 * (level - 1) * userlevel,
+                                    exp_tjanat: 2 * (level - 1) * userlevel,
                                     tid: totalTimeElapsed / level,
                                     netvarde: usernetworth,
                                 };
     
-                                gainExp(2 * level * (userlevel - 1));
+                                gainExp(2 * (level - 1) * userlevel);
     
                                 grantRewards();
 
@@ -1413,7 +1413,7 @@ if (currentPhpFile === "game_display.php") {
             .then(res => res.json())
             .then(poangssystemData => {
                 const userlevel = poangssystemData.find(u => u.Namn === username)?.Levels || 1;
-                const reward = 2 * level * (userlevel - 1);
+                const reward = 2 * (level - 1) * userlevel;
     
                 // Update ekonomi
                 fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
@@ -1432,21 +1432,25 @@ const levelInfo = document.getElementById('level-info');
 const timerDisplay = document.getElementById('timer');
 const attemptsDisplay = document.getElementById('attempts');
 const startButton = document.getElementById('start-button');
-const gameOverPopup = document.getElementById('game-over-popup');
-const popupCloseButton = document.getElementById('popup-close');
-const popupOverlay = document.getElementById('popup-overlay');
+const newGameOverPopup = document.getElementById('new-game-over-popup');
+const newPopupCloseButton = document.getElementById('new-popup-close');
+const newPopupOverlay = document.getElementById('new-popup-overlay');
+const newBuyAttemptsButton = document.getElementById('new-buy-attempts-button');
 const username = phpFileInfoElement.dataset.username;
+const buyAttemptsButton = document.getElementById("new-buy-attempts-button");
 
 let level = 1;
 let attempts = 3;
 let timer = 10;
 let timerInterval;
-let startTime; // To track time played for the current level
-let totalTimePlayed = 0; // Total time played across all levels
+let startTime;
+let totalTimePlayed = 0;
 let targetBoxIndex = null;
-let colorDifference = 50; // Starting difference in RGB values
-let originalColors = []; // Store original colors of boxes
-let gameStarted = false; // Flag to check if the game has started
+let colorDifference = 50;
+let originalColors = [];
+let gameStarted = false;
+let baseCost = 50;
+let currentCost = baseCost;
 
 function generateRandomColor() {
     return {
@@ -1470,20 +1474,20 @@ function rgbToCss(rgb) {
 
 function createGrid() {
     gridContainer.innerHTML = '';
-    originalColors = []; // Clear colors each time grid is created
+    originalColors = [];
 
     for (let i = 0; i < 16; i++) {
         const box = document.createElement('div');
         box.className = 'grid-box';
-        box.style.pointerEvents = ''; // Reset interaction
-        box.classList.remove('disabled'); // Reset disabled state
+        box.style.pointerEvents = '';
+        box.classList.remove('disabled');
         box.addEventListener('click', () => handleBoxClick(box, i));
         gridContainer.appendChild(box);
     }
 }
 
 function startGame() {
-    gameStarted = true; // Game starts
+    gameStarted = true;
     levelInfo.style.display = 'block';
     document.getElementById('info-container').style.display = 'block';
     startButton.style.display = 'none';
@@ -1494,7 +1498,7 @@ function startGame() {
     timer = 10 + (level - 1) * 5;
     timerDisplay.textContent = `Time Left: ${timer}s`;
 
-    startTime = Date.now(); // Reset start time for the current level
+    startTime = Date.now();
 
     const baseColor = generateRandomColor();
     const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
@@ -1506,7 +1510,7 @@ function startGame() {
     boxes.forEach((box, index) => {
         const color = index === targetBoxIndex ? targetColor : baseColor;
         box.style.backgroundColor = rgbToCss(color);
-        originalColors[index] = rgbToCss(color); // Store each box's color
+        originalColors[index] = rgbToCss(color);
     });
 
     clearInterval(timerInterval);
@@ -1520,22 +1524,20 @@ function startGame() {
 }
 
 function handleBoxClick(box, index) {
-    if (!gameStarted || box.classList.contains('clicked')) return; // Ignore clicks if game hasn't started or box is already clicked
+    if (!gameStarted || box.classList.contains('clicked')) return;
 
     if (index === targetBoxIndex) {
         box.style.backgroundColor = 'green';
         box.style.transform = 'scale(1.2)';
-        box.classList.add('clicked'); // Mark the box as clicked
+        box.classList.add('clicked');
         clearInterval(timerInterval);
 
-        // Disable all other boxes immediately
         const boxes = document.querySelectorAll('.grid-box');
         boxes.forEach((b) => {
             b.classList.add('disabled');
-            b.style.pointerEvents = 'none'; // Disable interaction
+            b.style.pointerEvents = 'none';
         });
 
-        // Add the time played in the current level to totalTimePlayed
         totalTimePlayed += (Date.now() - startTime) / 1000;
 
         setTimeout(() => {
@@ -1547,14 +1549,14 @@ function handleBoxClick(box, index) {
     } else {
         box.style.backgroundColor = 'red';
         box.style.transform = 'scale(1.2)';
-        box.classList.add('clicked'); // Mark the box as clicked
+        box.classList.add('clicked');
         attempts--;
         attemptsDisplay.textContent = `Attempts: ${attempts}`;
 
         setTimeout(() => {
             box.style.transform = 'scale(1)';
-            box.style.backgroundColor = originalColors[index]; // Revert to original color
-            box.classList.remove('clicked'); // Allow the box to be clicked again if the game continues
+            box.style.backgroundColor = originalColors[index];
+            box.classList.remove('clicked');
         }, 500);
 
         if (attempts <= 0) {
@@ -1564,49 +1566,42 @@ function handleBoxClick(box, index) {
 }
 
 function handleGameOver() {
-    if (username != "guest") {
-        gameStarted = false; // Stop the game
+    if (username !== "guest") {
+        gameStarted = false;
         clearInterval(timerInterval);
-        
-
-        // Add the time played in the current level to totalTimePlayed
         totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
 
         function getUserLevel(username) {
-            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem') // Ensure the correct URL
-                .then(response => response.json()) // Convert the response to JSON
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+                .then(response => response.json())
                 .then(data => {
-                    // Loop through the data and find the match for level
                     for (const user of data) {
                         if (user.Namn === username) {
-                            return user.Levels; // Return the level when found
+                            return user.Levels;
                         }
                     }
-                    // If no match is found
                     return 'User not found';
                 })
                 .catch(error => {
-                    console.error('Error fetching level data:', error); // Handle any errors
-                    return null; // Return null in case of error
+                    console.error('Error fetching level data:', error);
+                    return null;
                 });
         }
 
         function getUserNetWorth(username) {
-            return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde') // Ensure the correct URL
-                .then(response => response.json()) // Convert the response to JSON
+            return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde')
+                .then(response => response.json())
                 .then(data => {
-                    // Loop through the data and find the match for networth
                     for (const user of data) {
-                        if (user.username === username) { // Match with 'username' column
-                            return user.networth; // Return the networth when found
+                        if (user.username === username) {
+                            return user.networth;
                         }
                     }
-                    // If no match is found
                     return 'Networth not found';
                 })
                 .catch(error => {
-                    console.error('Error fetching networth data:', error); // Handle any errors
-                    return null; // Return null in case of error
+                    console.error('Error fetching networth data:', error);
+                    return null;
                 });
         }
 
@@ -1628,14 +1623,13 @@ function handleGameOver() {
                 .then(data => console.log('User stats updated:', data))
                 .catch(error => console.error('Error updating user stats:', error));
 
-            // Update ekonomi database
             fetch('http://samet-desktop.adm.huddinge.se:3000/updateEkonomi', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username,
                     moneyToAdd: money,
-                    netWorthToAdd: money // Assuming net worth increases by the same money value
+                    netWorthToAdd: money
                 })
             })
                 .then(response => response.json())
@@ -1644,56 +1638,47 @@ function handleGameOver() {
 
             let experience2 = 2 * level * userlevel;
 
-            document.getElementById('popup-level').textContent = `Level: ${level}`;
-            document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
-            document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
-            document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
+            document.getElementById('new-popup-level').textContent = `Level: ${level}`;
+            document.getElementById('new-popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+            document.getElementById('new-popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
+            document.getElementById('new-popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
 
             gainExp(experience2);
         }
 
-        // Function to get both user level and networth in parallel
         function getUserData(username) {
-            // Fetch level and net worth in parallel using Promise.all
+            console.log(username);
             Promise.all([getUserLevel(username), getUserNetWorth(username)])
                 .then(([userlevel, userNetWorth]) => {
                     if (userlevel !== null && userlevel !== undefined && userNetWorth !== null && userNetWorth !== undefined) {
                         const experience = 2 * level * userlevel;
                         const money = 2 * level * userlevel;
-                        let averagetime = totalTimePlayed / level; // Use totalTimePlayed for average time calculation
-        
-                        // Fetch all data from the 'colourvision' table
+                        let averagetime = totalTimePlayed / level;
+
                         fetch('http://samet-desktop.adm.huddinge.se:3000/colourvision')
                             .then(response => response.json())
                             .then(data => {
-                                // Check if the username exists in the fetched data
                                 const userExists = data.some(user => user.username === username);
-        
+
+                                console.log(userExists);
+
                                 if (userExists) {
                                     updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth);
-                                    popupOverlay.style.display = 'block';
-
-                                    // Add a slight delay before setting the animation state for smoothness
-                                    setTimeout(() => {
-                                        gameOverPopup.style.opacity = '1';
-                                        gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-                                    }, 100);
                                 } else {
                                     gainExp(experience);
 
-                                    document.getElementById('popup-level').textContent = `Level: ${level}`;
-                                    document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
-                                    document.getElementById('popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
-                                    document.getElementById('popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
+                                    document.getElementById('new-popup-level').textContent = `Level: ${level}`;
+                                    document.getElementById('new-popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+                                    document.getElementById('new-popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
+                                    document.getElementById('new-popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
 
                                     let pengar_tjanat = 2 * level * userlevel;
 
                                     const updateData = {
                                         username: username,
-                                        pengar_tjanat: pengar_tjanat // Renamed to pengar_tjanat as expected by the backend
+                                        pengar_tjanat: pengar_tjanat
                                     };
-                                    
-                                    // Send the updated data to the backend
+
                                     fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
@@ -1702,14 +1687,14 @@ function handleGameOver() {
                                     .then(response => response.json())
                                     .then(result => {
                                         if (result.success) {
-                                            console.log(result.message); // Success message
+                                            console.log(result.message);
                                         } else {
                                             console.error('Failed to update:', result.message);
                                         }
                                     })
                                     .catch(error => console.error('Error updating ekonomi table:', error));
+                                    
 
-                                    // User does not exist, insert new data into 'colourvision'
                                     fetch('http://samet-desktop.adm.huddinge.se:3000/insertIntoColourvision', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
@@ -1729,51 +1714,91 @@ function handleGameOver() {
                                 }
                             })
                             .catch(error => console.error('Error fetching colourvision data:', error));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error getting user data:', error);
-                });
-        }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error getting user data:', error);
+                    });
+            }
     
+            getUserData(username);
+    
+            newPopupOverlay.style.display = 'block';
+            newGameOverPopup.style.display = 'block';
+            newGameOverPopup.style.opacity = '1';
 
-        // Example usage
-        getUserData(username);
-
-        // Show the popup
-        popupOverlay.style.display = 'block';
-
-        // Add a slight delay before setting the animation state for smoothness
-        setTimeout(() => {
-            gameOverPopup.style.opacity = '1';
-            gameOverPopup.style.animation = 'fall-down 1s cubic-bezier(0.25, 1, 0.5, 1)';
-        }, 500);
-    } else if (username == "guest") {
-        gameStarted = false; // Stop the game
-        clearInterval(timerInterval);
-
-        // Add the time played in the current level to totalTimePlayed
-        totalTimePlayed += Math.floor((Date.now() - startTime) / 1000);
-
-        // Update popup content
-        document.getElementById('popup-level').textContent = `Level: ${level}`;
-        document.getElementById('popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`; // Display total time played
+            newPopupOverlay.classList.add('visible');
+            newGameOverPopup.classList.add('visible');
+            buyAttemptsButton.style.display = 'block';
+            buyAttemptsButton.style.marginLeft = "12%";
+        } else if (username === "guest") {
+            gameStarted = false;
+            clearInterval(timerInterval);
+            totalTimePlayed += Math.floor((Date.now() - startTime) / 1000);
+    
+            document.getElementById('new-popup-level').textContent = `Level: ${level}`;
+            document.getElementById('new-popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+    
+            newPopupOverlay.style.display = 'block';
+            newGameOverPopup.style.display = 'block';
+            newGameOverPopup.style.opacity = '1';
+        }
     }
-}
+    
+    function closePopup() {
+        newPopupOverlay.style.display = 'none';
+        location.reload();
+    }
+    
+    createGrid();
+    startButton.addEventListener('click', startGame);
+    newPopupCloseButton.addEventListener('click', closePopup);
+    newPopupOverlay.addEventListener('click', (e) => {
+        if (e.target === newPopupOverlay) closePopup();
+    });
+    
+    newBuyAttemptsButton.addEventListener('click', () => {
+        fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
+            .then(res => res.json())
+            .then(ekonomiResponse => {
+                const matchedUser = ekonomiResponse.find(user => user.username === username);
+                if (matchedUser && matchedUser.value >= currentCost) {
+                    const updateData = {
+                        username: username,
+                        cost: currentCost
+                    };
+    
+                    fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi2', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updateData),
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            attempts += 3;
+                            updateStats();
+                            newPopupOverlay.style.display = 'none';
+                            newGameOverPopup.style.display = 'none';
+                            startGame();
+    
+                            currentCost *= 2;
+                            newBuyAttemptsButton.textContent = `Buy Attempts (${currentCost} AP)`;
+                        }
+                    });
+                } else {
+                    alert(`Not enough AP coins! You need ${currentCost} AP.`);
+                }
+            });
+    });
+    
+    // Helper function to update displayed stats
+    function updateStats() {
+        attemptsDisplay.textContent = `Attempts: ${attempts}`;
+        timerDisplay.textContent = `Time Left: ${timer}s`;
+        levelInfo.textContent = `Level: ${level}`;
+    }
 
-// Close the popup
-function closePopup() {
-    popupOverlay.style.display = 'none';
-    location.reload(); // Refresh the page to restart the game
-}
-
-// Initialize grid and attach event listeners
-createGrid();
-startButton.addEventListener('click', startGame);
-popupCloseButton.addEventListener('click', closePopup);
-popupOverlay.addEventListener('click', (e) => {
-    if (e.target === popupOverlay) closePopup(); // Close popup on outside click
-});
 
 
     } else if (currentPhpFile === "spel4.php") {

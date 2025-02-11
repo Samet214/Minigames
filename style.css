@@ -4178,7 +4178,8 @@ html[data-page="spel1"] .popup-buttons {
 }
 
 html[data-page="spel1"] #buy-attempts-button {
-    margin-left: 10%;
+    position: relative;
+    left: 7%;
 }
 
 /*spel3.php*/
@@ -4258,8 +4259,7 @@ html[data-page="spel3"] #start-button:hover {
     transform: scale(1.05);
 }
 
-html[data-page="spel3"] #popup-overlay {
-    display: none;
+html[data-page="spel3"] #new-popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -4267,9 +4267,10 @@ html[data-page="spel3"] #popup-overlay {
     height: 100%;
     background: rgba(0, 0, 0, 0.8);
     z-index: 999;
+    display: none; /* Initially hidden */
 }
 
-html[data-page="spel3"] #game-over-popup {
+html[data-page="spel3"] #new-game-over-popup {
     position: fixed;
     top: 30%; /* Default position after animation ends */
     left: 50%;
@@ -4281,16 +4282,17 @@ html[data-page="spel3"] #game-over-popup {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-    opacity: 1; /* Ensure it stays visible */
-    transition: none; /* Remove conflicting opacity transitions */
+    opacity: 0; /* Start hidden */
+    display: none; /* Start hidden */
+    transition: opacity 0.3s ease; /* Smooth transition for opacity */
     animation: fall-down 1s cubic-bezier(0.25, 1, 0.5, 1) forwards; /* Add "forwards" */
 }
 
-html[data-page="spel3"] #game-over-popup h2 {
+html[data-page="spel3"] #new-game-over-popup h2 {
     margin-top: 0;
 }
 
-html[data-page="spel3"] #popup-close {
+html[data-page="spel3"] #new-popup-close {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -4301,7 +4303,7 @@ html[data-page="spel3"] #popup-close {
     color: #666;
 }
 
-html[data-page="spel3"] #popup-close:hover {
+html[data-page="spel3"] #new-popup-close:hover {
     color: #000;
 }
 
@@ -4315,7 +4317,7 @@ html[data-page="spel3"] #popup-close:hover {
     }
 }
 
-html[data-page="spel3"] #buy-attempts-button {
+html[data-page="spel3"] #new-buy-attempts-button {
     padding: 10px 20px;
     font-size: 14px;
     background-color: #4CAF50;
@@ -4327,7 +4329,7 @@ html[data-page="spel3"] #buy-attempts-button {
     display: none; /* Hidden by default */
 }
 
-html[data-page="spel3"] #buy-attempts-button:hover {
+html[data-page="spel3"] #new-buy-attempts-button:hover {
     background-color: #45a049;
 }
 

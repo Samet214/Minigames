@@ -183,18 +183,19 @@ app.post('/update-memory', (req, res) => {
         nivå: Math.max(user.nivå, nivå),
         level: Math.max(user.level, level),
         pengar_tjanat: Math.max(user.pengar_tjanat, pengar_tjanat),
+        exp_tjanat: Math.max(user.pengar_tjanat, pengar_tjanat), // Updating exp_tjanat with pengar_tjanat value
         tid: Math.min(user.tid, tid),
         netvarde: Math.max(user.netvarde, netvarde),
       };
 
       // Run multiple database updates in parallel
-      const updateQuery = `UPDATE memory SET nivå = ?, level = ?, pengar_tjanat = ?, tid = ?, netvarde = ? WHERE username = ?`;
+      const updateQuery = `UPDATE memory SET nivå = ?, level = ?, pengar_tjanat = ?, exp_tjanat = ?, tid = ?, netvarde = ? WHERE username = ?`;
       const updateQuery2 = `UPDATE ekonomi SET value = value + ?, networth = networth + ? WHERE username = ?`;
 
       // Execute multiple queries asynchronously
       Promise.all([
         new Promise((resolve, reject) => {
-          db.query(updateQuery, [updatedUser.nivå, updatedUser.level, updatedUser.pengar_tjanat, updatedUser.tid, updatedUser.netvarde, username], (err, result) => {
+          db.query(updateQuery, [updatedUser.nivå, updatedUser.level, updatedUser.pengar_tjanat, updatedUser.exp_tjanat, updatedUser.tid, updatedUser.netvarde, username], (err, result) => {
             if (err) reject(err);
             else resolve('Memory updated successfully');
           });
@@ -220,6 +221,7 @@ app.post('/update-memory', (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 app.get('/squigglegolf', async (req, res) => {
   const query = 'SELECT * FROM squigglegolf';
@@ -641,13 +643,9 @@ app.post('/updateUserStats', async (req, res) => {
 
       const [results] = await spelDb.query(checkUserQuery, [username]);
 
-      console.log("Hey"); // Now it should log if the query executes
-
       if (results.length > 0) {
           // User exists, update based on conditions
           const existingUser = results[0];
-
-          console.log("hey");
 
           const newLevel = level > existingUser.nivå ? level : existingUser.nivå;
           const newUserLevel = userlevel > existingUser.level ? userlevel : existingUser.level;
