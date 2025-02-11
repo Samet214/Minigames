@@ -63,6 +63,16 @@ html[data-page="index"] html, html[data-page="index"] body {
     background-color: #131A20;
     color: white;
     height: 100%;
+    overflow: hidden; /* Disables scrolling */
+}
+
+html[data-page="index"] * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html[data-page="index"] *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Edge */
 }
 
 html[data-page="index"] #currency-bar {
@@ -4696,11 +4706,6 @@ html[data-page="spel4"] #buy-attempts-button:hover {
     background-color: #45a049;
 }
 
-
-
-
-
-
 /*topplista.php*/
 
 /* General Resets */
@@ -4713,6 +4718,7 @@ html[data-page="topplista"] body {
     text-align: center;
     background-size: cover;
     padding-top: 100px;
+    overflow: hidden; /* Disables scrolling */
 }
     
 /* Container for the topplista and sign-in buttons */

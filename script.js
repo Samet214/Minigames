@@ -1216,18 +1216,26 @@ if (currentPhpFile === "game_display.php") {
 
     function handleUserInput(index) {
         const boxes = document.querySelectorAll('.box');
+        
+        // Prevent interaction if already processing the input
+        if (!canInteract) return;
     
-        // Highlight user input
         if (sequence[userSequence.length] === index) {
             userSequence.push(index);
             boxes[index].classList.add('correct');
-            setTimeout(() => boxes[index].classList.remove('correct'), 500);
+            canInteract = false; // Disable interaction temporarily
     
-            // Check if user completed the sequence
-            if (userSequence.length === sequence.length) {
-                level++;
-                setTimeout(nextLevel, 1000);
-            }
+            setTimeout(() => {
+                boxes[index].classList.remove('correct');
+                canInteract = true; // Re-enable interaction
+    
+                // Check if user completed the sequence
+                if (userSequence.length === sequence.length) {
+                    level++;
+                    canInteract = false; // Disable interaction until the next sequence starts
+                    setTimeout(nextLevel, 1000);
+                }
+            }, 500);
         } else {
             // Handle incorrect input
             boxes[index].classList.add('incorrect');
@@ -1235,18 +1243,15 @@ if (currentPhpFile === "game_display.php") {
     
             attempts--;
             updateStats();
-
-            buyAttemptsButton.style.marginLeft = "40px";
     
             if (attempts <= 0) {
                 buyAttemptsButton.style.display = 'block'; // Show the "Buy Attempts" button
-                updateBuyAttemptsButton(); // Show the button with the current cost
+                updateBuyAttemptsButton();
                 endGame();
-            } else {
-                // Do not reset userSequence; allow continued attempts within the current level
             }
         }
     }
+    
 
     function updateStats() {
         attemptsDisplay.textContent = attempts;
@@ -2614,6 +2619,9 @@ function handleGameOver() {
         document.head.appendChild(style);
 
         async function showPopup() {
+            // Disable player movement
+            player.disableMovement();
+        
             // Calculate total elapsed time
             const endTime = Date.now();
             const elapsedTimeInSeconds = Math.floor((endTime - startTime) / 1000);
@@ -2704,18 +2712,18 @@ function handleGameOver() {
                     );
                 }
             }
-
+        
             if (username) {
                 const buyButton = document.getElementById('buy-attempts-button');
                 buyButton.style.display = 'block'; // Always show if user is logged in
-
+        
                 // Function to update the button text with the current cost
                 const updateButtonText = () => {
                     document.getElementById('cost').textContent = currentCost;
                 };
-
+        
                 updateButtonText(); // Initial update
-
+        
                 // Handle button click
                 buyButton.addEventListener('click', () => {
                     fetch("http://samet-desktop.adm.huddinge.se:3000/ekonomi")
@@ -2750,7 +2758,7 @@ function handleGameOver() {
                                     // Reset player and monster positions
                                     player.position = { row: Maze.rows - 2, col: Maze.cols - 2 };
                                     monster.resetPosition();
-
+        
                                     currentCost *= 2;
                 
                                     // Restart UI and timer
@@ -2758,7 +2766,7 @@ function handleGameOver() {
                                     if (popupOverlay) popupOverlay.remove();
                                     updateHUD();
                                     startTimer();
-                                    player.enableMovement();
+                                    player.enableMovement(); // Re-enable player movement
                                     updateButtonText(); // Update the button text with the new cost
                                 });
                             } else {
@@ -2766,13 +2774,6 @@ function handleGameOver() {
                             }
                         });
                 });                
-            }
-            // Function to update the button text with the current cost
-            function updateBuyAttemptsButton() {
-                const buyButton = document.getElementById('buy-attempts-button');
-                if (buyButton) {
-                    buyButton.textContent = `Buy 3 Attempts (Cost: ${currentCost} AP)`;
-                }
             }
         }
 
@@ -3027,7 +3028,7 @@ function handleGameOver() {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser && ekonomiUser.value !== undefined ? ekonomiUser.value : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser && ekonomiUser.networth !== undefined ? ekonomiUser.networth : 0 // Default to 0 if not found
                                     };
                                 });
                             }
@@ -3132,7 +3133,7 @@ function handleGameOver() {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser ? ekonomiUser.value : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
                                     };
                                 });
                             }
