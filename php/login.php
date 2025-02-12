@@ -1,65 +1,75 @@
 <?php
+// Starta sessionen för att hantera inloggning
 session_start();
 
-ini_set('display_errors', 1); // Enable error reporting for debugging
+// Aktivera felrapportering för att identifiera problem under utveckling
+ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Redirect to spel.php if the user is already logged in
+// Om användaren redan är inloggad, omdirigera till spel.php
 if (isset($_SESSION['username'])) {
     header("Location: spel.php");
     exit();
 }
 
-$username = 'Guest';
-$profile_picture = 'default.png'; // Replace with actual profile picture logic
-$level = 1;
-$current_exp = 0;
-$next_level_exp = 100;
+// Standardvärden för en gästanvändare
+$username = 'Guest'; // Standardanvändarnamn
+$profile_picture = 'default.png'; // Standardprofilbild
+$level = 1; // Standardnivå
+$current_exp = 0; // Nuvarande erfarenhetspoäng
+$next_level_exp = 100; // Erfarenhetspoäng som krävs för nästa nivå
 
-
+// Inkludera filen för databasanslutning
 include 'db.php';
 
+// Kontrollera om inloggningsformuläret skickats
 if (isset($_POST['submit'])) {
-    $conn = Anvandarinformation();
+    $conn = Anvandarinformation(); // Anslut till databasen
 
+    // Rensa användarnamn och lösenord från blanksteg och gör dem små bokstäver
     $username = strtolower(trim($_POST['username']));
     $password = strtolower(trim($_POST['password']));
 
+    // Funktion för att hasha lösenordet med SHA-256
     function hashString($input) {
         return hash('sha256', $input, false);
     }
 
-    $hashedCode = hashString($password);
+    $hashedCode = hashString($password); // Hasha användarens lösenord
 
+    // Hämta lösenordet från databasen för det angivna användarnamnet
     $sql = "SELECT Lösenord FROM användare WHERE Namn = ?";
     if ($stmt = $conn->prepare($sql)) {
         $stmt->bind_param("s", $username);
         $stmt->execute();
         $stmt->store_result();
 
+        // Kontrollera om användaren finns
         if ($stmt->num_rows > 0) {
             $stmt->bind_result($dbHashedPassword);
             $stmt->fetch();
 
+            // Jämför det hashade lösenordet från databasen med användarens inmatning
             if ($dbHashedPassword === $hashedCode) {
-                // Set session variables
+                // Sätt sessionsvariabler
                 $_SESSION['username'] = $username;
-
+                
+                // Omdirigera till spel.php efter lyckad inloggning
                 header("Location: spel.php");
                 exit();
             } else {
                 $errorMessage = "Fel användarnamn eller lösenord.";
             }
         } else {
-            $errorMessage = "Användare finns inte.";
+            $errorMessage = "Användaren finns inte.";
         }
 
-        $stmt->close();
+        $stmt->close(); // Stäng databasfrågan
     } else {
         $errorMessage = "Ett fel inträffade vid verifiering.";
     }
 
-    $conn->close();
+    $conn->close(); // Stäng databasanslutningen
 }
 ?>
 
@@ -71,6 +81,7 @@ if (isset($_POST['submit'])) {
     <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
 <body>
+
 <header id="header">
     <div id="circle-container" style="position: relative; display: inline-block;">
         <img id="logo" src="../bilder/Logotyp.png" alt="Logo" style="width: 80px; height: auto;">
@@ -93,23 +104,19 @@ if (isset($_POST['submit'])) {
     </div>
 </header>
 
-
-
+<!-- Sidopanel för användarprofil och erfarenhetspoäng -->
 <div id="sidebar-toggle" onclick="toggleSidebar()">☰</div>
 <div id="sidebar" class="sidebar">
-    <!-- Profile Picture Section -->
     <div class="profile-section">
         <div class="username">
-        <div class="profile-circle" style="background-image: url('../pfp/<?php echo htmlspecialchars($profile_picture); ?>');" onclick="document.getElementById('profilePictureInput').click();"></div>
-        <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
+            <div class="profile-circle" style="background-image: url('../pfp/<?php echo htmlspecialchars($profile_picture); ?>');" onclick="document.getElementById('profilePictureInput').click();"></div>
+            <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
+        </div>
+        <form id="profilePictureForm" method="POST" enctype="multipart/form-data" style="display: none;">
+            <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
+        </form>
     </div>
-    <!-- File input for profile picture upload -->
-    <form id="profilePictureForm" method="POST" enctype="multipart/form-data" style="display: none;">
-        <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
-    </form>
-</div>
 
-    <!-- Level and EXP bar -->
     <div class="level-section">
         <h4>Level <span id="level"><?php echo $level; ?></span></h4>
         <div class="exp-bar">
@@ -128,17 +135,15 @@ if (isset($_POST['submit'])) {
                     return $number;
                 }
             }
-
             $formattedCurrentExp = formatNumber($current_exp);
             $formattedNextLevelExp = formatNumber($next_level_exp);
-
             echo $formattedCurrentExp . '/' . $formattedNextLevelExp . ' EXP';
             ?>
         </p>
     </div>
 </div>
 
-
+<!-- Inloggningsformulär -->
 <h2>Logga in</h2>
 <form action="" method="post">
     <input type="text" name="username" placeholder="Lägg in användarnamn" required />
@@ -146,10 +151,9 @@ if (isset($_POST['submit'])) {
     <input type="submit" name="submit" value="Logga in" />
 </form>
 
-<h2 id="text-register">Har du ingen konto? <a href="signup.php" id="register-button">Registrera</a></h2>
+<h2 id="text-register">Har du inget konto? <a href="signup.php" id="register-button">Registrera</a></h2>
 
 <?php
-// Display error messages if set
 if (isset($errorMessage)) {
     echo '<p id="error-message" style="color: red;">' . $errorMessage . '</p>';
 }

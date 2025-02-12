@@ -1,15 +1,15 @@
 <?php
-ini_set('display_errors', 0);
-// Start the session
+ini_set('display_errors', 0); // Inaktivera felrapportering
+// Starta sessionen
 session_start();
 
-// Unset all session variables
+// Töm alla sessionsvariabler
 $_SESSION = array();
 
-// Destroy the session
+// Förstör sessionen
 session_destroy();
 
-// Redirect to the login page or home page
+// Omdirigera användaren till inloggningssidan
 header("Location: login.php");
 exit;
 ?>

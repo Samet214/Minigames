@@ -1,35 +1,36 @@
 <?php
-session_start();
-header('Content-Type: application/json');
+session_start();  // Startar sessionen
+header('Content-Type: application/json');  // Anger att svaret ska vara i JSON-format
 
-// Check if the user is logged in
+// Kontrollera om användaren är inloggad
 if (!isset($_SESSION['username'])) {
-    echo json_encode(['status' => 'error', 'message' => 'User not logged in']);
+    echo json_encode(['status' => 'error', 'message' => 'Användaren är inte inloggad']);
     exit;
 }
 
-$username = $_SESSION['username'];  // Get the logged-in user's username
+$username = $_SESSION['username'];  // Hämtar det inloggade användarnamnet
 
 try {
-    // Connect to the database
-    $pdo = new PDO("mysql:host=localhost;dbname=ekonomi", "samet", "samet");  // Change to your DB credentials
+    // Anslut till databasen (ändra vid behov)
+    $pdo = new PDO("mysql:host=localhost;dbname=ekonomi", "samet", "samet");
 
-    // Fetch the user's value and networth from the database
+    // Hämta användarens värde från databasen
     $stmt = $pdo->prepare("SELECT value FROM ekonomi WHERE username = :username");
     $stmt->execute([':username' => $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        // Return both value and networth in the response
+        // Returnerar värdet i JSON-svar
         echo json_encode([
             'status' => 'success',
             'value' => $user['value'],
         ]);
     } else {
-        echo json_encode(['status' => 'error', 'message' => 'User not found in database']);
+        echo json_encode(['status' => 'error', 'message' => 'Användaren hittades inte i databasen']);
     }
 
 } catch (PDOException $e) {
+    // Returnerar felmeddelande vid databasfel
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
 ?>

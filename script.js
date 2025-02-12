@@ -34,6 +34,54 @@ async function fetchUserNetworth() {
     }
 }
 
+function gainExp(expAmount, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "sida.php", true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            var response = JSON.parse(xhr.responseText);
+            var currentExp = response.current_exp;
+            var nextLevelExp = response.next_level_exp;
+            var level = response.level;
+
+            // Format numbers with appropriate units (K, M, G)
+            function formatNumber(number) {
+                if (number >= 1000000000) {
+                    return (number / 1000000000).toFixed(1) + 'G';
+                } else if (number >= 1000000) {
+                    return (number / 1000000).toFixed(1) + 'M';
+                } else if (number >= 1000) {
+                    return (number / 1000).toFixed(1) + 'K';
+                } else {
+                    return number;
+                }
+            }
+
+            var formattedCurrentExp = formatNumber(currentExp);
+            var formattedNextLevelExp = formatNumber(nextLevelExp);
+
+            // Update the EXP bar and text
+            var progressBar = document.getElementById('expProgress');
+            var expText = document.getElementById('expText');
+            progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
+            expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
+
+            // Update the user's level
+            document.getElementById('level').textContent = level;
+
+            // If callback is provided, execute it with EXP data
+            if (callback) {
+                callback(currentExp, nextLevelExp, level);
+            }
+        }
+    };
+
+    // Send the request to the server with the EXP amount
+    xhr.send("add_exp=true&exp_amount=" + expAmount);
+}
+
 function formatNumber(number) {
     if (number >= 1_000_000_000) {
         return (number / 1_000_000_000).toFixed(1) + 'G';
@@ -2485,12 +2533,12 @@ function handleGameOver() {
 
         let level = 1;
         let attempts = 3;
-        let timeLeft = 5;
+        let timeLeft = 180;
         let timer;
 
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 5;
+            timeLeft = 180;
             updateHUD();
             timer = setInterval(() => {
                 timeLeft--;
@@ -2700,7 +2748,7 @@ function handleGameOver() {
                                 }).then(() => {
                                     // Reset game state
                                     attempts = 3;
-                                    timeLeft = 5;
+                                    timeLeft = 180;
                                     startTime = Date.now();
                 
                                     // Reset player and monster positions
@@ -2727,7 +2775,7 @@ function handleGameOver() {
 
         function resetGame() {
             attempts = 3;
-            timeLeft = 5;
+            timeLeft = 180;
             startTime = Date.now();
             clearInterval(timer);
         
