@@ -1,39 +1,40 @@
-//Alla filer
-
-// Get the PHP file name from the data attribute
+// Hämta namnet på PHP-filen från data-attributet
 const phpFileInfoElement = document.getElementById('php-file-info');
 const currentPhpFile = phpFileInfoElement.getAttribute('data-php-file');
-let currentProfile = {};  // Global object to hold the current profile data
+let currentProfile = {};  // Globalt objekt för att lagra aktuell profildata
 
-
+// Funktion för att omdirigera till en viss URL
 function redirect(url) {
     window.location.href = url;
 }
 
-let currency = 0; // This will be updated dynamically
+let currency = 0; // Variabel som lagrar användarens valuta (uppdateras dynamiskt)
 
-// Fetch the user's networth on page load
+// Funktion för att hämta användarens nuvarande förmögenhet när sidan laddas
 async function fetchUserNetworth() {
     try {
         let response;
+        // Välj rätt sökväg beroende på vilken PHP-fil som används
         if (currentPhpFile === "index.php") {
             response = await fetch('../minigames/php/get_currency.php');
         } else {
             response = await fetch('../php/get_currency.php');
         }
-        const data = await response.json();
+
+        const data = await response.json();  // Konvertera svaret till JSON
 
         if (data.status === 'success') {
-            currency = data.value; // Set currency to networth
+            currency = data.value; // Sätt valutan till användarens nuvarande förmögenhet
             document.getElementById('currency-amount').textContent = formatNumber(currency);
         } else {
-            console.error('Error fetching networth:', data.message);
+            console.error('Fel vid hämtning av förmögenhet:', data.message);
         }
     } catch (error) {
-        console.error('Fetch error:', error);
+        console.error('Hämtningsfel:', error);
     }
 }
 
+// Funktion för att lägga till erfarenhetspoäng (EXP)
 function gainExp(expAmount, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "sida.php", true);
@@ -46,7 +47,7 @@ function gainExp(expAmount, callback) {
             var nextLevelExp = response.next_level_exp;
             var level = response.level;
 
-            // Format numbers with appropriate units (K, M, G)
+            // Intern funktion för att formatera nummer med K, M eller G
             function formatNumber(number) {
                 if (number >= 1000000000) {
                     return (number / 1000000000).toFixed(1) + 'G';
@@ -59,29 +60,31 @@ function gainExp(expAmount, callback) {
                 }
             }
 
+            // Formatera erfarenhetspoängen och målet för nästa nivå
             var formattedCurrentExp = formatNumber(currentExp);
             var formattedNextLevelExp = formatNumber(nextLevelExp);
 
-            // Update the EXP bar and text
+            // Uppdatera EXP-fältet och texten
             var progressBar = document.getElementById('expProgress');
             var expText = document.getElementById('expText');
             progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
             expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
 
-            // Update the user's level
+            // Uppdatera användarens nivå
             document.getElementById('level').textContent = level;
 
-            // If callback is provided, execute it with EXP data
+            // Kör callback-funktionen om den finns, med aktuell EXP-data
             if (callback) {
                 callback(currentExp, nextLevelExp, level);
             }
         }
     };
 
-    // Send the request to the server with the EXP amount
+    // Skicka begäran till servern med mängden EXP som ska läggas till
     xhr.send("add_exp=true&exp_amount=" + expAmount);
 }
 
+// Funktion för att formatera ett nummer till K, M eller G
 function formatNumber(number) {
     if (number >= 1_000_000_000) {
         return (number / 1_000_000_000).toFixed(1) + 'G';
@@ -94,24 +97,26 @@ function formatNumber(number) {
     }
 }
 
-// Call the function when the page loads
+// Kör funktionen för att hämta användarens förmögenhet när sidan laddas
 window.onload = fetchUserNetworth;
 
+// Funktion för att lägga till valuta till användarens konto
 function gainCurrency(amount) {
-    fetch('../php/get_currency.php')  // This PHP script returns the current user's currency value
+    // Hämta den aktuella valutan från servern
+    fetch('../php/get_currency.php')
         .then((response) => response.json())
         .then((data) => {
             if (data.status === 'success') {
-                let currentCurrency = data.value; // Get the current value
+                let currentCurrency = data.value;  // Hämta aktuell valuta
 
-                // Add the amount
+                // Lägg till det angivna beloppet
                 currentCurrency += amount;
                 currency = currentCurrency;
 
-                // Update the currency display
+                // Uppdatera valutatvisningen på sidan
                 document.getElementById('currency-amount').textContent = currency;
 
-                // Send the updated value to the server
+                // Skicka den uppdaterade valutan tillbaka till servern
                 fetch('update_ekonomi.php', {
                     method: 'POST',
                     headers: {
@@ -122,118 +127,117 @@ function gainCurrency(amount) {
                     .then((response) => response.json())
                     .then((data) => {
                         if (data.status === 'success') {
-                            console.log('Currency updated successfully.');
+                            console.log('Valuta uppdaterad framgångsrikt.');
                         } else {
-                            console.error('Error updating currency:', data.message);
+                            console.error('Fel vid uppdatering av valuta:', data.message);
                         }
                     })
                     .catch((error) => {
-                        console.error('Fetch error:', error);
+                        console.error('Hämtningsfel:', error);
                     });
             } else {
-                console.error('Error retrieving currency:', data.message);
+                console.error('Fel vid hämtning av valuta:', data.message);
             }
         })
         .catch((error) => {
-            console.error('Fetch error:', error);
+            console.error('Hämtningsfel:', error);
         });
 }
 
-
+// Funktionen för att minska valuta (currency)
 function loseCurrency(amount) {
-    if (currency - amount < 0) {
-        console.log('Not enough currency to lose.');
-        return;
+    if (currency - amount < 0) {  // Kontrollera om valutan är mindre än det belopp som ska dras av
+        console.log('Not enough currency to lose.');  // Logga ett felmeddelande om inte tillräckligt med valuta finns
+        return;  // Avsluta funktionen
     }
 
-    currency -= amount;
-    document.getElementById('currency-amount').textContent = currency;
+    currency -= amount;  // Minska valutan
+    document.getElementById('currency-amount').textContent = currency;  // Uppdatera valutan på skärmen
 
+    // Skicka uppdaterad valuta till servern
     fetch('update_ekonomi.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `action=lose&amount=${amount}`,
+        body: `action=lose&amount=${amount}`,  // Skicka data om förlustbeloppet
     })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            if (data.status === 'success') {
-                console.log('Currency updated successfully.');
-            } else {
-                console.error('Error updating currency:', data.message);
-            }
-        })
-        .catch((error) => {
-            console.error('Fetch error:', error);
-        });
+    .then((response) => {
+        if (!response.ok) {  // Kontrollera om servern svarar korrekt
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();  // Om allt gick bra, konvertera svaret till JSON
+    })
+    .then((data) => {
+        if (data.status === 'success') {  // Kontrollera om servern meddelar att uppdateringen lyckades
+            console.log('Currency updated successfully.');
+        } else {
+            console.error('Error updating currency:', data.message);  // Felmeddelande om uppdatering misslyckades
+        }
+    })
+    .catch((error) => {  // Fånga eventuella fel
+        console.error('Fetch error:', error);
+    });
 }
 
+// Funktion för att visa och dölja sidofältet (sidebar)
 function toggleSidebar() {
     var sidebar = document.getElementById("sidebar");
     var toggleButton = document.getElementById("sidebar-toggle");
 
-    // Toggle the 'open' class
+    // Växla mellan att lägga till/ta bort klassen 'open'
     sidebar.classList.toggle("open");
 
-    // Adjust the width of the sidebar when open
+    // Justera sidofältets bredd när det är öppet
     if (sidebar.classList.contains("open")) {
-        sidebar.style.width = "250px"; // Set width when sidebar is open
-        toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+        sidebar.style.width = "250px";  // Ställ in bredden när sidofältet är öppet
+        toggleButton.style.left = "260px";  // Placera knappen utanför sidofältet
     } else {
-        sidebar.style.width = "0"; // Set width to 0 when sidebar is closed
-        toggleButton.style.left = "10px"; // Reset to original position
+        sidebar.style.width = "0";  // Dölj sidofältet
+        toggleButton.style.left = "10px";  // Återställ knappen till ursprunglig position
     }
 }
 
-//Specifika filer
+// Om vi är på specifika PHP-filer, lägg till specifik logik
 if (currentPhpFile === "game_display.php") {
-    
+    // Här kan du lägga till kod för game_display.php om det behövs
 } else if (currentPhpFile === "index.php") {
+    // Samma toggleSidebar-funktion som ovan för index.php
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
         var toggleButton = document.getElementById("sidebar-toggle");
     
-        // Toggle the 'open' class
         sidebar.classList.toggle("open");
     
-        // Adjust the width of the sidebar when open
         if (sidebar.classList.contains("open")) {
-            sidebar.style.width = "250px"; // Set width when sidebar is open
-            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+            sidebar.style.width = "250px";
+            toggleButton.style.left = "260px";
         } else {
-            sidebar.style.width = "0"; // Set width to 0 when sidebar is closed
-            toggleButton.style.left = "10px"; // Reset to original position
+            sidebar.style.width = "0";
+            toggleButton.style.left = "10px";
         }
     }
 
+    // Klick på loggan leder tillbaka till index.php
     document.getElementById("logo").addEventListener("click", function() {
         redirect('index.php');
     });
-    
+
+    // Glow-effekt när man hovrar över loggan
     const logo = document.getElementById('logo');
     const hoverCircle = document.getElementById('hover-circle');
     
-    // Smooth transition when hovering over the logo
     logo.addEventListener('mouseover', () => {
-        hoverCircle.style.opacity = '1'; // Fade in
-        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)'; // Intense glow
+        hoverCircle.style.opacity = '1';
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)';
     });
     
     logo.addEventListener('mouseout', () => {
-        hoverCircle.style.opacity = '0'; // Fade out
-        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
+        hoverCircle.style.opacity = '0';
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)';
     });
 
-    document.getElementById("logo").addEventListener("click", function() {
-        redirect('index.php');
-    });
-    
+    // Funktion för att öppna ett modalt fönster för specifika spel
     function openModal(gameId) {
         const gameUrls = {
             game1: "game_display.php?gameId=game1",
@@ -244,30 +248,28 @@ if (currentPhpFile === "game_display.php") {
         };
     
         if (gameUrls[gameId]) {
-            window.location.href = gameUrls[gameId];
-        } else {
-            
+            window.location.href = gameUrls[gameId];  // Navigera till vald spelsida
         }
     }
     
+    // Funktion för att stänga det modala fönstret
     function closeModal() {
         const overlay = document.getElementById("overlay");
         const modal = document.getElementById("modal");
-        overlay.style.animation = "fadeOut 0.5s ease-out forwards";
+        overlay.style.animation = "fadeOut 0.5s ease-out forwards";  // Lägg till fade-out animation
         modal.style.animation = "modalResizeOut 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards";
     
         setTimeout(() => {
-            overlay.style.display = "none";
+            overlay.style.display = "none";  // Dölj efter animation
         }, 500);
     }
     
-    // Toggle Full-Screen Mode
+    // Växla mellan fullskärmsläge och normalt läge för det modala fönstret
     function toggleFullScreen(event) {
         event.stopPropagation();
         const modal = document.getElementById("modal");
         const enterIcon = document.getElementById("enter-fullscreen-icon");
         const exitIcon = document.getElementById("exit-fullscreen-icon");
-        const gameIframe = document.getElementById("game-iframe");
     
         if (!document.fullscreenElement) {
             modal.requestFullscreen().then(() => {
@@ -287,74 +289,72 @@ if (currentPhpFile === "game_display.php") {
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
         var toggleButton = document.getElementById("sidebar-toggle");
-    
+        
+        // Växla klassen "open" på sidebaren för att visa eller dölja den
         sidebar.classList.toggle("open");
-    
-        // Check if sidebar is open and move the button accordingly
+        
+        // Kontrollera om sidebaren är öppen och flytta knappen därefter
         if (sidebar.classList.contains("open")) {
-            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+            toggleButton.style.left = "260px"; // Sidebarens bredd (250px) + 10px marginal
         } else {
-            toggleButton.style.left = "10px"; // Reset to original position
+            toggleButton.style.left = "10px"; // Återställ till ursprunglig position
         }
     }
     
     document.addEventListener("DOMContentLoaded", function() {
-        // Get the username from the data attribute
+        // Hämta användarnamnet från data-attributet i elementet med id "php-file-info"
         const username = document.getElementById("php-file-info").getAttribute("data-username");
-    
-        // Print the username in the console
-        console.log("Logged in user:", username);
-    
-        // If you want to display it somewhere on the page
+        
+        // Skriv ut användarnamnet i konsolen
+        console.log("Inloggad användare:", username);
+        
+        // Visa användarnamnet på sidan om elementet "display-username" finns
         const usernameElement = document.getElementById("display-username");
         if (usernameElement) {
             usernameElement.textContent = username;
         }
-    
-        // Disable profile picture click for guests
+        
+        // Inaktivera klick på profilbilden om användaren är "guest"
         const profileCircle = document.querySelector(".profile-circle");
         if (username.toLowerCase() === "guest") {
-            profileCircle.style.pointerEvents = "none";  // Disable clicks
-            profileCircle.style.cursor = "default";  // Change cursor to default
+            profileCircle.style.pointerEvents = "none";  // Inaktivera klick
+            profileCircle.style.cursor = "default";  // Ändra muspekaren till standard
         }
     });
     
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
-    
+        
+        // Växla profilrutan mellan aktiv och inaktiv
         if (profileSquare.classList.contains('active')) {
-            closeProfile();
+            closeProfile();  // Stäng profilrutan om den är aktiv
         } else {
             profileSquare.classList.add('active');
             profileSquare.style.display = 'block';
             profileSquare.style.opacity = '1';
-            profileSquare.style.transform = 'translateY(10px)';
+            profileSquare.style.transform = 'translateY(10px)';  // Flytta ned rutan med 10px
         }
     }
     
-    // Function to close the profile square
     function closeProfile() {
         const profileSquare = document.getElementById('profileSquare');
-    
+        
+        // Sätt opacity till 0 och återställ positionen
         profileSquare.style.opacity = '0';
         profileSquare.style.transform = 'translateY(0px)';
-    
-        // Timeout to wait for the animation to finish before hiding
+        
+        // Vänta tills animationen är klar innan rutan döljs
         setTimeout(() => {
             profileSquare.classList.remove('active');
             profileSquare.style.display = 'none';
-        }, 300); // Match the CSS transition duration
-    
-        // Remove the event listener
-        document.removeEventListener('click', handleOutsideClick);
+        }, 300); // Matcha CSS-transitionens varaktighet (300 ms)
     }
     
-    // Handle clicks outside of the square
     function handleOutsideClick(event) {
         const profileSquare = document.getElementById('profileSquare');
         const searchProfileBtn = document.getElementById('searchProfileBtn');
         
-        // Check if the click is outside profileSquare and not on result-item or close-button
+        // Stäng profilrutan om klicket är utanför rutan och inte på vissa specifika element
         if (
             !profileSquare.contains(event.target) &&
             event.target !== searchProfileBtn &&
@@ -368,84 +368,85 @@ if (currentPhpFile === "game_display.php") {
         }
     }
     
-    // Assuming searchProfiles is where you create and display search results
     function searchProfiles() {
         const searchInput = document.getElementById('searchInput').value.trim();
-    
+        
+        // Om sökfältet är tomt, rensa sökresultaten
         if (searchInput === '') {
             document.getElementById('searchResults').innerHTML = '';
             return;
         }
-    
+        
         const xhr = new XMLHttpRequest();
         xhr.open('GET', '../minigames/php/sida.php?search=' + encodeURIComponent(searchInput), true);
-    
+        
         xhr.onload = function() {
             if (xhr.status === 200) {
                 console.log(JSON.parse(xhr.responseText));
                 const results = JSON.parse(xhr.responseText);
                 const searchResultsContainer = document.getElementById('searchResults');
-                searchResultsContainer.innerHTML = '';
-        
+                searchResultsContainer.innerHTML = '';  // Töm tidigare sökresultat
+                
+                // Om inga användare hittas, visa ett meddelande
                 if (results.message) {
                     const noUserFound = document.createElement('div');
                     noUserFound.classList.add('result-item');
                     noUserFound.textContent = results.message;
                     searchResultsContainer.appendChild(noUserFound);
                 } else {
+                    // Skapa ett resultatobjekt för varje användare
                     results.forEach(function(user) {
                         const profileImage = user.Profil_bild || '../minigames/pfp/default.png';
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('result-item');
-        
-                        // Set data attributes for level, exp, and exp threshold
+                        
+                        // Sätt data-attribut för nivå, erfarenhet och erfarenhetsgräns
                         resultItem.dataset.profileImage = profileImage;
                         resultItem.dataset.level = user.Levels;
                         resultItem.dataset.exp = user.EXP;
                         resultItem.dataset.expThreshold = user.EXP_GRÄNS;
-        
+                        
                         const img = document.createElement('img');
                         img.classList.add('profile-image');
                         img.src = '../minigames/pfp/' + profileImage;
-        
+                        
                         let username = document.createElement('span');
                         username.classList.add('username');
-        
+                        
+                        // Funktion för att göra första bokstaven i namnet versal
                         function capitalizeFirstLetter(str) {
-                            if (!str) return str; // Handle empty or falsy strings
+                            if (!str) return str; // Hantera tomma eller falska strängar
                             return str.charAt(0).toUpperCase() + str.slice(1);
                         }
-        
+                        
                         username.textContent = capitalizeFirstLetter(user.Namn);
                         username.style.color = "black";
-        
+                        
                         resultItem.appendChild(img);
-                        resultItem.appendChild(username); // Append username correctly
+                        resultItem.appendChild(username); // Lägg till användarnamn korrekt
                         searchResultsContainer.appendChild(resultItem);
                     });
                 }
             }
         };
         
-    
-        xhr.send();
-    }
-
+        xhr.send(); // Skicka förfrågan till servern
+    }    
     
     function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
         const searchResultsContainer = document.getElementById('searchResults');
     
-        // Clear previous results
+        // Rensa tidigare resultat
         searchResultsContainer.innerHTML = '';
     
-        // Create a new container for the selected profile
+        // Skapa en ny container för den valda profilen
         const selectedProfileContainer = document.createElement('div');
         selectedProfileContainer.style.display = 'flex';
         selectedProfileContainer.style.alignItems = 'center';
         selectedProfileContainer.style.flexDirection = 'column';
         selectedProfileContainer.style.textAlign = 'center';
     
-        // Add profile picture and username
+        // Lägg till profilbild och användarnamn
         const profileCircle = document.createElement('img');
         profileCircle.src = '../pfp/' + profileImageSrc;
         profileCircle.classList.add('selected-profile-circle');
@@ -453,9 +454,8 @@ if (currentPhpFile === "game_display.php") {
         const username = document.createElement('span');
         username.classList.add('username2');
         username.textContent = userName;
-        
     
-        // Create the level section with EXP details as plain text
+        // Skapa en sektion för level med EXP-detaljer
         const levelSection = document.createElement('div');
         levelSection.classList.add('level-section2');
         levelSection.innerHTML = `
@@ -466,71 +466,69 @@ if (currentPhpFile === "game_display.php") {
             <p>${userExp} / ${expThreshold} EXP</p>
         `;
     
-        // Append elements to the new profile container
+        // Lägg till elementen i den nya profilcontainern
         selectedProfileContainer.appendChild(profileCircle);
         selectedProfileContainer.appendChild(username);
         selectedProfileContainer.appendChild(levelSection);
     
-        // Append to the search results container
+        // Lägg till i sökresultatcontainern
         searchResultsContainer.appendChild(selectedProfileContainer);
     
-        // Add the close button
+        // Skapa stäng-knapp
         const closeButton = document.createElement('button');
         closeButton.textContent = 'X';
         closeButton.classList.add('close-button');
         closeButton.addEventListener('click', function() {
-            searchResultsContainer.innerHTML = '';
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
-            searchProfiles(); // Reload the search results
+            searchResultsContainer.innerHTML = ''; // Rensa resultatcontainern
+            document.getElementById('searchInput').style.display = 'block'; // Visa sökrutan igen
+            searchProfiles(); // Ladda om sökresultaten
         });
         selectedProfileContainer.appendChild(closeButton);
     }
     
     function openMessageContainer() {
         const searchResultsContainer = document.getElementById('searchResults');
-        searchResultsContainer.innerHTML = ''; // Clear any previous content
+        searchResultsContainer.innerHTML = ''; // Rensa tidigare innehåll
     
-        // Create and configure the "Close" button
+        // Skapa och konfigurera "Stäng"-knappen
         const closeButton = document.createElement('button');
         closeButton.textContent = 'X';
         closeButton.classList.add('close-button');
         closeButton.addEventListener('click', function() {
-            // Return to the search input and reload search results
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box
-            searchResultsContainer.innerHTML = ''; // Clear the message container
-            searchProfiles(); // Reload the search results
+            document.getElementById('searchInput').style.display = 'block'; // Visa sökrutan igen
+            searchResultsContainer.innerHTML = ''; // Rensa meddelandecontainern
+            searchProfiles(); // Ladda om sökresultaten
         });
     
-        // Message display area
+        // Skapa meddelandedisplay
         const messageDisplay = document.createElement('div');
         messageDisplay.classList.add('message-display');
     
-        // Input field for composing new messages
+        // Skapa inmatningsfält för nya meddelanden
         const messageInput = document.createElement('input');
         messageInput.type = 'text';
         messageInput.classList.add('message-input');
-        messageInput.placeholder = 'Write a message...';
+        messageInput.placeholder = 'Skriv ett meddelande...';
     
-        // "Send" button for sending messages
+        // Skapa "Skicka"-knappen
         const sendButton = document.createElement('button');
-        sendButton.textContent = 'Send';
+        sendButton.textContent = 'Skicka';
         sendButton.classList.add('send-button');
     
-        // Append elements to display the message UI
-        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
+        // Lägg till elementen för meddelande-UI
+        searchResultsContainer.classList.add('message-container'); // Använd stilar för meddelandecontainern
         searchResultsContainer.appendChild(closeButton);
         searchResultsContainer.appendChild(messageDisplay);
         searchResultsContainer.appendChild(messageInput);
         searchResultsContainer.appendChild(sendButton);
     }
     
-    
-    // Event listener for handling profile and message interactions
+    // Lyssnare för klickhändelser på profiler och meddelanden
     document.addEventListener('click', function(event) {
         const searchResultsContainer = document.getElementById('searchResults');
         const searchBox = document.getElementById('searchInput');
     
-        // Check if a profile item or profile image is clicked
+        // Kontrollera om en profil eller profilbild har klickats
         if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
             const clickedItem = event.target.closest('.result-item');
             const profileImageSrc = clickedItem.dataset.profileImage;
@@ -539,161 +537,173 @@ if (currentPhpFile === "game_display.php") {
             const userExp = clickedItem.dataset.exp;
             const expThreshold = clickedItem.dataset.expThreshold;
     
-            // Hide the search box
+            // Dölj sökrutan
             searchBox.style.display = 'none';
     
-            // Display the selected profile with its details
+            // Visa vald profil med detaljer
             updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
         }
     
-        // Check if the "Meddelande" (Message) button is clicked
+        // Kontrollera om "Meddelande"-knappen har klickats
         if (event.target.classList.contains('messagebutton')) {
             openMessageContainer();
         }
     });
     
-    // Dismiss messages automatically after 5 seconds
+    // Automatisk stängning av meddelanden efter 5 sekunder
     setTimeout(() => {
         document.querySelectorAll('.message').forEach(msg => {
             msg.style.display = 'none';
         });
-    }, 5000);
+    }, 5000);    
 
 } else if (currentPhpFile === "login.php") {
     
+    // När dokumentet är fullständigt laddat
     document.addEventListener("DOMContentLoaded", function () {
         const infoSection = document.getElementById('login-info');
-        infoSection.style.opacity = 0;
-    
+        infoSection.style.opacity = 0;  // Döljer info-sektionen
+
         setTimeout(function () {
+            // Lägger till en mjuk övergångseffekt och visar info-sektionen
             infoSection.style.transition = 'opacity 1.5s ease-in-out';
             infoSection.style.opacity = 1;
         }, 200);
     });
-    
+
+    // Om användaren klickar på logotypen omdirigeras de till startsidan
     document.getElementById("logo").addEventListener("click", function() {
         redirect('../index.php');
     });
-    
+
     const logo = document.getElementById('logo');
     const hoverCircle = document.getElementById('hover-circle');
-    
-    // Smooth transition when hovering over the logo
+
+    // Mjuk övergång vid hovring över logotypen
     logo.addEventListener('mouseover', () => {
-        hoverCircle.style.opacity = '1'; // Fade in
-        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)'; // Intense glow
-    });
-    
-    logo.addEventListener('mouseout', () => {
-        hoverCircle.style.opacity = '0'; // Fade out
-        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
+        hoverCircle.style.opacity = '1';  // Fadar in cirkeln
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)';  // Starkare glow-effekt
     });
 
+    logo.addEventListener('mouseout', () => {
+        hoverCircle.style.opacity = '0';  // Fadar ut cirkeln
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)';  // Normal glow-effekt
+    });
+
+    // När dokumentet är fullständigt laddat
     document.addEventListener("DOMContentLoaded", function() {
-        // Get the username from the data attribute
+        // Hämtar användarnamnet från data-attributet
         const username = document.getElementById("php-file-info").getAttribute("data-username");
-    
-        // Print the username in the console
-        console.log("Logged in user:", username);
-    
-        // If you want to display it somewhere on the page
+        
+        // Skriver ut användarnamnet i konsolen
+        console.log("Inloggad användare:", username);
+
+        // Visar användarnamnet på sidan om elementet finns
         const usernameElement = document.getElementById("display-username");
         if (usernameElement) {
             usernameElement.textContent = username;
         }
-    
-        // Disable profile picture click for guests
+
+        // Inaktiverar klick på profilbilden om användaren är gäst
         const profileCircle = document.querySelector(".profile-circle");
         if (username.toLowerCase() === "guest") {
-            profileCircle.style.pointerEvents = "none";  // Disable clicks
-            profileCircle.style.cursor = "default";  // Change cursor to default
+            profileCircle.style.pointerEvents = "none";  // Inaktiverar klick
+            profileCircle.style.cursor = "default";  // Ändrar pekaren till standard
         }
     });
-    
+
+    // Funktion för att växla profilfönstret
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
-    
+
         if (profileSquare.classList.contains('active')) {
-            closeProfile();
+            closeProfile();  // Stänger profilfönstret
         } else {
+            // Öppnar profilfönstret och visar det med en övergång
             profileSquare.classList.add('active');
             profileSquare.style.display = 'block';
             profileSquare.style.opacity = '1';
             profileSquare.style.transform = 'translateY(10px)';
         }
     }
-    
+
 } else if (currentPhpFile === "signup.php") {
-    
+
+    // När dokumentet är fullständigt laddat
     document.addEventListener("DOMContentLoaded", function () {
         const infoSection = document.getElementById('signup-info');
-        infoSection.style.opacity = 0;
-    
+        infoSection.style.opacity = 0;  // Döljer info-sektionen
+
         setTimeout(function () {
+            // Lägger till en mjuk övergångseffekt och visar info-sektionen
             infoSection.style.transition = 'opacity 1.5s ease-in-out';
             infoSection.style.opacity = 1;
         }, 200);
     });
-    
+
+    // Om användaren klickar på logotypen omdirigeras de till startsidan
     document.getElementById("logo").addEventListener("click", function() {
         redirect('../index.php');
     });
-    
+
     const logo = document.getElementById('logo');
     const hoverCircle = document.getElementById('hover-circle');
-    
-    // Smooth transition when hovering over the logo
+
+    // Mjuk övergång vid hovring över logotypen
     logo.addEventListener('mouseover', () => {
-        hoverCircle.style.opacity = '1'; // Fade in
-        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)'; // Intense glow
-    });
-    
-    logo.addEventListener('mouseout', () => {
-        hoverCircle.style.opacity = '0'; // Fade out
-        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)'; // Normal glow
+        hoverCircle.style.opacity = '1';  // Fadar in cirkeln
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.6)';  // Starkare glow-effekt
     });
 
+    logo.addEventListener('mouseout', () => {
+        hoverCircle.style.opacity = '0';  // Fadar ut cirkeln
+        hoverCircle.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(0, 255, 255, 0.5), 0 0 45px rgba(0, 255, 255, 0.4)';  // Normal glow-effekt
+    });
+
+    // När dokumentet är fullständigt laddat
     document.addEventListener("DOMContentLoaded", function() {
-        // Get the username from the data attribute
+        // Hämtar användarnamnet från data-attributet
         const username = document.getElementById("php-file-info").getAttribute("data-username");
-    
-        // Print the username in the console
-        console.log("Logged in user:", username);
-    
-        // If you want to display it somewhere on the page
+        
+        // Skriver ut användarnamnet i konsolen
+        console.log("Inloggad användare:", username);
+
+        // Visar användarnamnet på sidan om elementet finns
         const usernameElement = document.getElementById("display-username");
         if (usernameElement) {
             usernameElement.textContent = username;
         }
-    
-        // Disable profile picture click for guests
+
+        // Inaktiverar klick på profilbilden om användaren är gäst
         const profileCircle = document.querySelector(".profile-circle");
         if (username.toLowerCase() === "guest") {
-            profileCircle.style.pointerEvents = "none";  // Disable clicks
-            profileCircle.style.cursor = "default";  // Change cursor to default
+            profileCircle.style.pointerEvents = "none";  // Inaktiverar klick
+            profileCircle.style.cursor = "default";  // Ändrar pekaren till standard
         }
     });
-    
+
+    // Funktion för att växla profilfönstret
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
-    
+
         if (profileSquare.classList.contains('active')) {
-            closeProfile();
+            closeProfile();  // Stänger profilfönstret
         } else {
+            // Öppnar profilfönstret och visar det med en övergång
             profileSquare.classList.add('active');
             profileSquare.style.display = 'block';
             profileSquare.style.opacity = '1';
             profileSquare.style.transform = 'translateY(10px)';
         }
     }
-    
 } else if (currentPhpFile === "spel.php") {
 
+    // När användaren klickar på logotypen omdirigeras de till startsidan
     document.getElementById("logo").addEventListener("click", function() {
         redirect('../index.php');
     });
     
-    
+    // Funktion för att öppna modalen med rätt spel
     function openModal(gameId) {
         const gameUrls = {
             game1: "game_display.php?gameId=game1",
@@ -702,86 +712,93 @@ if (currentPhpFile === "game_display.php") {
             game4: "game_display.php?gameId=game4",
             game5: "game_display.php?gameId=game5"
         };
-    
+
+        // Om gameId matchar någon av URL:erna, omdirigeras användaren till den URL:en
         if (gameUrls[gameId]) {
             window.location.href = gameUrls[gameId];
         } else {
-            
+            // Annars görs ingenting
         }
     }
-    
+
+    // Funktion för att stänga modalen
     function closeModal() {
         const overlay = document.getElementById("overlay");
         const modal = document.getElementById("modal");
         overlay.style.animation = "fadeOut 0.5s ease-out forwards";
         modal.style.animation = "modalResizeOut 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards";
-    
+
+        // Väntar tills animationen är klar innan overlay döljs
         setTimeout(() => {
             overlay.style.display = "none";
         }, 500);
     }
-    
-    // Toggle Full-Screen Mode
+
+    // Funktion för att växla mellan fullskärmsläge
     function toggleFullScreen(event) {
         event.stopPropagation();
         const modal = document.getElementById("modal");
         const enterIcon = document.getElementById("enter-fullscreen-icon");
         const exitIcon = document.getElementById("exit-fullscreen-icon");
         const gameIframe = document.getElementById("game-iframe");
-    
+
+        // Om sidan inte redan är i fullskärm
         if (!document.fullscreenElement) {
             modal.requestFullscreen().then(() => {
                 modal.classList.add("full-screen-mode");
-                enterIcon.style.display = "none";
-                exitIcon.style.display = "inline";
+                enterIcon.style.display = "none";  // Döljer ikonen för att gå till fullskärm
+                exitIcon.style.display = "inline";  // Visar ikonen för att gå ur fullskärm
             });
         } else {
             document.exitFullscreen().then(() => {
                 modal.classList.remove("full-screen-mode");
-                enterIcon.style.display = "inline";
-                exitIcon.style.display = "none";
+                enterIcon.style.display = "inline";  // Visar ikonen för att gå till fullskärm
+                exitIcon.style.display = "none";  // Döljer ikonen för att gå ur fullskärm
             });
         }
     }
-    
+
+    // Funktion för att växla sidopanelen
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
         var toggleButton = document.getElementById("sidebar-toggle");
-    
+
         sidebar.classList.toggle("open");
-    
-        // Check if sidebar is open and move the button accordingly
+
+        // Kollar om sidopanelen är öppen och justerar knappen därefter
         if (sidebar.classList.contains("open")) {
-            toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
+            toggleButton.style.left = "260px"; // Sidopanelens bredd (250px) + 10px marginal
         } else {
-            toggleButton.style.left = "10px"; // Reset to original position
+            toggleButton.style.left = "10px"; // Återställer till ursprunglig position
         }
     }
 
+    // När dokumentet är fullständigt laddat
     document.addEventListener("DOMContentLoaded", function() {
-        // Get the username from the data attribute
+        // Hämtar användarnamnet från data-attributet
         const username = document.getElementById("php-file-info").getAttribute("data-username");
-    
-        // Print the username in the console
-        console.log("Logged in user:", username);
-    
-        // If you want to display it somewhere on the page
+
+        // Skriver ut användarnamnet i konsolen
+        console.log("Inloggad användare:", username);
+
+        // Visar användarnamnet på sidan om elementet finns
         const usernameElement = document.getElementById("display-username");
         if (usernameElement) {
             usernameElement.textContent = username;
         }
-    
-        // Disable profile picture click for guests
+
+        // Inaktiverar klick på profilbilden om användaren är gäst
         const profileCircle = document.querySelector(".profile-circle");
         if (username.toLowerCase() === "guest") {
-            profileCircle.style.pointerEvents = "none";  // Disable clicks
-            profileCircle.style.cursor = "default";  // Change cursor to default
+            profileCircle.style.pointerEvents = "none";  // Inaktiverar klick
+            profileCircle.style.cursor = "default";  // Ändrar pekaren till standard
         }
     });
-    
+
+    // Funktion för att växla profilfönstret
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
-    
+
         if (profileSquare.classList.contains('active')) {
             closeProfile();
         } else {
@@ -791,30 +808,30 @@ if (currentPhpFile === "game_display.php") {
             profileSquare.style.transform = 'translateY(10px)';
         }
     }
-    
-    // Function to close the profile square
+
+    // Funktion för att stänga profilfönstret
     function closeProfile() {
         const profileSquare = document.getElementById('profileSquare');
-    
+
         profileSquare.style.opacity = '0';
         profileSquare.style.transform = 'translateY(0px)';
-    
-        // Timeout to wait for the animation to finish before hiding
+
+        // Väntar på att animationen ska slutföras innan fönstret döljs
         setTimeout(() => {
             profileSquare.classList.remove('active');
             profileSquare.style.display = 'none';
-        }, 300); // Match the CSS transition duration
-    
-        // Remove the event listener
+        }, 300); // Matchar CSS-övergångens varaktighet
+
+        // Tar bort event-lyssnaren
         document.removeEventListener('click', handleOutsideClick);
     }
-    
-    // Handle clicks outside of the square
+
+    // Funktion för att hantera klick utanför profilfönstret
     function handleOutsideClick(event) {
         const profileSquare = document.getElementById('profileSquare');
         const searchProfileBtn = document.getElementById('searchProfileBtn');
-        
-        // Check if the click is outside profileSquare and not on result-item or close-button
+
+        // Kollar om klicket är utanför profilfönstret och inte på någon av de angivna elementen
         if (
             !profileSquare.contains(event.target) &&
             event.target !== searchProfileBtn &&
@@ -828,93 +845,95 @@ if (currentPhpFile === "game_display.php") {
         }
     }
     
-    // Assuming searchProfiles is where you create and display search results
+    // Antag att searchProfiles är där du skapar och visar sökresultat
     function searchProfiles() {
         const searchInput = document.getElementById('searchInput').value.trim();
-    
+
+        // Om sökfältet är tomt, rensa sökresultaten och avsluta
         if (searchInput === '') {
             document.getElementById('searchResults').innerHTML = '';
             return;
         }
-    
+
         const xhr = new XMLHttpRequest();
         xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
-    
+
         xhr.onload = function() {
             if (xhr.status === 200) {
                 console.log(JSON.parse(xhr.responseText));
                 const results = JSON.parse(xhr.responseText);
                 const searchResultsContainer = document.getElementById('searchResults');
                 searchResultsContainer.innerHTML = '';
-        
+
+                // Om det finns ett meddelande, visa det som resultat
                 if (results.message) {
                     const noUserFound = document.createElement('div');
                     noUserFound.classList.add('result-item');
                     noUserFound.textContent = results.message;
                     searchResultsContainer.appendChild(noUserFound);
                 } else {
+                    // Loopar genom alla användare och visar resultaten
                     results.forEach(function(user) {
                         const profileImage = user.Profil_bild || '../pfp/default.png';
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('result-item');
-        
-                        // Set data attributes for level, exp, and exp threshold
+
+                        // Sätt data-attribut för nivå, EXP och EXP-gräns
                         resultItem.dataset.profileImage = profileImage;
                         resultItem.dataset.level = user.Levels;
                         resultItem.dataset.exp = user.EXP;
                         resultItem.dataset.expThreshold = user.EXP_GRÄNS;
-        
+
                         const img = document.createElement('img');
                         img.classList.add('profile-image');
                         img.src = '../pfp/' + profileImage;
-        
+
                         let username = document.createElement('span');
                         username.classList.add('username');
-        
+
                         function capitalizeFirstLetter(str) {
-                            if (!str) return str; // Handle empty or falsy strings
+                            if (!str) return str; // Hantera tomma eller falska strängar
                             return str.charAt(0).toUpperCase() + str.slice(1);
                         }
-        
+
                         username.textContent = capitalizeFirstLetter(user.Namn);
                         username.style.color = "black";
-        
+
                         resultItem.appendChild(img);
-                        resultItem.appendChild(username); // Append username correctly
+                        resultItem.appendChild(username); // Lägg till användarnamnet korrekt
                         searchResultsContainer.appendChild(resultItem);
                     });
                 }
             }
         };
-    
+
         xhr.send();
     }
 
-    
+    // Uppdatera profilens vy när en användare väljs
     function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
         const searchResultsContainer = document.getElementById('searchResults');
-    
-        // Clear previous results
+
+        // Rensa tidigare resultat
         searchResultsContainer.innerHTML = '';
-    
-        // Create a new container for the selected profile
+
+        // Skapa en ny container för den valda profilen
         const selectedProfileContainer = document.createElement('div');
         selectedProfileContainer.style.display = 'flex';
         selectedProfileContainer.style.alignItems = 'center';
         selectedProfileContainer.style.flexDirection = 'column';
         selectedProfileContainer.style.textAlign = 'center';
-    
-        // Add profile picture and username
+
+        // Lägg till profilbild och användarnamn
         const profileCircle = document.createElement('img');
         profileCircle.src = '../pfp/' + profileImageSrc;
         profileCircle.classList.add('selected-profile-circle');
-    
+
         const username = document.createElement('span');
         username.classList.add('username2');
         username.textContent = userName;
-        
-    
-        // Create the level section with EXP details as plain text
+
+        // Skapa nivåsektionen med EXP detaljer som vanlig text
         const levelSection = document.createElement('div');
         levelSection.classList.add('level-section2');
         levelSection.innerHTML = `
@@ -924,100 +943,101 @@ if (currentPhpFile === "game_display.php") {
             </div>
             <p>${userExp} / ${expThreshold} EXP</p>
         `;
-    
-        // Append elements to the new profile container
+
+        // Lägg till elementen i den nya profilcontainern
         selectedProfileContainer.appendChild(profileCircle);
         selectedProfileContainer.appendChild(username);
         selectedProfileContainer.appendChild(levelSection);
-    
-        // Append to the search results container
+
+        // Lägg till i sökresultatscontainern
         searchResultsContainer.appendChild(selectedProfileContainer);
-    
-        // Add the close button
+
+        // Lägg till stäng-knappen
         const closeButton = document.createElement('button');
         closeButton.textContent = 'X';
         closeButton.classList.add('close-button');
         closeButton.addEventListener('click', function() {
             searchResultsContainer.innerHTML = '';
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
-            searchProfiles(); // Reload the search results
+            document.getElementById('searchInput').style.display = 'block'; // Visa sökfältet igen
+            searchProfiles(); // Ladda om sökresultaten
         });
         selectedProfileContainer.appendChild(closeButton);
     }
-    
+
+    // Funktion för att öppna meddelandekontainern
     function openMessageContainer() {
         const searchResultsContainer = document.getElementById('searchResults');
-        searchResultsContainer.innerHTML = ''; // Clear any previous content
-    
-        // Create and configure the "Close" button
+        searchResultsContainer.innerHTML = ''; // Rensa eventuell tidigare innehåll
+
+        // Skapa och konfigurera "Stäng"-knappen
         const closeButton = document.createElement('button');
         closeButton.textContent = 'X';
         closeButton.classList.add('close-button');
         closeButton.addEventListener('click', function() {
-            // Return to the search input and reload search results
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box
-            searchResultsContainer.innerHTML = ''; // Clear the message container
-            searchProfiles(); // Reload the search results
+            // Gå tillbaka till sökinmatningen och ladda om sökresultaten
+            document.getElementById('searchInput').style.display = 'block'; // Visa sökfältet
+            searchResultsContainer.innerHTML = ''; // Rensa meddelandekontainern
+            searchProfiles(); // Ladda om sökresultaten
         });
-    
-        // Message display area
+
+        // Område för att visa meddelanden
         const messageDisplay = document.createElement('div');
         messageDisplay.classList.add('message-display');
-    
-        // Input field for composing new messages
+
+        // Inmatningsfält för att skriva nya meddelanden
         const messageInput = document.createElement('input');
         messageInput.type = 'text';
         messageInput.classList.add('message-input');
-        messageInput.placeholder = 'Write a message...';
-    
-        // "Send" button for sending messages
+        messageInput.placeholder = 'Skriv ett meddelande...';
+
+        // "Skicka"-knapp för att skicka meddelanden
         const sendButton = document.createElement('button');
-        sendButton.textContent = 'Send';
+        sendButton.textContent = 'Skicka';
         sendButton.classList.add('send-button');
-    
-        // Append elements to display the message UI
-        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
+
+        // Lägg till element för att visa meddelande UI
+        searchResultsContainer.classList.add('message-container'); // Tillämpa stilar för meddelandekontainer
         searchResultsContainer.appendChild(closeButton);
         searchResultsContainer.appendChild(messageDisplay);
         searchResultsContainer.appendChild(messageInput);
         searchResultsContainer.appendChild(sendButton);
     }
     
-    
-    // Event listener for handling profile and message interactions
-    document.addEventListener('click', function(event) {
-        const searchResultsContainer = document.getElementById('searchResults');
-        const searchBox = document.getElementById('searchInput');
-    
-        // Check if a profile item or profile image is clicked
-        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
-            const clickedItem = event.target.closest('.result-item');
-            const profileImageSrc = clickedItem.dataset.profileImage;
-            const userName = clickedItem.querySelector('.username').textContent;
-            const userLevel = clickedItem.dataset.level;
-            const userExp = clickedItem.dataset.exp;
-            const expThreshold = clickedItem.dataset.expThreshold;
-    
-            // Hide the search box
-            searchBox.style.display = 'none';
-    
-            // Display the selected profile with its details
-            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
-        }
-    
-        // Check if the "Meddelande" (Message) button is clicked
-        if (event.target.classList.contains('messagebutton')) {
-            openMessageContainer();
-        }
-    });
-    
-    // Dismiss messages automatically after 5 seconds
-    setTimeout(() => {
-        document.querySelectorAll('.message').forEach(msg => {
-            msg.style.display = 'none';
-        });
-    }, 5000);
+    // Eventlyssnare för att hantera interaktioner med profiler och meddelanden
+document.addEventListener('click', function(event) {
+    const searchResultsContainer = document.getElementById('searchResults');
+    const searchBox = document.getElementById('searchInput');
 
+    // Kolla om en profil eller profilbild har klickats
+    if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
+        const clickedItem = event.target.closest('.result-item');
+        const profileImageSrc = clickedItem.dataset.profileImage;
+        const userName = clickedItem.querySelector('.username').textContent;
+        const userLevel = clickedItem.dataset.level;
+        const userExp = clickedItem.dataset.exp;
+        const expThreshold = clickedItem.dataset.expThreshold;
+
+        // Dölj sökrutan
+        searchBox.style.display = 'none';
+
+        // Visa den valda profilen med dess detaljer
+        updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+    }
+
+    // Kolla om "Meddelande"-knappen har klickats
+    if (event.target.classList.contains('messagebutton')) {
+        openMessageContainer();
+    }
+});
+
+// Dölja meddelanden automatiskt efter 5 sekunder
+setTimeout(() => {
+    document.querySelectorAll('.message').forEach(msg => {
+        msg.style.display = 'none';
+    });
+}, 5000);
+
+// Om den aktuella filen är "spel1.php", sätt upp spelets logik
 } else if (currentPhpFile === "spel1.php") {
     const grid = document.getElementById('grid');
     const startButton = document.getElementById('start-button');
@@ -1049,20 +1069,20 @@ if (currentPhpFile === "game_display.php") {
     let progressiveMode = false;
     let startTime, endTime;
 
-    // Update switch text dynamically
+    // Uppdatera texten för lägenväxlaren dynamiskt
     modeSwitch.addEventListener('change', () => {
         if (modeSwitch.checked) {
-            switchText.textContent = 'Progressive ';
+            switchText.textContent = 'Progressiv ';
             progressiveMode = true;
             startButton.style.marginRight = "40%";
         } else {
-            switchText.textContent = 'Random ';
+            switchText.textContent = 'Slumpmässig ';
             progressiveMode = false;
             startButton.style.marginRight = "35%";
         }
     });
 
-    // Generate the grid
+    // Skapa rutnätet
     for (let i = 0; i < 9; i++) {
         const box = document.createElement('div');
         box.classList.add('box');
@@ -1078,7 +1098,7 @@ if (currentPhpFile === "game_display.php") {
 
     startButton.addEventListener('click', () => {
         startButton.style.display = 'none';
-        switchContainer.remove(); // Remove the switch container
+        switchContainer.remove(); // Ta bort växlingscontainern
         startGame();
     });
 
@@ -1099,17 +1119,17 @@ if (currentPhpFile === "game_display.php") {
         });
     }
 
-    // Add event listener for the "Buy Attempts" button
+    // Lägg till eventlyssnare för "Köp Försök"-knappen
     let baseCost = 50;
-    let currentCost = baseCost; // Start with 50 AP
+    let currentCost = baseCost; // Starta med 50 AP
 
-    // Function to update the button text with the current cost
+    // Funktion för att uppdatera texten på knappen med aktuell kostnad
     function updateBuyAttemptsButton() {
-        buyAttemptsButton.textContent = `Buy Attempts (${currentCost} AP)`;
+        buyAttemptsButton.textContent = `Köp Försök (${currentCost} AP)`;
         buyAttemptsButton.style.display = 'block';
     }
 
-    // Add event listener for the "Buy Attempts" button
+    // Lägg till eventlyssnare för "Köp Försök"-knappen
     buyAttemptsButton.addEventListener('click', () => {
         fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
             .then(res => res.json())
@@ -1135,24 +1155,23 @@ if (currentPhpFile === "game_display.php") {
                             overlay.classList.remove('visible');
                             restartLevel();
 
-                            // Double the cost for the next purchase
+                            // Dubbel kostnaden för nästa köp
                             currentCost *= 2;
-                            updateBuyAttemptsButton(); // Update the button text with the new cost
+                            updateBuyAttemptsButton(); // Uppdatera knappen med ny kostnad
                         }
                     });
                 } else {
-                    alert(`Not enough AP coins! You need ${currentCost} AP.`);
+                    alert(`Inte tillräckligt med AP! Du behöver ${currentCost} AP.`);
                 }
             });
     });
-
 
     function startGame() {
         level = 1;
         attempts = 3;
         timeRemaining = 10;
         sequence = [];
-        startTime = Date.now(); // Record start time
+        startTime = Date.now(); // Registrera starttiden
         updateStats();
         nextLevel();
     }
@@ -1161,9 +1180,10 @@ if (currentPhpFile === "game_display.php") {
         canInteract = false;
         userSequence = [];
         levelDisplay.textContent = level;
-        timeRemaining = 10 + (level - 1) * 5; // Adjust timer for each level
+        timeRemaining = 10 + (level - 1) * 5; // Justera timern för varje nivå
         updateStats();
     
+        // Lägg till ett nytt tal i sekvensen beroende på om det är progressivt läge eller inte
         if (progressiveMode) {
             sequence.push(Math.floor(Math.random() * 9));
         } else {
@@ -1171,10 +1191,10 @@ if (currentPhpFile === "game_display.php") {
         }
     
         displaySequence(() => {
-            startTimer(); // Start the timer **only after** sequence display completes
+            startTimer(); // Starta timern **efter** att sekvensen visats
         });
     }
-
+    
     function displaySequence(callback) {
         let index = 0;
         const boxes = document.querySelectorAll('.box');
@@ -1190,50 +1210,50 @@ if (currentPhpFile === "game_display.php") {
                 boxes.forEach((box) => box.classList.remove('active'));
                 canInteract = true;
     
-                // Invoke the callback after sequence display completes
+                // Anropa callback-funktionen när sekvensen har visats klart
                 if (typeof callback === 'function') callback();
             }
         }, 800);
     }
-
-    // Update the startTimer function:
+    
+    // Uppdatera startTimer-funktionen:
     function startTimer() {
-        clearInterval(timer); // Clear any existing timers
-        updateStats(); // Update the display immediately
+        clearInterval(timer); // Rensa eventuella befintliga timers
+        updateStats(); // Uppdatera visningen omedelbart
         timer = setInterval(() => {
-            timeRemaining--; // Use the global variable
+            timeRemaining--; // Använd den globala variabeln
             updateStats();
             if (timeRemaining <= 0) {
                 clearInterval(timer);
-                endGame(); // Handle time expiration
+                endGame(); // Hantera när tiden är slut
             }
         }, 1000);
     }
-
+    
     function handleUserInput(index) {
         const boxes = document.querySelectorAll('.box');
         
-        // Prevent interaction if already processing the input
+        // Förhindra interaktion om vi redan behandlar användarens input
         if (!canInteract) return;
     
         if (sequence[userSequence.length] === index) {
             userSequence.push(index);
             boxes[index].classList.add('correct');
-            canInteract = false; // Disable interaction temporarily
+            canInteract = false; // Inaktivera interaktion tillfälligt
     
             setTimeout(() => {
                 boxes[index].classList.remove('correct');
-                canInteract = true; // Re-enable interaction
+                canInteract = true; // Återaktivera interaktion
     
-                // Check if user completed the sequence
+                // Kolla om användaren har slutfört sekvensen
                 if (userSequence.length === sequence.length) {
                     level++;
-                    canInteract = false; // Disable interaction until the next sequence starts
+                    canInteract = false; // Inaktivera interaktion tills nästa sekvens startar
                     setTimeout(nextLevel, 1000);
                 }
             }, 500);
         } else {
-            // Handle incorrect input
+            // Hantera felaktig input
             boxes[index].classList.add('incorrect');
             setTimeout(() => boxes[index].classList.remove('incorrect'), 500);
     
@@ -1241,21 +1261,18 @@ if (currentPhpFile === "game_display.php") {
             updateStats();
     
             if (attempts <= 0) {
-                buyAttemptsButton.style.display = 'block'; // Show the "Buy Attempts" button
+                buyAttemptsButton.style.display = 'block'; // Visa knappen för att köpa fler försök
                 updateBuyAttemptsButton();
                 endGame();
             }
         }
     }
     
-
     function updateStats() {
         attemptsDisplay.textContent = attempts;
         timeDisplay.textContent = timeRemaining;
     }
-
     
-
     function endGame() {
         canInteract = false;
         clearInterval(timer);
@@ -1265,12 +1282,14 @@ if (currentPhpFile === "game_display.php") {
         finalLevel.textContent = level;
         totalTime.textContent = totalTimeElapsed;
     
+        // Om användaren inte är "guest", spara resultatet
         if (username !== 'guest') {
             fetch('http://samet-desktop.adm.huddinge.se:3000/memory')
                 .then(res => res.json())
                 .then(memoryResponse => {
                     let userExists = false;
     
+                    // Kontrollera om användaren redan finns
                     for (const record of memoryResponse) {
                         if (record.username === username) {
                             userExists = true;
@@ -1278,334 +1297,380 @@ if (currentPhpFile === "game_display.php") {
                             (async () => {
                                 try {
                                     const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
-                                    const poangssystemData = await poangssystemResponse.json();
+                                    const poangssystemData = await poangssystemResponse.json();    
     
+                                    // Hitta användaren i poängsystemdata baserat på användarnamn
                                     const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
+
+                                    // Om användaren hittas, använd deras nivå, annars sätt nivå till 1
                                     const userlevel = matchedPoangssystemUser ? matchedPoangssystemUser.Levels : 1;
-    
+
+                                    // Skapa ett objekt med aktuell speldata
                                     const currentGameData = {
-                                        nivå: level,
-                                        level: userlevel,
-                                        pengar_tjanat: 2 * (level - 1) * userlevel,
-                                        exp_tjanat: 2 * (level - 1) * userlevel,
-                                        tid: totalTimeElapsed / level,
-                                        netvarde: (record.netvarde || 0) + 2 * (level - 1) * userlevel,
+                                        nivå: level, // Aktuellt spelens nivå
+                                        level: userlevel, // Användarens nivå
+                                        pengar_tjanat: 2 * (level - 1) * userlevel, // Beräknat antal pengar tjänat
+                                        exp_tjanat: 2 * (level - 1) * userlevel, // Beräknat antal erfarenhetspoäng tjänat
+                                        tid: totalTimeElapsed / level, // Beräknad tid baserat på total tid och nivå
+                                        netvarde: (record.netvarde || 0) + 2 * (level - 1) * userlevel, // Beräknat netto värde
                                     };
-    
+
+                                    // Uppdaterar netvärdet i record-objektet med det nya värdet
                                     record.netvarde = currentGameData.netvarde;
-    
+
+                                    // Ger spelaren erfarenhetspoäng baserat på exp_tjanat
                                     gainExp(currentGameData.exp_tjanat);
-    
-                                    finalLevel.textContent = level;
-                                    finalXP.textContent = currentGameData.exp_tjanat;
-                                    finalAP.textContent = currentGameData.pengar_tjanat;
-                                    totalTime.textContent = totalTimeElapsed;
-    
+
+                                    // Uppdaterar textinnehåll för olika UI-element med aktuell speldata
+                                    finalLevel.textContent = level; // Visar aktuell nivå
+                                    finalXP.textContent = currentGameData.exp_tjanat; // Visar tjänade erfarenhetspoäng
+                                    finalAP.textContent = currentGameData.pengar_tjanat; // Visar tjänade pengar
+                                    totalTime.textContent = totalTimeElapsed; // Visar total tid
+
+                                    // Skapar ett uppdaterat dataobjekt för att skicka till servern
                                     const updatedData = {
-                                        username: record.username,
-                                        nivå: Math.max(record.nivå, currentGameData.nivå),
-                                        level: Math.max(record.level, currentGameData.level),
-                                        pengar_tjanat: Math.max(record.pengar_tjanat, currentGameData.pengar_tjanat),
-                                        exp_tjanat: Math.max(record.exp_tjanat, currentGameData.exp_tjanat),
-                                        tid: Math.min(record.tid || Infinity, currentGameData.tid),
-                                        netvarde: Math.max(record.netvarde, currentGameData.netvarde),
+                                        username: record.username, // Användarnamn
+                                        nivå: Math.max(record.nivå, currentGameData.nivå), // Högsta nivån
+                                        level: Math.max(record.level, currentGameData.level), // Högsta användarnivån
+                                        pengar_tjanat: Math.max(record.pengar_tjanat, currentGameData.pengar_tjanat), // Högsta pengar tjänat
+                                        exp_tjanat: Math.max(record.exp_tjanat, currentGameData.exp_tjanat), // Högsta erfarenhetspoäng tjänat
+                                        tid: Math.min(record.tid || Infinity, currentGameData.tid), // Lägsta tid
+                                        netvarde: Math.max(record.netvarde, currentGameData.netvarde), // Högsta netto värde
                                     };
-    
+
+                                    // Skickar en POST-förfrågan för att uppdatera spelardata på servern
                                     await fetch('http://samet-desktop.adm.huddinge.se:3000/update-memory', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ updatedData, currentGameData }),
+                                        body: JSON.stringify({ updatedData, currentGameData }), // Skickar uppdaterad data och aktuell speldata
                                     });
-    
+
+                                    // Visar popup och overlay för att indikera att spelet är klart
                                     popup.classList.add('visible');
                                     overlay.classList.add('visible');
-                                    buyAttemptsButton.style.display = 'block';
-                                } catch (error) {
-                                    console.error('Error:', error);
-                                }
-                            })();
-                        }
-                    }
-    
-                    if (userExists === false) {
-                        (async () => {
-                            try {
-                                const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
-                                const poangssystemData = await poangssystemResponse.json();
-                                const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
-                                const userlevel = matchedPoangssystemUser ? matchedPoangssystemUser.Levels : 1;
-    
-                                const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
-                                const ekonomiData = await ekonomiResponse.json();
-                                const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
-                                let usernetworth = matchedEkonomiUser ? matchedEkonomiUser.networth : 0;
-    
-                                usernetworth += 2 * (level - 1) * userlevel;
-    
-                                finalLevel.textContent = level;
-                                finalXP.textContent = 2 * (level - 1) * userlevel;
-                                finalAP.textContent = 2 * (level - 1) * userlevel;
-                                totalTime.textContent = totalTimeElapsed;
-    
-                                const dataToInsert = {
-                                    username: username,
-                                    level: level,
-                                    userlevel: userlevel,
-                                    pengar_tjanat: 2 * (level - 1) * userlevel,
-                                    exp_tjanat: 2 * (level - 1) * userlevel,
-                                    tid: totalTimeElapsed / level,
-                                    netvarde: usernetworth,
-                                };
-    
-                                gainExp(2 * (level - 1) * userlevel);
-    
-                                grantRewards();
+                                    buyAttemptsButton.style.display = 'block'; // Visar knappen för att köpa fler försök
+                                    } catch (error) {
+                                        console.error('Error:', error); // Loggar eventuella fel
+                                    }
+                                    })();
+                                    }
+                                    }
 
-                                popup.classList.add('visible');
-                                overlay.classList.add('visible');
-                                buyAttemptsButton.style.display = 'block';
-    
-                                await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(dataToInsert),
-                                });
+                                    // Om användaren inte finns i systemet
+                                    if (userExists === false) {
+                                    (async () => {
+                                    try {
+                                        // Hämtar poängsystemdata från servern
+                                        const poangssystemResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem');
+                                        const poangssystemData = await poangssystemResponse.json();
 
-                            } catch (error) {
-                                console.error('Error fetching data:', error);
-                            }
-                        })();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        } else {
-            popup.classList.add('visible');
-            overlay.classList.add('visible');
-            buyAttemptsButton.style.display = 'none';
-        }
-    }
-    
-    
-    
-    function closePopup() {
-        popup.classList.remove('visible');
-        overlay.classList.remove('visible');
-        buyAttemptsButton.style.display = 'none';
-    
-        if (attempts <= 0) {
-            // Reset the game if the user did not buy attempts
-            console.log("Reset");
-            grantRewards();
-            startGame();
-            
-            // Reset cost to 50 for the next game
-            currentCost = 50; 
-            
-            window.location.reload();
-        } else {
-            restartLevel();
-        }
-    }
+                                        // Hittar användaren i poängsystemdata
+                                        const matchedPoangssystemUser = poangssystemData.find(user => user.Namn === username);
+                                        const userlevel = matchedPoangssystemUser ? matchedPoangssystemUser.Levels : 1;
 
-    function grantRewards() {
-        if (username === 'guest') return;
-    
-        fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
-            .then(res => res.json())
-            .then(poangssystemData => {
-                const userlevel = poangssystemData.find(u => u.Namn === username)?.Levels || 1;
-                const reward = 2 * (level - 1) * userlevel;
-    
-                // Update ekonomi
-                fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, pengar_tjanat: reward })
-                });
-    
-                gainExp(reward);
-            });
+                                        // Hämtar ekonomidata från servern
+                                        const ekonomiResponse = await fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi');
+                                        const ekonomiData = await ekonomiResponse.json();
+
+                                        // Hittar användaren i ekonomidata
+                                        const matchedEkonomiUser = ekonomiData.find(user => user.username === username);
+                                        let usernetworth = matchedEkonomiUser ? matchedEkonomiUser.networth : 0;
+
+                                        // Uppdaterar användarens netto värde
+                                        usernetworth += 2 * (level - 1) * userlevel;
+
+                                        // Uppdaterar textinnehåll för olika UI-element
+                                        finalLevel.textContent = level; // Visar aktuell nivå
+                                        finalXP.textContent = 2 * (level - 1) * userlevel; // Visar tjänade erfarenhetspoäng
+                                        finalAP.textContent = 2 * (level - 1) * userlevel; // Visar tjänade pengar
+                                        totalTime.textContent = totalTimeElapsed; // Visar total tid
+
+                                        // Skapar ett objekt med data som ska skickas till servern
+                                        const dataToInsert = {
+                                            username: username, // Användarnamn
+                                            level: level, // Aktuell nivå
+                                            userlevel: userlevel, // Användarens nivå
+                                            pengar_tjanat: 2 * (level - 1) * userlevel, // Tjänade pengar
+                                            exp_tjanat: 2 * (level - 1) * userlevel, // Tjänade erfarenhetspoäng
+                                            tid: totalTimeElapsed / level, // Beräknad tid
+                                            netvarde: usernetworth, // Netto värde
+                                        };
+
+                                        // Ger spelaren erfarenhetspoäng
+                                        gainExp(2 * (level - 1) * userlevel);
+
+                                        // Ger belöningar till spelaren
+                                        grantRewards();
+
+                                        // Visar popup och overlay för att indikera att spelet är klart
+                                        popup.classList.add('visible');
+                                        overlay.classList.add('visible');
+                                        buyAttemptsButton.style.display = 'block'; // Visar knappen för att köpa fler försök
+
+                                        // Skickar en POST-förfrågan för att lägga till ny spelardata på servern
+                                        await fetch('http://samet-desktop.adm.huddinge.se:3000/insert-memory', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify(dataToInsert), // Skickar data som ska infogas
+                                        });
+
+                                    } catch (error) {
+                                        console.error('Error fetching data:', error); // Loggar eventuella fel
+                                    }
+                                    })();
+                                    }
+                                    })
+                                    .catch(error => console.error('Error:', error)); // Loggar eventuella fel
+                                    } else {
+                                    // Om spelet inte är klart, visa popup och overlay utan köpknapp
+                                    popup.classList.add('visible');
+                                    overlay.classList.add('visible');
+                                    buyAttemptsButton.style.display = 'none';
+                                    }
+}
+
+// Funktion för att stänga popup
+function closePopup() {
+    // Döljer popup och overlay
+    popup.classList.remove('visible');
+    overlay.classList.remove('visible');
+    buyAttemptsButton.style.display = 'none';
+
+    // Om försöken är slut, återställ spelet
+    if (attempts <= 0) {
+    console.log("Reset"); // Loggar återställning
+    grantRewards(); // Ger belöningar
+    startGame(); // Startar om spelet
+
+    // Återställ kostnaden till 50 för nästa spel
+    currentCost = 50;
+
+    // Ladda om sidan
+    window.location.reload();
+    } else {
+    // Starta om nivån om det finns fler försök kvar
+    restartLevel();
     }
+}
+
+// Funktion för att ge belöningar till spelaren
+function grantRewards() {
+    // Om användaren är gäst, returnera utan att ge belöningar
+    if (username === 'guest') return;
+
+    // Hämtar poängsystemdata från servern
+    fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+    .then(res => res.json())
+    .then(poangssystemData => {
+        // Hittar användarens nivå eller sätter den till 1 om användaren inte hittas
+        const userlevel = poangssystemData.find(u => u.Namn === username)?.Levels || 1;
+
+        // Beräknar belöningen baserat på nivå och användarens nivå
+        const reward = 2 * (level - 1) * userlevel;
+
+        // Uppdaterar ekonomidata på servern
+        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, pengar_tjanat: reward }) // Skickar användarnamn och belöning
+        });
+
+        // Ger spelaren erfarenhetspoäng
+        gainExp(reward);
+    });
+}
     
 } else if (currentPhpFile === "spel3.php") {
     const gridContainer = document.getElementById('grid-container');
-const levelInfo = document.getElementById('level-info');
-const timerDisplay = document.getElementById('timer');
-const attemptsDisplay = document.getElementById('attempts');
-const startButton = document.getElementById('start-button');
-const newGameOverPopup = document.getElementById('new-game-over-popup');
-const newPopupCloseButton = document.getElementById('new-popup-close');
-const newPopupOverlay = document.getElementById('new-popup-overlay');
-const newBuyAttemptsButton = document.getElementById('new-buy-attempts-button');
-const username = phpFileInfoElement.dataset.username;
-const buyAttemptsButton = document.getElementById("new-buy-attempts-button");
-
-let level = 1;
-let attempts = 3;
-let timer = 10;
-let timerInterval;
-let startTime;
-let totalTimePlayed = 0;
-let targetBoxIndex = null;
-let colorDifference = 50;
-let originalColors = [];
-let gameStarted = false;
-let baseCost = 50;
-let currentCost = baseCost;
-
-function generateRandomColor() {
-    return {
-        r: Math.floor(Math.random() * 256),
-        g: Math.floor(Math.random() * 256),
-        b: Math.floor(Math.random() * 256),
-    };
-}
-
-function adjustColor(color, adjustment) {
-    return {
-        r: Math.max(0, Math.min(255, color.r + adjustment)),
-        g: Math.max(0, Math.min(255, color.g + adjustment)),
-        b: Math.max(0, Math.min(255, color.b + adjustment)),
-    };
-}
-
-function rgbToCss(rgb) {
-    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-}
-
-function createGrid() {
-    gridContainer.innerHTML = '';
-    originalColors = [];
-
-    for (let i = 0; i < 16; i++) {
-        const box = document.createElement('div');
-        box.className = 'grid-box';
-        box.style.pointerEvents = '';
-        box.classList.remove('disabled');
-        box.addEventListener('click', () => handleBoxClick(box, i));
-        gridContainer.appendChild(box);
+    const levelInfo = document.getElementById('level-info');
+    const timerDisplay = document.getElementById('timer');
+    const attemptsDisplay = document.getElementById('attempts');
+    const startButton = document.getElementById('start-button');
+    const newGameOverPopup = document.getElementById('new-game-over-popup');
+    const newPopupCloseButton = document.getElementById('new-popup-close');
+    const newPopupOverlay = document.getElementById('new-popup-overlay');
+    const newBuyAttemptsButton = document.getElementById('new-buy-attempts-button');
+    const username = phpFileInfoElement.dataset.username;
+    const buyAttemptsButton = document.getElementById("new-buy-attempts-button");
+    
+    let level = 1;
+    let attempts = 3;
+    let timer = 10;
+    let timerInterval;
+    let startTime;
+    let totalTimePlayed = 0;
+    let targetBoxIndex = null;
+    let colorDifference = 50;
+    let originalColors = [];
+    let gameStarted = false;
+    let baseCost = 50;
+    let currentCost = baseCost;
+    
+    // Funktion för att generera en slumpmässig färg
+    function generateRandomColor() {
+        return {
+            r: Math.floor(Math.random() * 256),
+            g: Math.floor(Math.random() * 256),
+            b: Math.floor(Math.random() * 256),
+        };
     }
-}
-
-function startGame() {
-    gameStarted = true;
-    levelInfo.style.display = 'block';
-    document.getElementById('info-container').style.display = 'block';
-    startButton.style.display = 'none';
-
-    levelInfo.textContent = `Level: ${level}`;
-    attempts = 3;
-    attemptsDisplay.textContent = `Attempts: ${attempts}`;
-    timer = 10 + (level - 1) * 5;
-    timerDisplay.textContent = `Time Left: ${timer}s`;
-
-    startTime = Date.now();
-
-    const baseColor = generateRandomColor();
-    const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference;
-    const targetColor = adjustColor(baseColor, adjustment);
-
-    targetBoxIndex = Math.floor(Math.random() * 16);
-
-    const boxes = document.querySelectorAll('.grid-box');
-    boxes.forEach((box, index) => {
-        const color = index === targetBoxIndex ? targetColor : baseColor;
-        box.style.backgroundColor = rgbToCss(color);
-        originalColors[index] = rgbToCss(color);
-    });
-
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        timer--;
-        timerDisplay.textContent = `Time Left: ${timer}s`;
-        if (timer <= 0) {
-            handleGameOver();
+    
+    // Funktion för att justera en färg
+    function adjustColor(color, adjustment) {
+        return {
+            r: Math.max(0, Math.min(255, color.r + adjustment)),
+            g: Math.max(0, Math.min(255, color.g + adjustment)),
+            b: Math.max(0, Math.min(255, color.b + adjustment)),
+        };
+    }
+    
+    // Omvandla RGB till CSS-format
+    function rgbToCss(rgb) {
+        return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+    }
+    
+    // Skapa rutnätet (grid)
+    function createGrid() {
+        gridContainer.innerHTML = ''; // Rensa tidigare innehåll
+        originalColors = []; // Rensa färgdata
+    
+        // Skapa 16 rutor i rutnätet
+        for (let i = 0; i < 16; i++) {
+            const box = document.createElement('div');
+            box.className = 'grid-box';
+            box.style.pointerEvents = ''; // Tillåt klick på boxarna
+            box.classList.remove('disabled'); // Ta bort 'disabled' klass
+            box.addEventListener('click', () => handleBoxClick(box, i)); // Lägg till klickhanterare
+            gridContainer.appendChild(box); // Lägg till boxen i rutnätet
         }
-    }, 1000);
-}
-
-function handleBoxClick(box, index) {
-    if (!gameStarted || box.classList.contains('clicked')) return;
-
-    if (index === targetBoxIndex) {
-        box.style.backgroundColor = 'green';
-        box.style.transform = 'scale(1.2)';
-        box.classList.add('clicked');
-        clearInterval(timerInterval);
-
+    }
+    
+    // Starta spelet
+    function startGame() {
+        gameStarted = true; // Spelet har startat
+        levelInfo.style.display = 'block'; // Visa level-info
+        document.getElementById('info-container').style.display = 'block'; // Visa info-container
+        startButton.style.display = 'none'; // Dölj startknappen
+    
+        levelInfo.textContent = `Level: ${level}`; // Uppdatera leveln
+        attempts = 3; // Nollställ försök
+        attemptsDisplay.textContent = `Attempts: ${attempts}`; // Uppdatera visningen av försök
+        timer = 10 + (level - 1) * 5; // Uppdatera timer för nästa nivå
+        timerDisplay.textContent = `Time Left: ${timer}s`; // Visa tid kvar
+    
+        startTime = Date.now(); // Spara starttiden
+    
+        const baseColor = generateRandomColor(); // Generera en basfärg
+        const adjustment = Math.random() > 0.5 ? -colorDifference : colorDifference; // Bestäm justering för mål-färgen
+        const targetColor = adjustColor(baseColor, adjustment); // Justera färgen för att få mål-färgen
+    
+        targetBoxIndex = Math.floor(Math.random() * 16); // Välj en slumpmässig ruta som mål
+    
         const boxes = document.querySelectorAll('.grid-box');
-        boxes.forEach((b) => {
-            b.classList.add('disabled');
-            b.style.pointerEvents = 'none';
+        boxes.forEach((box, index) => {
+            const color = index === targetBoxIndex ? targetColor : baseColor; // Om det är mål-boxen, sätt mål-färgen, annars basfärgen
+            box.style.backgroundColor = rgbToCss(color); // Sätt bakgrundsfärg för varje ruta
+            originalColors[index] = rgbToCss(color); // Spara originalfärger
         });
-
-        totalTimePlayed += (Date.now() - startTime) / 1000;
-
-        setTimeout(() => {
-            level++;
-            colorDifference = Math.max(5, colorDifference - 5);
-            createGrid();
-            startGame();
+    
+        clearInterval(timerInterval); // Rensa eventuella tidigare timers
+        timerInterval = setInterval(() => {
+            timer--; // Minska timer
+            timerDisplay.textContent = `Time Left: ${timer}s`; // Uppdatera tid kvar
+            if (timer <= 0) { // Om tiden är slut, avsluta spelet
+                handleGameOver();
+            }
         }, 1000);
-    } else {
-        box.style.backgroundColor = 'red';
-        box.style.transform = 'scale(1.2)';
-        box.classList.add('clicked');
-        attempts--;
-        attemptsDisplay.textContent = `Attempts: ${attempts}`;
-
-        setTimeout(() => {
-            box.style.transform = 'scale(1)';
-            box.style.backgroundColor = originalColors[index];
-            box.classList.remove('clicked');
-        }, 500);
-
-        if (attempts <= 0) {
-            handleGameOver();
+    }
+    
+    // Hantera klick på rutor
+    function handleBoxClick(box, index) {
+        if (!gameStarted || box.classList.contains('clicked')) return; // Om spelet inte har startat eller boxen redan är klickad
+    
+        if (index === targetBoxIndex) { // Om användaren klickar på mål-boxen
+            box.style.backgroundColor = 'green'; // Ändra färg på boxen till grön
+            box.style.transform = 'scale(1.2)'; // Gör boxen större
+            box.classList.add('clicked'); // Markera boxen som klickad
+            clearInterval(timerInterval); // Stoppa timern
+    
+            const boxes = document.querySelectorAll('.grid-box');
+            boxes.forEach((b) => {
+                b.classList.add('disabled'); // Disabla alla boxar
+                b.style.pointerEvents = 'none'; // Förhindra klick på boxarna
+            });
+    
+            totalTimePlayed += (Date.now() - startTime) / 1000; // Lägg till tiden spelad
+    
+            // Efter 1 sekund, öka leveln och skapa ett nytt rutnät
+            setTimeout(() => {
+                level++;
+                colorDifference = Math.max(5, colorDifference - 5); // Minska färgskillnaden
+                createGrid(); // Skapa nytt rutnät
+                startGame(); // Starta spelet igen
+            }, 1000);
+        } else { // Om användaren klickar på en fel box
+            box.style.backgroundColor = 'red'; // Ändra färg på boxen till röd
+            box.style.transform = 'scale(1.2)'; // Gör boxen större
+            box.classList.add('clicked'); // Markera boxen som klickad
+            attempts--; // Minska försök
+            attemptsDisplay.textContent = `Attempts: ${attempts}`; // Uppdatera antal försök
+    
+            // Återställ boxens utseende efter 500 ms
+            setTimeout(() => {
+                box.style.transform = 'scale(1)';
+                box.style.backgroundColor = originalColors[index]; // Återställ färg
+                box.classList.remove('clicked'); // Ta bort 'clicked' klass
+            }, 500);
+    
+            if (attempts <= 0) { // Om försök är slut, avsluta spelet
+                handleGameOver();
+            }
         }
     }
-}
-
-function handleGameOver() {
-    if (username !== "guest") {
-        gameStarted = false;
-        clearInterval(timerInterval);
-        totalTimePlayed += Math.floor(Date.now() - startTime) / 1000;
-
-        function getUserLevel(username) {
-            return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
-                .then(response => response.json())
-                .then(data => {
-                    for (const user of data) {
-                        if (user.Namn === username) {
-                            return user.Levels;
+    
+    function handleGameOver() {
+        if (username !== "guest") { // Kontrollera om användaren inte är en gäst
+            gameStarted = false; // Stoppa spelet
+            clearInterval(timerInterval); // Stoppa timern
+            totalTimePlayed += Math.floor(Date.now() - startTime) / 1000; // Lägg till den totala tiden som spelats
+    
+            // Funktion för att hämta användarens nivå
+            function getUserLevel(username) {
+                return fetch('http://samet-desktop.adm.huddinge.se:3000/poangssystem')
+                    .then(response => response.json())
+                    .then(data => {
+                        for (const user of data) {
+                            if (user.Namn === username) {
+                                return user.Levels; // Återvänd användarens nivå
+                            }
                         }
-                    }
-                    return 'User not found';
-                })
-                .catch(error => {
-                    console.error('Error fetching level data:', error);
-                    return null;
-                });
-        }
-
+                        return 'User not found'; // Om användaren inte hittas
+                    })
+                    .catch(error => {
+                        console.error('Error fetching level data:', error); // Logga eventuella fel
+                        return null;
+                    });
+            }
+    
+        // Funktion för att hämta användarens nettoförmögenhet
         function getUserNetWorth(username) {
             return fetch('http://samet-desktop.adm.huddinge.se:3000/netvarde')
                 .then(response => response.json())
                 .then(data => {
                     for (const user of data) {
                         if (user.username === username) {
-                            return user.networth;
+                            return user.networth; // Återvänd användarens nettoförmögenhet
                         }
                     }
-                    return 'Networth not found';
+                    return 'Networth not found'; // Om användarens nettoförmögenhet inte hittas
                 })
                 .catch(error => {
-                    console.error('Error fetching networth data:', error);
+                    console.error('Error fetching networth data:', error); // Logga eventuella fel
                     return null;
                 });
         }
 
+        // Funktion för att uppdatera användarens statistik
         function updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth) {
             fetch('http://samet-desktop.adm.huddinge.se:3000/updateUserStats', {
                 method: 'POST',
@@ -1621,8 +1686,8 @@ function handleGameOver() {
                 })
             })
                 .then(response => response.json())
-                .then(data => console.log('User stats updated:', data))
-                .catch(error => console.error('Error updating user stats:', error));
+                .then(data => console.log('User stats updated:', data)) // Logga när användarstatistik uppdateras
+                .catch(error => console.error('Error updating user stats:', error)); // Logga eventuella fel
 
             fetch('http://samet-desktop.adm.huddinge.se:3000/updateEkonomi', {
                 method: 'POST',
@@ -1634,40 +1699,43 @@ function handleGameOver() {
                 })
             })
                 .then(response => response.json())
-                .then(data => console.log('Ekonomi updated:', data))
-                .catch(error => console.error('Error updating ekonomi:', error));
+                .then(data => console.log('Ekonomi updated:', data)) // Logga när ekonomi uppdateras
+                .catch(error => console.error('Error updating ekonomi:', error)); // Logga eventuella fel
 
-            let experience2 = 2 * level * userlevel;
+            let experience2 = 2 * level * userlevel; // Beräkna erfarenhetspoäng
 
+            // Uppdatera popup-informationen
             document.getElementById('new-popup-level').textContent = `Level: ${level}`;
             document.getElementById('new-popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
             document.getElementById('new-popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
             document.getElementById('new-popup-money').textContent = `Earned money: ${2 * level * userlevel}`;
 
-            gainExp(experience2);
+            gainExp(experience2); // Ge erfarenhetspoäng
         }
 
+        // Funktion för att hämta användardata
         function getUserData(username) {
-            console.log(username);
-            Promise.all([getUserLevel(username), getUserNetWorth(username)])
+            console.log(username); // Logga användarnamnet
+            Promise.all([getUserLevel(username), getUserNetWorth(username)]) // Vänta på både nivå och nettoförmögenhet
                 .then(([userlevel, userNetWorth]) => {
                     if (userlevel !== null && userlevel !== undefined && userNetWorth !== null && userNetWorth !== undefined) {
-                        const experience = 2 * level * userlevel;
-                        const money = 2 * level * userlevel;
-                        let averagetime = totalTimePlayed / level;
+                        const experience = 2 * level * userlevel; // Beräkna erfarenhet
+                        const money = 2 * level * userlevel; // Beräkna pengar
+                        let averagetime = totalTimePlayed / level; // Beräkna genomsnittlig speltid
 
                         fetch('http://samet-desktop.adm.huddinge.se:3000/colourvision')
                             .then(response => response.json())
                             .then(data => {
-                                const userExists = data.some(user => user.username === username);
+                                const userExists = data.some(user => user.username === username); // Kontrollera om användaren finns i databasen
 
                                 console.log(userExists);
 
                                 if (userExists) {
-                                    updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth);
+                                    updateUserStats(username, level, userlevel, averagetime, money, experience, userNetWorth); // Uppdatera användarstatistik
                                 } else {
-                                    gainExp(experience);
+                                    gainExp(experience); // Ge erfarenhet
 
+                                    // Uppdatera popup-information om användaren är ny
                                     document.getElementById('new-popup-level').textContent = `Level: ${level}`;
                                     document.getElementById('new-popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
                                     document.getElementById('new-popup-exp').textContent = `Earned exp: ${2 * level * userlevel}`;
@@ -1677,25 +1745,25 @@ function handleGameOver() {
 
                                     const updateData = {
                                         username: username,
-                                        pengar_tjanat: pengar_tjanat
+                                        pengar_tjanat: pengar_tjanat // Spara pengar som användaren tjänat
                                     };
 
                                     fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(updateData),
+                                        body: JSON.stringify(updateData), // Uppdatera ekonomin
                                     })
                                     .then(response => response.json())
                                     .then(result => {
                                         if (result.success) {
-                                            console.log(result.message);
+                                            console.log(result.message); // Logga om uppdateringen lyckades
                                         } else {
-                                            console.error('Failed to update:', result.message);
+                                            console.error('Failed to update:', result.message); // Logga om uppdateringen misslyckades
                                         }
                                     })
-                                    .catch(error => console.error('Error updating ekonomi table:', error));
-                                    
+                                    .catch(error => console.error('Error updating ekonomi table:', error)); // Logga eventuella fel
 
+                                    // Lägg till användaren i databasen om den inte finns där
                                     fetch('http://samet-desktop.adm.huddinge.se:3000/insertIntoColourvision', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
@@ -1710,202 +1778,207 @@ function handleGameOver() {
                                         })
                                     })
                                         .then(response => response.json())
-                                        .then(data => console.log('User inserted into colourvision:', data))
-                                        .catch(error => console.error('Error inserting into colourvision:', error));
+                                        .then(data => console.log('User inserted into colourvision:', data)) // Logga när användaren är inlagd
+                                        .catch(error => console.error('Error inserting into colourvision:', error)); // Logga eventuella fel
                                 }
                             })
-                            .catch(error => console.error('Error fetching colourvision data:', error));
+                            .catch(error => console.error('Error fetching colourvision data:', error)); // Logga eventuella fel
                         }
                     })
                     .catch(error => {
-                        console.error('Error getting user data:', error);
+                        console.error('Error getting user data:', error); // Logga eventuella fel vid hämtning av användardata
                     });
             }
     
-            getUserData(username);
+            getUserData(username); // Hämtar användardata baserat på användarnamnet
     
-            newPopupOverlay.style.display = 'block';
-            newGameOverPopup.style.display = 'block';
-            newGameOverPopup.style.opacity = '1';
+            newPopupOverlay.style.display = 'block'; // Visar överlägget
+            newGameOverPopup.style.display = 'block'; // Visar spelet slut-popupen
+            newGameOverPopup.style.opacity = '1'; // Sätter opacitet för att göra popupen synlig
 
-            newPopupOverlay.classList.add('visible');
-            newGameOverPopup.classList.add('visible');
-            buyAttemptsButton.style.display = 'block';
-            buyAttemptsButton.style.marginLeft = "12%";
-        } else if (username === "guest") {
-            gameStarted = false;
-            clearInterval(timerInterval);
-            totalTimePlayed += Math.floor((Date.now() - startTime) / 1000);
-    
-            document.getElementById('new-popup-level').textContent = `Level: ${level}`;
-            document.getElementById('new-popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
-    
-            newPopupOverlay.style.display = 'block';
-            newGameOverPopup.style.display = 'block';
-            newGameOverPopup.style.opacity = '1';
-        }
-    }
-    
-    function closePopup() {
-        newPopupOverlay.style.display = 'none';
-        location.reload();
-    }
-    
-    createGrid();
-    startButton.addEventListener('click', startGame);
-    newPopupCloseButton.addEventListener('click', closePopup);
-    newPopupOverlay.addEventListener('click', (e) => {
-        if (e.target === newPopupOverlay) closePopup();
-    });
-    
-    newBuyAttemptsButton.addEventListener('click', () => {
-        fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi')
-            .then(res => res.json())
-            .then(ekonomiResponse => {
-                const matchedUser = ekonomiResponse.find(user => user.username === username);
-                if (matchedUser && matchedUser.value >= currentCost) {
-                    const updateData = {
-                        username: username,
-                        cost: currentCost
-                    };
-    
-                    fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi2', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updateData),
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            attempts += 3;
-                            updateStats();
-                            newPopupOverlay.style.display = 'none';
-                            newGameOverPopup.style.display = 'none';
-                            startGame();
-    
-                            currentCost *= 2;
-                            newBuyAttemptsButton.textContent = `Buy Attempts (${currentCost} AP)`;
-                        }
-                    });
-                } else {
-                    alert(`Not enough AP coins! You need ${currentCost} AP.`);
-                }
-            });
-    });
-    
-    // Helper function to update displayed stats
-    function updateStats() {
-        attemptsDisplay.textContent = `Attempts: ${attempts}`;
-        timerDisplay.textContent = `Time Left: ${timer}s`;
-        levelInfo.textContent = `Level: ${level}`;
-    }
+            newPopupOverlay.classList.add('visible'); // Lägger till 'visible' klass för animation på överlägget
+            newGameOverPopup.classList.add('visible'); // Lägger till 'visible' klass för animation på spelet slut-popupen
+            buyAttemptsButton.style.display = 'block'; // Visar knappen för att köpa fler försök
+            buyAttemptsButton.style.marginLeft = "12%"; // Justerar vänstermarginalen för knappen
 
-
-
-    } else if (currentPhpFile === "spel4.php") {
-        let baseCost = 50; // Base cost for buying attempts
-        let currentCost = baseCost; // Initialize current cost
-
-        function gainExp(expAmount, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "sida.php", true);
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    var response = JSON.parse(xhr.responseText);
-                    var currentExp = response.current_exp;
-                    var nextLevelExp = response.next_level_exp;
-                    var level = response.level;
-        
-                    // Format numbers with appropriate units (K, M, G)
-                    function formatNumber(number) {
-                        if (number >= 1000000000) {
-                            return (number / 1000000000).toFixed(1) + 'G';
-                        } else if (number >= 1000000) {
-                            return (number / 1000000).toFixed(1) + 'M';
-                        } else if (number >= 1000) {
-                            return (number / 1000).toFixed(1) + 'K';
-                        } else {
-                            return number;
-                        }
-                    }
-        
-                    var formattedCurrentExp = formatNumber(currentExp);
-                    var formattedNextLevelExp = formatNumber(nextLevelExp);
-        
-                    // Update the EXP bar and text
-                    var progressBar = document.getElementById('expProgress');
-                    var expText = document.getElementById('expText');
-                    progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%';
-                    expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP';
-        
-                    // Update the user's level
-                    document.getElementById('level').textContent = level;
-        
-                    // If callback is provided, execute it with EXP data
-                    if (callback) {
-                        callback(currentExp, nextLevelExp, level);
-                    }
-                }
-            };
-        
-            // Send the request to the server with the EXP amount
-            xhr.send("add_exp=true&exp_amount=" + expAmount);
+            } else if (username === "guest") { // Kollar om användarnamnet är "guest"
+                gameStarted = false; // Stoppar spelet om användaren är en gäst
+                clearInterval(timerInterval); // Stänger av eventuella aktiva timerintervall
+                totalTimePlayed += Math.floor((Date.now() - startTime) / 1000); // Uppdaterar den totala spelade tiden
+                
+                // Uppdaterar den visade nivån och tiden spelad för popupen när spelet är slut
+                document.getElementById('new-popup-level').textContent = `Level: ${level}`;
+                document.getElementById('new-popup-time').textContent = `Total Time Played: ${totalTimePlayed}s`;
+                
+                newPopupOverlay.style.display = 'block'; // Visar överlägget
+                newGameOverPopup.style.display = 'block'; // Visar spelet slut-popupen
+                newGameOverPopup.style.opacity = '1'; // Gör spelet slut-popupen synlig
+            }
         }
 
-        let startTime = null; // Tracks when the game starts
-        let totalElapsedTime = 0; // Tracks total elapsed time in seconds
+        function closePopup() { // Funktion för att stänga popupen
+            newPopupOverlay.style.display = 'none'; // Döljer överlägget
+            location.reload(); // Laddar om sidan
+        }
+        
+        createGrid(); // Skapar spelrutnätet
+        startButton.addEventListener('click', startGame); // Lägg till eventlyssnare för startknappen
+        newPopupCloseButton.addEventListener('click', closePopup); // Lägg till eventlyssnare för att stänga popupen
+        newPopupOverlay.addEventListener('click', (e) => { // Lyssnar på klick på överlägget
+            if (e.target === newPopupOverlay) closePopup(); // Stänger popupen om bakgrunden klickas
+        });
+        
+        newBuyAttemptsButton.addEventListener('click', () => { // Klickhändelse för att köpa fler försök
+            fetch('http://samet-desktop.adm.huddinge.se:3000/ekonomi') // Hämtar ekonomiuppgifter från servern
+                .then(res => res.json()) // Omvandlar svaret till JSON
+                .then(ekonomiResponse => {
+                    const matchedUser = ekonomiResponse.find(user => user.username === username); // Hittar användaren i svaret
+                    if (matchedUser && matchedUser.value >= currentCost) { // Om användaren har tillräckligt med AP
+                        const updateData = {
+                            username: username,
+                            cost: currentCost
+                        };
+        
+                        fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi2', { // Uppdaterar ekonomi på servern
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updateData),
+                        })
+                        .then(response => response.json()) // Omvandlar svar till JSON
+                        .then(result => {
+                            if (result.success) { // Om uppdateringen var framgångsrik
+                                attempts += 3; // Ökar antal försök
+                                updateStats(); // Uppdaterar visade stats
+                                newPopupOverlay.style.display = 'none'; // Döljer popupen
+                                newGameOverPopup.style.display = 'none'; // Döljer spelet slut-popupen
+                                startGame(); // Startar om spelet
+        
+                                currentCost *= 2; // Fördubblar kostnaden för nästa gång
+                                newBuyAttemptsButton.textContent = `Buy Attempts (${currentCost} AP)`; // Uppdaterar knapptexten
+                            }
+                        });
+                    } else {
+                        alert(`Not enough AP coins! You need ${currentCost} AP.`); // Meddelar om inte tillräckligt med AP
+                    }
+                });
+        });
+        
+        // Hjälpfunktion för att uppdatera visade stats
+        function updateStats() {
+            attemptsDisplay.textContent = `Attempts: ${attempts}`; // Uppdaterar antalet försök
+            timerDisplay.textContent = `Time Left: ${timer}s`; // Uppdaterar timer
+            levelInfo.textContent = `Level: ${level}`; // Uppdaterar nivå
+        }
+        
+        
+        
+        } else if (currentPhpFile === "spel4.php") { // Kollar om den aktuella PHP-filen är 'spel4.php'
+            let baseCost = 50; // Grundkostnad för att köpa fler försök
+            let currentCost = baseCost; // Initierar nuvarande kostnad
+        
+            function gainExp(expAmount, callback) { // Funktion för att ge erfarenhetspoäng
+                var xhr = new XMLHttpRequest(); // Skapar XMLHttpRequest för att kommunicera med servern
+                xhr.open("POST", "sida.php", true); // Skickar POST-förfrågan till 'sida.php'
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded"); // Ställer in headers för POST-begäran
+            
+                xhr.onreadystatechange = function() { // Funktion som körs när svar mottas från servern
+                    if (xhr.readyState == 4 && xhr.status == 200) { // Om svaret är klart och status är OK
+                        var response = JSON.parse(xhr.responseText); // Omvandlar svaret till JSON
+                        var currentExp = response.current_exp; // Hämtar nuvarande erfarenhetspoäng
+                        var nextLevelExp = response.next_level_exp; // Hämtar erfarenhetspoäng som krävs för nästa nivå
+                        var level = response.level; // Hämtar nuvarande nivå
+            
+                        // Funktion för att formatera nummer med rätt enheter (K, M, G)
+                        function formatNumber(number) {
+                            if (number >= 1000000000) {
+                                return (number / 1000000000).toFixed(1) + 'G'; // G för miljarder
+                            } else if (number >= 1000000) {
+                                return (number / 1000000).toFixed(1) + 'M'; // M för miljoner
+                            } else if (number >= 1000) {
+                                return (number / 1000).toFixed(1) + 'K'; // K för tusen
+                            } else {
+                                return number; // Returnerar talet som det är
+                            }
+                        }
+            
+                        var formattedCurrentExp = formatNumber(currentExp); // Formaterar nuvarande XP
+                        var formattedNextLevelExp = formatNumber(nextLevelExp); // Formaterar XP för nästa nivå
+            
+                        // Uppdaterar EXP-bar och text
+                        var progressBar = document.getElementById('expProgress');
+                        var expText = document.getElementById('expText');
+                        progressBar.style.width = (currentExp / nextLevelExp) * 100 + '%'; // Uppdaterar bredden på EXP-bar
+                        expText.textContent = formattedCurrentExp + '/' + formattedNextLevelExp + ' EXP'; // Uppdaterar EXP-text
+            
+                        // Uppdaterar spelarens nivå
+                        document.getElementById('level').textContent = level;
+            
+                        // Om callback tillhandahålls, kör den med EXP-data
+                        if (callback) {
+                            callback(currentExp, nextLevelExp, level);
+                        }
+                    }
+                };
+            
+                // Skickar förfrågan till servern med den angivna EXP-mängden
+                xhr.send("add_exp=true&exp_amount=" + expAmount);
+            }
+        
+            let startTime = null; // Spårar när spelet startar
+            let totalElapsedTime = 0; // Spårar den totala förflutna tiden i sekunder
+        
+            // Hämtar användarnamnet från PHP-elementet
+            const phpFileInfo = document.getElementById("php-file-info");
+            const username = phpFileInfo.dataset.username; // Hämtar användarnamnet från dataset        
 
-        // Get the username from the php-file-info element
-        const phpFileInfo = document.getElementById("php-file-info");
-        const username = phpFileInfo.dataset.username;
-
+        // Hämtar användarens nivå baserat på användarnamnet
         async function fetchUserLevel(username) {
             try {
-                // Fetch all data from the poangssystem endpoint
+                // Hämtar all data från poangssystem endpoint
                 const response = await fetch(`http://samet-desktop.adm.huddinge.se:3000/poangssystem`);
                 const data = await response.json();
-        
-                // Check if the response is an array
+
+                // Kollar om svaret är en array
                 if (!Array.isArray(data)) {
-                    console.error("Invalid response format: Expected an array");
-                    return 1; // Default to level 1 if the response is not an array
+                    console.error("Ogiltigt svarformat: Förväntade en array");
+                    return 1; // Återgår till nivå 1 om svaret inte är en array
                 }
-        
-                // Find the user with the matching 'Namn' (username)
+
+                // Hittar användaren med matchande 'Namn' (användarnamn)
                 const user = data.find((entry) => entry.Namn === username);
-        
-                // If a matching user is found, return their level; otherwise, default to level 1
+
+                // Om användaren hittas och nivå definieras, returnera deras nivå, annars återgå till nivå 1
                 if (user && user.Levels) {
                     return user.Levels;
                 } else {
-                    console.log("User not found or level not defined. Defaulting to level 1.");
+                    console.log("Användare inte hittad eller nivå inte definierad. Återgår till nivå 1.");
                     return 1;
                 }
             } catch (error) {
-                console.error("Error fetching user level:", error);
-                return 1; // Default to level 1 if an error occurs
+                console.error("Fel vid hämtning av användarnivå:", error);
+                return 1; // Återgår till nivå 1 om ett fel inträffar
             }
         }
 
+        // Kollar om en användare existerar
         async function checkUserExists(username) {
             try {
                 const response = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner?username=${username}`);
                 const data = await response.json();
-                return data.length > 0; // Ensure this returns true if the user exists
+                return data.length > 0; // Returnerar true om användaren finns
             } catch (error) {
-                console.error("Error checking if user exists:", error);
-                return false;
+                console.error("Fel vid kontroll av användare:", error);
+                return false; // Returnerar false om ett fel inträffar
             }
         }
 
+        // Sätter in användarens data i mazerunner-tabellen och uppdaterar ekonomi
         async function insertUser(username, level, userlevel, averagetime) {
             try {
-                const pengar_tjanat = 10 * userlevel * level;
-                const exp_tjanat = 10 * userlevel * level;
-        
-                // Insert user into mazerunner table
+                const pengar_tjanat = 10 * userlevel * level; // Beräknar pengar tjänade
+                const exp_tjanat = 10 * userlevel * level; // Beräknar erfarenhetspoäng tjänade
+
+                // Sätter in användaren i mazerunner-tabellen
                 const mazerunnerResponse = await fetch("http://samet-desktop.adm.huddinge.se:3000/mazerunner", {
                     method: "POST",
                     headers: {
@@ -1920,20 +1993,20 @@ function handleGameOver() {
                         exp_tjanat,
                     }),
                 });
-        
+
                 if (!mazerunnerResponse.ok) {
-                    throw new Error(`HTTP error! Status: ${mazerunnerResponse.status}`);
+                    throw new Error(`HTTP-fel! Status: ${mazerunnerResponse.status}`);
                 }
-        
-                // Check if the user exists in ekonomi
+
+                // Kollar om användaren finns i ekonomi
                 const ekonomiCheckResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi?username=${username}`);
                 if (!ekonomiCheckResponse.ok) {
-                    throw new Error(`HTTP error! Status: ${ekonomiCheckResponse.status}`);
+                    throw new Error(`HTTP-fel! Status: ${ekonomiCheckResponse.status}`);
                 }
                 const ekonomiData = await ekonomiCheckResponse.json();
-        
+
                 if (ekonomiData.length > 0) {
-                    // User exists, update ekonomi
+                    // Om användaren finns, uppdatera ekonomi
                     const ekonomiUpdateResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                         method: "PUT",
                         headers: {
@@ -1945,12 +2018,12 @@ function handleGameOver() {
                             networth: pengar_tjanat,
                         }),
                     });
-        
+
                     if (!ekonomiUpdateResponse.ok) {
-                        throw new Error(`HTTP error! Status: ${ekonomiUpdateResponse.status}`);
+                        throw new Error(`HTTP-fel! Status: ${ekonomiUpdateResponse.status}`);
                     }
                 } else {
-                    // User does not exist, insert into ekonomi
+                    // Om användaren inte finns, sätt in användaren i ekonomi
                     const ekonomiInsertResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
                         method: "POST",
                         headers: {
@@ -1962,414 +2035,435 @@ function handleGameOver() {
                             networth: pengar_tjanat,
                         }),
                     });
-        
+
                     if (!ekonomiInsertResponse.ok) {
-                        throw new Error(`HTTP error! Status: ${ekonomiInsertResponse.status}`);
+                        throw new Error(`HTTP-fel! Status: ${ekonomiInsertResponse.status}`);
                     }
-                    console.log(`Ekonomi inserted for ${username}.`);
+                    console.log(`Ekonomi insatt för ${username}.`);
                 }
             } catch (error) {
-                console.error("Error inserting user and updating ekonomi:", error);
+                console.error("Fel vid inmatning av användare och uppdatering av ekonomi:", error);
             }
         }
         
-        
-        async function updateUser(username, level, userlevel, averagetime) {
-            try {
-              const pengar_tjanat = 10 * userlevel * level;
-              const exp_tjanat = 10 * userlevel * level;
-          
-              // Update mazerunner table
-              const mazerunnerResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner`, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  username,
-                  nivå: level,
-                  level: userlevel,
-                  tid: averagetime,
-                  pengar_tjanat,
-                  exp_tjanat,
-                }),
-              });
-          
-              if (!mazerunnerResponse.ok) {
-                throw new Error(`HTTP error! Status: ${mazerunnerResponse.status}`);
-              }
-          
-              // Update ekonomi table (adds pengar_tjanat to value and networth)
-              const ekonomiResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  username,
-                  value: pengar_tjanat, // Adding pengar_tjanat to value
-                  networth: pengar_tjanat, // Adding pengar_tjanat to networth
-                }),
-              });
-          
-              if (!ekonomiResponse.ok) {
-                throw new Error(`HTTP error! Status: ${ekonomiResponse.status}`);
-              }
-          
-              const ekonomiData = await ekonomiResponse.json();
-              return ekonomiData;
-            } catch (error) {
-              console.error("Error updating user and ekonomi:", error);
-              throw error;
-            }
-          }          
+        // Funktion för att uppdatera användarens data i både mazerunner och ekonomi
+    async function updateUser(username, level, userlevel, averagetime) {
+        try {
+            const pengar_tjanat = 10 * userlevel * level; // Beräknar pengar tjänade
+            const exp_tjanat = 10 * userlevel * level; // Beräknar erfarenhetspoäng tjänade
 
-        class MazeBuilder {
-        
-            constructor(width, height) {
-        
+            // Uppdaterar mazerunner-tabellen
+            const mazerunnerResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/mazerunner`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username,
+                    nivå: level,
+                    level: userlevel,
+                    tid: averagetime,
+                    pengar_tjanat,
+                    exp_tjanat,
+                }),
+            });
+
+            if (!mazerunnerResponse.ok) {
+                throw new Error(`HTTP-fel! Status: ${mazerunnerResponse.status}`);
+            }
+
+            // Uppdaterar ekonomi-tabellen (adderar pengar_tjanat till value och networth)
+            const ekonomiResponse = await fetch(`http://samet-desktop.adm.huddinge.se:3000/ekonomi`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username,
+                    value: pengar_tjanat, // Lägger till pengar_tjanat till value
+                    networth: pengar_tjanat, // Lägger till pengar_tjanat till networth
+                }),
+            });
+
+            if (!ekonomiResponse.ok) {
+                throw new Error(`HTTP-fel! Status: ${ekonomiResponse.status}`);
+            }
+
+            const ekonomiData = await ekonomiResponse.json();
+            return ekonomiData; // Returnerar uppdaterad ekonomi-data
+        } catch (error) {
+            console.error("Fel vid uppdatering av användare och ekonomi:", error);
+            throw error; // Kastar vidare felet för att hantera det högre upp
+        }
+    }
+
+    class MazeBuilder {
+
+        constructor(width, height) {
+
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-    
-            // Calculate maximum rows and columns based on screen size
-            const cellSize = 20; // Size of each cell in pixels
+
+            // Beräknar maximala rader och kolumner baserat på skärmstorlek
+            const cellSize = 20; // Storleken på varje cell i pixlar
             const maxCols = Math.floor(screenWidth / cellSize);
             const maxRows = Math.floor(screenHeight / cellSize);
-    
-            // Ensure the maze has at least 4 rows and columns
+
+            // Säkerställer att labyrinten har minst 4 rader och kolumner
             this.width = Math.max(4, Math.floor(maxCols / 2));
             this.height = Math.max(4, Math.floor(maxRows / 2));
-    
+
             this.cols = 2 * this.width + 1;
             this.rows = 2 * this.height + 1;
-    
+
             this.maze = this.initArray([]);
-        
-            /* place initial walls */
-        
+
+            /* Placera initiala väggar */
+
             this.maze.forEach((row, r) => {
                 row.forEach((cell, c) => {
-                switch(r)
-                {
-                    case 0:
-                    case this.rows - 1:
-                    this.maze[r][c] = ["wall"];
-                    break;
-        
-                    default:
-                    if((r % 2) == 1) {
-                        if((c == 0) || (c == this.cols - 1)) {
-                        this.maze[r][c] = ["wall"];
-                        }
-                    } else if(c % 2 == 0) {
-                        this.maze[r][c] = ["wall"];
+                    switch(r)
+                    {
+                        case 0:
+                        case this.rows - 1:
+                            this.maze[r][c] = ["wall"];
+                            break;
+
+                        default:
+                            if((r % 2) == 1) {
+                                if((c == 0) || (c == this.cols - 1)) {
+                                    this.maze[r][c] = ["wall"];
+                                }
+                            } else if(c % 2 == 0) {
+                                this.maze[r][c] = ["wall"];
+                            }
                     }
-        
-                }
                 });
-        
+
                 if(r == 0) {
-                /* place exit in top row */
-                let doorPos = this.posToSpace(this.rand(1, this.width));
-                this.maze[r][doorPos] = ["door", "exit"];
+                    // Placera utgången i översta raden
+                    let doorPos = this.posToSpace(this.rand(1, this.width));
+                    this.maze[r][doorPos] = ["door", "exit"];
                 }
-        
+
                 if(r == this.rows - 1) {
-                /* place entrance in bottom row */
-                let doorPos = this.posToSpace(this.rand(1, this.width));
-                this.maze[r][doorPos] = ["door", "entrance"];
+                    // Placera ingången i nedersta raden
+                    let doorPos = this.posToSpace(this.rand(1, this.width));
+                    this.maze[r][doorPos] = ["door", "entrance"];
                 }
-        
             });
-        
-            /* start partitioning */
-        
+
+            /* Börjar dela upp labyrinten */
+
             this.partition(1, this.height - 1, 1, this.width - 1);
-        
-            }
-        
-            initArray(value) {
+        }
+
+        // Skapar en array med de givna värdena
+        initArray(value) {
             return new Array(this.rows).fill().map(() => new Array(this.cols).fill(value));
-            }
-        
-            rand(min, max) {
+        }
+
+        // Slumpar ett tal inom ett givet intervall
+        rand(min, max) {
             return min + Math.floor(Math.random() * (1 + max - min));
-            }
-        
-            posToSpace(x) {
-            return 2 * (x-1) + 1;
-            }
-        
-            posToWall(x) {
+        }
+
+        // Omvandlar en position till ett utrymme i labyrinten
+        posToSpace(x) {
+            return 2 * (x - 1) + 1;
+        }
+
+        // Omvandlar en position till en vägg
+        posToWall(x) {
             return 2 * x;
-            }
-        
-            inBounds(r, c) {
+        }
+
+        // Kollar om en position är inom labyrintens gränser
+        inBounds(r, c) {
             if((typeof this.maze[r] == "undefined") || (typeof this.maze[r][c] == "undefined")) {
-                return false; /* out of bounds */
+                return false; // Om utanför gränserna
             }
-            return true;
-            }
-        
-            shuffle(array) {
-            /* sauce: https://stackoverflow.com/a/12646864 */
+            return true; // Om inom gränserna
+        }
+
+        // Blandar en array
+        shuffle(array) {
+            // Källa: https://stackoverflow.com/a/12646864
             for(let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+                [array[i], array[j]] = [array[j], array[i]]; // Byter plats på elementen
             }
-            return array;
+            return array; // Returnerar den blandade arrayen
+        }
+
+        
+            // Funktion för att skapa partitionering av väggar i labyrinten
+        partition(r1, r2, c1, c2) {
+            /* skapa partitioneringsväggar
+            källa: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_division_method */
+        
+            let horiz, vert, x, y, start, end;
+        
+            if ((r2 < r1) || (c2 < c1)) {
+                return false; // Om områdets höger-/nederkant är utanför vänster-/övre kanten
             }
         
-            partition(r1, r2, c1, c2) {
-                /* create partition walls
-                   ref: https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_division_method */
-            
-                let horiz, vert, x, y, start, end;
-            
-                if ((r2 < r1) || (c2 < c1)) {
-                    return false;
-                }
-            
-                if (r1 == r2) {
-                    horiz = r1;
-                } else {
-                    x = r1 + 1;
-                    y = r2 - 1;
-                    start = Math.round(x + (y - x) / 4);
-                    end = Math.round(x + 3 * (y - x) / 4);
-                    horiz = this.rand(start, end);
-                }
-            
-                if (c1 == c2) {
-                    vert = c1;
-                } else {
-                    x = c1 + 1;
-                    y = c2 - 1;
-                    start = Math.round(x + (y - x) / 3);
-                    end = Math.round(x + 2 * (y - x) / 3);
-                    vert = this.rand(start, end);
-                }
-            
-                for (let i = this.posToWall(r1) - 1; i <= this.posToWall(r2) + 1; i++) {
-                    for (let j = this.posToWall(c1) - 1; j <= this.posToWall(c2) + 1; j++) {
-                        if ((i == this.posToWall(horiz)) || (j == this.posToWall(vert))) {
-                            this.maze[i][j] = ["wall"];
-                        }
-                    }
-                }
-            
-                // Create gaps in the partition walls to allow multiple paths
-                let primaryGaps = this.shuffle([true, true, true, false]); // Ensure one primary gap per partition
-                let extraGaps = this.shuffle([true, false, false, false]); // Additional gaps to create more paths
-            
-                const createGap = (row, col) => {
-                    if (this.inBounds(row, col) && this.maze[row][col].includes("wall")) {
-                        this.maze[row][col] = []; // Remove the wall to create a path
-                    }
-                };
-            
-                if (primaryGaps[0]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(c1, vert)));
-                if (primaryGaps[1]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(vert + 1, c2 + 1)));
-                if (primaryGaps[2]) createGap(this.posToSpace(this.rand(r1, horiz)), this.posToWall(vert));
-                if (primaryGaps[3]) createGap(this.posToSpace(this.rand(horiz + 1, r2 + 1)), this.posToWall(vert));
-            
-                if (extraGaps[0]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(c1, vert)));
-                if (extraGaps[1]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(vert + 1, c2 + 1)));
-                if (extraGaps[2]) createGap(this.posToSpace(this.rand(r1, horiz)), this.posToWall(vert));
-                if (extraGaps[3]) createGap(this.posToSpace(this.rand(horiz + 1, r2 + 1)), this.posToWall(vert));
-            
-                // Recursively partition newly created chambers
-                this.partition(r1, horiz - 1, c1, vert - 1);
-                this.partition(horiz + 1, r2, c1, vert - 1);
-                this.partition(r1, horiz - 1, vert + 1, c2);
-                this.partition(horiz + 1, r2, vert + 1, c2);
+            if (r1 == r2) {
+                horiz = r1; // Om raderna är lika, sätt horisontell vägg vid r1
+            } else {
+                x = r1 + 1;
+                y = r2 - 1;
+                start = Math.round(x + (y - x) / 4); // Bestäm startpunkt för horisontell vägg
+                end = Math.round(x + 3 * (y - x) / 4); // Bestäm slutpunkt för horisontell vägg
+                horiz = this.rand(start, end); // Välj en slumpmässig plats för horisontell vägg
             }
         
-            isGap(...cells) {
+            if (c1 == c2) {
+                vert = c1; // Om kolumnerna är lika, sätt vertikal vägg vid c1
+            } else {
+                x = c1 + 1;
+                y = c2 - 1;
+                start = Math.round(x + (y - x) / 3); // Bestäm startpunkt för vertikal vägg
+                end = Math.round(x + 2 * (y - x) / 3); // Bestäm slutpunkt för vertikal vägg
+                vert = this.rand(start, end); // Välj en slumpmässig plats för vertikal vägg
+            }
+        
+            // Skapar väggar för partitionen
+            for (let i = this.posToWall(r1) - 1; i <= this.posToWall(r2) + 1; i++) {
+                for (let j = this.posToWall(c1) - 1; j <= this.posToWall(c2) + 1; j++) {
+                    if ((i == this.posToWall(horiz)) || (j == this.posToWall(vert))) {
+                        this.maze[i][j] = ["wall"]; // Sätt vägg på den beräknade positionen
+                    }
+                }
+            }
+        
+            // Skapar luckor i partitioneringsväggarna för att tillåta flera vägar
+            let primaryGaps = this.shuffle([true, true, true, false]); // Säkerställer en primär lucka per partition
+            let extraGaps = this.shuffle([true, false, false, false]); // Ytterligare luckor för fler vägar
+        
+            // Funktion för att skapa en lucka genom att ta bort en vägg
+            const createGap = (row, col) => {
+                if (this.inBounds(row, col) && this.maze[row][col].includes("wall")) {
+                    this.maze[row][col] = []; // Ta bort väggen för att skapa en väg
+                }
+            };
+        
+            // Skapar primära luckor
+            if (primaryGaps[0]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(c1, vert)));
+            if (primaryGaps[1]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(vert + 1, c2 + 1)));
+            if (primaryGaps[2]) createGap(this.posToSpace(this.rand(r1, horiz)), this.posToWall(vert));
+            if (primaryGaps[3]) createGap(this.posToSpace(this.rand(horiz + 1, r2 + 1)), this.posToWall(vert));
+        
+            // Skapar extra luckor
+            if (extraGaps[0]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(c1, vert)));
+            if (extraGaps[1]) createGap(this.posToWall(horiz), this.posToSpace(this.rand(vert + 1, c2 + 1)));
+            if (extraGaps[2]) createGap(this.posToSpace(this.rand(r1, horiz)), this.posToWall(vert));
+            if (extraGaps[3]) createGap(this.posToSpace(this.rand(horiz + 1, r2 + 1)), this.posToWall(vert));
+        
+            // Rekursiv partitionering för de nya delarna av labyrinten
+            this.partition(r1, horiz - 1, c1, vert - 1);
+            this.partition(horiz + 1, r2, c1, vert - 1);
+            this.partition(r1, horiz - 1, vert + 1, c2);
+            this.partition(horiz + 1, r2, vert + 1, c2);
+        }
+
+        // Funktion för att kontrollera om en cell är en lucka (väg)
+        isGap(...cells) {
             return cells.every((array) => {
                 let row, col;
                 [row, col] = array;
                 if(this.maze[row][col].length > 0) {
-                if(!this.maze[row][col].includes("door")) {
-                    return false;
+                    if(!this.maze[row][col].includes("door")) {
+                        return false; // Om det inte är en dörr
+                    }
                 }
-                }
-                return true;
+                return true; // Om det är en öppning eller dörr
             });
-            }
-        
-            countSteps(array, r, c, val, stop) {
-        
+        }
+
+        // Funktion för att räkna steg för att nå en viss plats
+        countSteps(array, r, c, val, stop) {
+
             if(!this.inBounds(r, c)) {
-                return false; /* out of bounds */
+                return false; /* utanför gränserna */
             }
-        
+
             if(array[r][c] <= val) {
-                return false; /* shorter route already mapped */
+                return false; /* Kortare väg har redan kartlagts */
             }
-        
+
             if(!this.isGap([r, c])) {
-                return false; /* not traversable */
+                return false; /* Kan inte passera här */
             }
-        
+
             array[r][c] = val;
-        
+
             if(this.maze[r][c].includes(stop)) {
-                return true; /* reached destination */
+                return true; /* Målet har nåtts */
             }
-        
+
+            // Räkna steg i alla fyra riktningar
             this.countSteps(array, r-1, c, val+1, stop);
             this.countSteps(array, r, c+1, val+1, stop);
             this.countSteps(array, r+1, c, val+1, stop);
             this.countSteps(array, r, c-1, val+1, stop);
-        
-            }
-        
-            getKeyLocation() {
-        
+        }
+
+        // Funktion för att hitta nyckelns position i labyrinten
+        getKeyLocation() {
+
             let fromEntrance = this.initArray();
             let fromExit = this.initArray();
-        
+
             this.totalSteps = -1;
-        
+
+            // Räkna steg från ingången och utgången
             for(let j = 1; j < this.cols-1; j++) {
                 if(this.maze[this.rows-1][j].includes("entrance")) {
-                this.countSteps(fromEntrance, this.rows-1, j, 0, "exit");
+                    this.countSteps(fromEntrance, this.rows-1, j, 0, "exit");
                 }
                 if(this.maze[0][j].includes("exit")) {
-                this.countSteps(fromExit, 0, j, 0, "entrance");
+                    this.countSteps(fromExit, 0, j, 0, "entrance");
                 }
             }
-        
+
             let fc = -1, fr = -1;
-        
+
+            // Hitta cellen med flest gemensamma steg från både ingång och utgång
             this.maze.forEach((row, r) => {
                 row.forEach((cell, c) => {
-                if(typeof fromEntrance[r][c] == "undefined") {
-                    return;
-                }
-                let stepCount = fromEntrance[r][c] + fromExit[r][c];
-                if(stepCount > this.totalSteps) {
-                    fr = r;
-                    fc = c;
-                    this.totalSteps = stepCount;
-                }
+                    if(typeof fromEntrance[r][c] == "undefined") {
+                        return;
+                    }
+                    let stepCount = fromEntrance[r][c] + fromExit[r][c];
+                    if(stepCount > this.totalSteps) {
+                        fr = r;
+                        fc = c;
+                        this.totalSteps = stepCount;
+                    }
                 });
             });
+
+            return [fr, fc]; // Returnerar den bästa platsen för nyckeln
+        }
+
         
-            return [fr, fc];
-            }
-        
-            placeKey() {
-        
+        placeKey() {
+            // Variabler för rad och kolumn där nyckeln ska placeras
             let fr, fc;
+            // Hämta platsen för nyckeln
             [fr, fc] = this.getKeyLocation();
         
+            // Placera nyckeln på den angivna platsen i labyrinten
             this.maze[fr][fc] = ["key"];
+        }
         
-            }
-        
-            display(id) {
-        
+        display(id) {
+            // Hämta föräldradiv med det angivna id:t
             this.parentDiv = document.getElementById(id);
         
-            if(!this.parentDiv) {
+            // Om föräldradiven inte existerar, returnera falskt
+            if (!this.parentDiv) {
                 return false;
             }
         
-            while(this.parentDiv.firstChild) {
+            // Ta bort alla tidigare barn från föräldradiven
+            while (this.parentDiv.firstChild) {
                 this.parentDiv.removeChild(this.parentDiv.firstChild);
             }
         
+            // Skapa en container för labyrinten
             const container = document.createElement("div");
             container.id = "maze";
-            container.dataset.steps = this.totalSteps;
+            container.dataset.steps = this.totalSteps;  // Lägg till antalet steg i data-attribut
         
+            // Gå igenom varje rad i labyrinten och skapa en div för varje rad och cell
             this.maze.forEach((row) => {
                 let rowDiv = document.createElement("div");
                 row.forEach((cell) => {
-                let cellDiv = document.createElement("div");
-                if(cell) {
-                    cellDiv.className = cell.join(" ");
-                }
-                rowDiv.appendChild(cellDiv);
+                    let cellDiv = document.createElement("div");
+                    if (cell) {
+                        // Om cellen innehåller något (t.ex. en nyckel), sätt klassen till cellens innehåll
+                        cellDiv.className = cell.join(" ");
+                    }
+                    rowDiv.appendChild(cellDiv);  // Lägg till cellen till raden
                 });
-                container.appendChild(rowDiv);
+                container.appendChild(rowDiv);  // Lägg till raden till containern
             });
         
+            // Lägg till containern till föräldradiven
             this.parentDiv.appendChild(container);
         
-            return true;
-            }
-        
+            return true;  // Returtrue för att indikera att visningen lyckades
+        }        
         }
         
         
         class Player {
             constructor(maze) {
                 this.maze = maze;
-                this.position = { row: maze.rows - 2, col: maze.cols - 2 }; // Start near the entrance
+                this.position = { row: maze.rows - 2, col: maze.cols - 2 }; // Starta nära ingången
                 this.hasKey = false;
-                this.isMovementEnabled = false; // Disable movement initially
+                this.isMovementEnabled = false; // Inaktivera rörelse initialt
             }
         
             init() {
-                document.addEventListener("keydown", (e) => this.move(e)); // Add the movement listener
-                this.updatePlayerPosition(); // Update the player's position in the UI
+                document.addEventListener("keydown", (e) => this.move(e)); // Lägg till lyssnare för rörelse
+                this.updatePlayerPosition(); // Uppdatera spelarens position i UI
             }
         
             move(event) {
-                if (!this.isMovementEnabled) return; // Only move if movement is enabled
+                if (!this.isMovementEnabled) return; // Endast rörelse om den är aktiverad
         
                 let { row, col } = this.position;
         
                 switch (event.key) {
                     case "ArrowUp":
-                        row -= 1;
+                        row -= 1; // Flytta uppåt
                         break;
                     case "ArrowDown":
-                        row += 1;
+                        row += 1; // Flytta nedåt
                         break;
                     case "ArrowLeft":
-                        col -= 1;
+                        col -= 1; // Flytta vänster
                         break;
                     case "ArrowRight":
-                        col += 1;
+                        col += 1; // Flytta höger
                         break;
                     default:
                         return;
                 }
         
                 if (this.canMoveTo(row, col)) {
-                    this.position = { row, col };
-                    this.checkInteraction();
-                    this.updatePlayerPosition();
+                    this.position = { row, col }; // Uppdatera position
+                    this.checkInteraction(); // Kontrollera interaktioner
+                    this.updatePlayerPosition(); // Uppdatera position i UI
                 }
             }
-
+        
             enableMovement() {
-                this.isMovementEnabled = true; // Enable movement
+                this.isMovementEnabled = true; // Aktivera rörelse
             }
         
             disableMovement() {
-                this.isMovementEnabled = false; // Disable movement
+                this.isMovementEnabled = false; // Inaktivera rörelse
             }
         
             canMoveTo(row, col) {
-                // Check if the new position is within bounds
+                // Kontrollera om positionen är inom gränserna
                 if (row < 0 || row >= this.maze.rows || col < 0 || col >= this.maze.cols) {
                     return false;
                 }
         
-                // Get the cell at the new position
+                // Hämta cellen på den nya positionen
                 const cell = this.maze.maze[row][col];
         
-                // Check if the cell contains a wall
+                // Kontrollera om cellen innehåller en vägg
                 if (cell.includes("wall")) {
                     return false;
                 }
         
-                // Additional check to ensure the cell is not a door (if needed)
+                // Extra kontroll för att säkerställa att cellen inte är en dörr (om nödvändigt)
                 if (cell.includes("door") && !cell.includes("entrance") && !cell.includes("exit")) {
                     return false;
                 }
@@ -2378,52 +2472,55 @@ function handleGameOver() {
             }
         
             generateNewMaze() {
-                if (monster) monster.stopHunting();
+                if (monster) monster.stopHunting(); // Stoppa monster om det finns ett
         
                 let width = 40;
                 let height = 24;
-                const newMaze = new MazeBuilder(width, height);
-                newMaze.placeKey();
-                newMaze.display("maze_container");
+                const newMaze = new MazeBuilder(width, height); // Skapa en ny labyrint
+                newMaze.placeKey(); // Placera nyckeln i labyrinten
+                newMaze.display("maze_container"); // Visa labyrinten i UI
         
                 this.maze = newMaze;
-                this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 };
+                this.position = { row: newMaze.rows - 2, col: newMaze.cols - 2 }; // Återställ spelaren till startposition
                 this.hasKey = false;
-                this.updatePlayerPosition();
+                this.updatePlayerPosition(); // Uppdatera spelarens position i UI
         
-                monster = new Monster(newMaze);
+                monster = new Monster(newMaze); // Skapa ett nytt monster
                 monster.init();
-                startTimer();
+                startTimer(); // Starta timern för spelet
             }
         
             checkInteraction() {
                 const cell = this.maze.maze[this.position.row][this.position.col];
                 if (cell.includes("key")) {
-                    this.pickUpKey();
+                    this.pickUpKey(); // Plocka upp nyckeln
                 } else if (cell.includes("exit") && this.hasKey) {
-                    completeMaze(); // Increment level and reset timer
+                    completeMaze(); // Avsluta labyrinten om nyckeln är upphämtad
                 }
             }
         
             pickUpKey() {
-                this.hasKey = true;
+                this.hasKey = true; // Spelaren har nu nyckeln
         
-                // Remove key from maze data
+                // Ta bort nyckeln från labyrintens data
                 this.maze.maze[this.position.row][this.position.col] = [];
         
-                // Update the DOM
+                // Uppdatera DOM
                 const currentCell = document
                     .getElementById("maze")
                     .children[this.position.row]
                     .children[this.position.col];
-                currentCell.classList.remove("key");
+                currentCell.classList.remove("key"); // Ta bort nyckelns visuella representation
         
-                // Update UI for key possession
+                // Uppdatera UI för att indikera att spelaren har nyckeln
                 document.getElementById("maze_score").classList.add("has-key");
-            }
+            }         
         
             updatePlayerPosition() {
+                // Ta bort tidigare position av spelaren i UI
                 document.querySelectorAll(".hero").forEach((el) => el.classList.remove("hero"));
+                
+                // Hitta aktuell cell och markera den som spelarens position
                 const currentCell = document
                     .getElementById("maze")
                     .children[this.position.row]
@@ -2431,52 +2528,53 @@ function handleGameOver() {
                 currentCell.classList.add("hero");
             }
         }
+        
 
         class Monster {
             constructor(maze) {
                 this.maze = maze;
-                this.position = { row: 1, col: 1 };
-                this.huntInterval = null; // Track the interval
+                this.position = { row: 1, col: 1 }; // Startposition för monstret
+                this.huntInterval = null; // Håller koll på intervallet för rörelse
             }
-
+        
             startHunting() {
                 if (this.huntInterval) {
-                    clearInterval(this.huntInterval); // Clear any existing interval
+                    clearInterval(this.huntInterval); // Rensa eventuellt tidigare intervall
                 }
-                this.huntInterval = setInterval(() => this.moveTowardsPlayer(), 500);
+                this.huntInterval = setInterval(() => this.moveTowardsPlayer(), 500); // Starta jakt på spelaren
             }
-
+        
             resetPosition() {
-                this.position = { row: 1, col: 1 }; // Reset to starting position
+                this.position = { row: 1, col: 1 }; // Återställ till startposition
                 this.updateMonsterPosition();
             }
         
             stopHunting() {
                 if (this.huntInterval) {
                     clearInterval(this.huntInterval);
-                    this.huntInterval = null; // Reset the interval tracker
+                    this.huntInterval = null; // Stoppa jaktintervallet
                 }
             }
-            
+        
             init() {
-                this.updateMonsterPosition();
-                this.startHunting();
+                this.updateMonsterPosition(); // Uppdatera monsterposition i UI
+                this.startHunting(); // Starta jakt på spelaren
             }
         
             canMoveTo(row, col) {
                 return (
                     row >= 0 && row < this.maze.rows &&
                     col >= 0 && col < this.maze.cols &&
-                    !this.maze.maze[row][col].includes("wall")
+                    !this.maze.maze[row][col].includes("wall") // Kontrollera att monstret inte går in i en vägg
                 );
             }
         
             findShortestPath(targetRow, targetCol) {
                 const directions = [
-                    { row: -1, col: 0 }, // Up
-                    { row: 1, col: 0 },  // Down
-                    { row: 0, col: -1 }, // Left
-                    { row: 0, col: 1 },  // Right
+                    { row: -1, col: 0 }, // Upp
+                    { row: 1, col: 0 },  // Ner
+                    { row: 0, col: -1 }, // Vänster
+                    { row: 0, col: 1 },  // Höger
                 ];
                 const queue = [{ row: this.position.row, col: this.position.col, path: [] }];
                 const visited = Array.from({ length: this.maze.rows }, () => Array(this.maze.cols).fill(false));
@@ -2484,7 +2582,7 @@ function handleGameOver() {
         
                 while (queue.length > 0) {
                     const { row, col, path } = queue.shift();
-                    if (row === targetRow && col === targetCol) return path;
+                    if (row === targetRow && col === targetCol) return path; // Returnera kortaste vägen till spelaren
         
                     for (const direction of directions) {
                         const newRow = row + direction.row;
@@ -2501,61 +2599,65 @@ function handleGameOver() {
             moveTowardsPlayer() {
                 const path = this.findShortestPath(player.position.row, player.position.col);
                 if (path.length > 0) {
-                    const nextMove = path[0];
+                    const nextMove = path[0]; // Nästa rörelse mot spelaren
                     this.position.row += nextMove.row;
                     this.position.col += nextMove.col;
-                    this.updateMonsterPosition();
-                    this.checkCollision();
+                    this.updateMonsterPosition(); // Uppdatera positionen i UI
+                    this.checkCollision(); // Kontrollera om monstret har träffat spelaren
                 }
             }
         
             startHunting() {
-                this.huntInterval = setInterval(() => this.moveTowardsPlayer(), 500);
+                this.huntInterval = setInterval(() => this.moveTowardsPlayer(), 500); // Starta jaktintervallet
             }
         
             updateMonsterPosition() {
+                // Ta bort tidigare position av monstret i UI
                 document.querySelectorAll(".monster").forEach(el => el.classList.remove("monster"));
+                // Uppdatera positionen i DOM
                 document.getElementById("maze").children[this.position.row].children[this.position.col].classList.add("monster");
             }
         
             checkCollision() {
                 if (this.position.row === player.position.row && this.position.col === player.position.col) {
-                    attempts--;
-                    updateHUD();
+                    attempts--; // Minska antal försök
+                    updateHUD(); // Uppdatera spelets UI
                     if (attempts > 0) {
-                        // ... (reset maze, timer, etc.)
+                        // Om det finns försök kvar, starta om spelet/timern
                     } else {
-                        showPopup(); // <-- Trigger popup on zero attempts
+                        showPopup(); // Visa popup när spelaren har slut på försök
                     }
                 }
             }
         }
-
+        
+        // Globala variabler för spelet
         let level = 1;
         let attempts = 3;
         let timeLeft = 180;
         let timer;
-
+        
         function startTimer() {
-            clearInterval(timer);
-            timeLeft = 180;
-            updateHUD();
+            clearInterval(timer); // Rensa eventuell befintlig timer
+            timeLeft = 180; // Återställ tid
+            updateHUD(); // Uppdatera spelets UI
             timer = setInterval(() => {
-                timeLeft--;
+                timeLeft--; // Minska tiden
                 updateHUD();
                 if (timeLeft <= 0) {
                     clearInterval(timer);
-                    showPopup(); // <-- Trigger popup on timeout
+                    showPopup(); // Visa popup när tiden är ute
                 }
             }, 1000);
         }
-
+        
         function updateHUD() {
             document.getElementById("level_counter").textContent = level;
             document.getElementById("time_counter").textContent = timeLeft;
             document.getElementById("attempts_counter").textContent = attempts;
         }
-
+        
+        // Skapa och tillämpa CSS-stil för popup
         const style = document.createElement('style');
         style.innerHTML = `
             #popupOverlay {
@@ -2567,33 +2669,33 @@ function handleGameOver() {
                 background: rgba(0, 0, 0, 0.5);
                 display: flex;
                 justify-content: center;
-                align-items: center; /* Center vertically and horizontally */
+                align-items: center; /* Centrera både horisontellt och vertikalt */
                 z-index: 1000;
                 opacity: 0;
                 visibility: hidden;
                 transition: opacity 0.3s ease, visibility 0.3s ease;
             }
-
+        
             #popupOverlay.visible {
                 opacity: 1;
                 visibility: visible;
             }
-
+        
             #popupOverlay.visible #popup {
-                transform: translateY(0); /* Bring it to the center */
+                transform: translateY(0); /* Placera popup i centrum */
             }
-
+        
             #popup h2 {
                 margin: 0 0 10px;
                 font-size: 1.5em;
                 color: black;
             }
-
+        
             #popup p {
                 margin: 5px 0;
                 color: black;
             }
-
+        
             #closePopup {
                 position: absolute;
                 top: 10px;
@@ -2603,27 +2705,27 @@ function handleGameOver() {
                 font-size: 1.2em;
                 cursor: pointer;
             }
-
+        
             #closePopup:hover {
-                color: #e00; /* Red color when hovered */
+                color: #e00; /* Röd färg vid hovring */
             }
-
+        
             #buy-attempts-button {
                 margin-left: 40px;
             }
         `;
-        document.head.appendChild(style);
+        document.head.appendChild(style);        
 
         async function showPopup() {
-            // Disable player movement
+            // stanna spelaren
             player.disableMovement();
         
-            // Calculate total elapsed time
+            // räkna ut tiden som tagits för att klara spelet
             const endTime = Date.now();
             const elapsedTimeInSeconds = Math.floor((endTime - startTime) / 1000);
             const averagetime = elapsedTimeInSeconds / level;
         
-            // Create the popup overlay and content
+            // skapa popupen och innehållet
             const popupOverlay = document.createElement('div');
             popupOverlay.id = 'popupOverlay';
         
@@ -2637,7 +2739,7 @@ function handleGameOver() {
                     </div>
                 `;
             }
-        
+            
             if (username) {
                 const userlevel = await fetchUserLevel(username);
                 popupOverlay.innerHTML = `
@@ -2664,23 +2766,23 @@ function handleGameOver() {
         
             document.body.appendChild(popupOverlay);
         
-            // Show the popup with animation
+            // visa popupen efter en kort fördröjning 
             setTimeout(() => {
                 popupOverlay.classList.add('visible');
             }, 10);
         
-            // Freeze the game state
-            clearInterval(timer); // Stop the countdown timer
-            if (monster) monster.stopHunting(); // Stop the monster
+            // frys spelet 
+            clearInterval(timer); // stanna timern
+            if (monster) monster.stopHunting(); // stana monstret 
         
-            // Close the popup when clicking outside or on the X button
+            // stäng popupen när användaren klickar på krysset eller bakgrunden
             popupOverlay.addEventListener('click', (e) => {
                 if (e.target.id === 'popupOverlay' || e.target.id === 'closePopup') {
                     window.location.reload();
                 }
             });
         
-            // Database operations (only if the user is logged in)
+            // Databas operationer för att uppdatera användarens data
             if (username) {
                 const userlevel = await fetchUserLevel(username);
         
@@ -2711,21 +2813,21 @@ function handleGameOver() {
         
             if (username) {
                 const buyButton = document.getElementById('buy-attempts-button');
-                buyButton.style.display = 'block'; // Always show if user is logged in
+                buyButton.style.display = 'block'; // visa alltid om användaren är inloggad
         
-                // Function to update the button text with the current cost
+                // Funktion för att uppdatera knappens text
                 const updateButtonText = () => {
                     document.getElementById('cost').textContent = currentCost;
                 };
         
-                updateButtonText(); // Initial update
+                updateButtonText(); // Updatera knappens text
         
-                // Handle button click
+                // Hantera knappklick
                 buyButton.addEventListener('click', () => {
                     fetch("http://samet-desktop.adm.huddinge.se:3000/ekonomi")
                         .then(res => res.json())
                         .then(data => {
-                            // Find the user in the fetched data
+                            // Hitta användaren i tabellen
                             const user = data.find(user => user.username === username);
                             
                             if (!user) {
@@ -2737,33 +2839,33 @@ function handleGameOver() {
                             console.log(userBalance);
                 
                             if (userBalance >= currentCost) {
-                                // Deduct AP and grant attempts
+                                // ta bort kostnaden från användarens saldo
                                 fetch('http://samet-desktop.adm.huddinge.se:3000/update-ekonomi2', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
                                         username: username,
-                                        cost: currentCost // Deduct cost
+                                        cost: currentCost // minska kostnaden
                                     })
                                 }).then(() => {
-                                    // Reset game state
+                                    // starta om spelet
                                     attempts = 3;
                                     timeLeft = 180;
                                     startTime = Date.now();
                 
-                                    // Reset player and monster positions
+                                    // Nollställ spelarens och monstrets position
                                     player.position = { row: Maze.rows - 2, col: Maze.cols - 2 };
                                     monster.resetPosition();
         
                                     currentCost *= 2;
                 
-                                    // Restart UI and timer
+                                    //starta om Ui och spelet
                                     const popupOverlay = document.getElementById('popupOverlay');
                                     if (popupOverlay) popupOverlay.remove();
                                     updateHUD();
                                     startTimer();
-                                    player.enableMovement(); // Re-enable player movement
-                                    updateButtonText(); // Update the button text with the new cost
+                                    player.enableMovement(); // återaktivera spelarens rörelse
+                                    updateButtonText(); // updatera knappens text med den nya kostnaden
                                 });
                             } else {
                                 alert("Not enough AP!");
@@ -2779,7 +2881,7 @@ function handleGameOver() {
             startTime = Date.now();
             clearInterval(timer);
         
-            // Reset the cost for buying attempts
+            // Återställ kostnaden för att köpa försök
             currentCost = baseCost;
         
             if (monster) {
@@ -2788,7 +2890,7 @@ function handleGameOver() {
             }
         
             if (player) {
-                player.disableMovement(); // Disable player movement
+                player.disableMovement(); // Inaktivera spelarens rörelse
                 player.position = { row: Maze.rows - 2, col: Maze.cols - 2 };
                 player.hasKey = false;
                 player.updatePlayerPosition();
@@ -2804,7 +2906,7 @@ function handleGameOver() {
             player.generateNewMaze();
             startTimer();
             
-            // Reset monster position for new level
+              // Återställ monsterpositionen för den nya nivån
             if (monster) {
                 monster.stopHunting();
                 monster.resetPosition();
@@ -2812,7 +2914,7 @@ function handleGameOver() {
             }
         }
 
-        // Update the start button event listener
+        // Uppdatera eventlyssnaren för startknappen
         document.getElementById("start_button").addEventListener("click", () => {
             Maze = new MazeBuilder(40, 24);
             Maze.placeKey();
@@ -2820,7 +2922,7 @@ function handleGameOver() {
         
             player = new Player(Maze);
             player.init();
-            player.enableMovement(); // Enable player movement
+            player.enableMovement(); //aktivera spelarens rörelse
         
             monster = new Monster(Maze);
             monster.init();
@@ -2831,10 +2933,11 @@ function handleGameOver() {
             document.getElementById("game_hud").style.display = "block";
             updateHUD();
         
-            startTime = Date.now(); // Record the start time
-            startTimer(); // Start the countdown timer
+            startTime = Date.now();  // Sätt starttiden när spelet börjar
+            startTimer(); // Starta nedräkningstimern
         });
 
+        // Eventlyssnare för menyknappen
         document.getElementById("menu_button").addEventListener("click", () => {
             resetGame(); // Completely reset the game state
             document.getElementById("start_page").style.display = "flex";
@@ -2842,21 +2945,21 @@ function handleGameOver() {
             document.getElementById("game_hud").style.display = "none";
             localStorage.setItem("currentState", "start");
         });
-
+        // Eventlyssnare för menyknappen för att dölja HUD
         document.getElementById("menu_button").addEventListener("click", function() {
             document.getElementById("game_hud").style.display = "none";  // Hide the container
         });
         
-        // When the 'Start!' button is clicked, show the game HUD container
+        // När 'Start!' knappen klickas på, visa spelets HUD-container
         document.getElementById("start_button").addEventListener("click", function() {
-            document.getElementById("game_hud").style.display = "block";  // Show the container
+            document.getElementById("game_hud").style.display = "block";//Visa HUD-container
         });
 
         let Maze = new MazeBuilder(40,24);
         Maze.placeKey();
         Maze.display("maze_container");
 
-        // Initialize the player
+        // Initialisera spelaren
         let player = new Player(Maze);
         player.init();
 
@@ -2867,7 +2970,7 @@ function handleGameOver() {
         document.addEventListener("DOMContentLoaded", () => {
             const currentState = localStorage.getItem("currentState");
             
-            // Reset game state when first loading or returning to start screen
+           // Återställ spelstatus när sidan först laddas eller när användaren återgår till startsidan
             resetGame();
             
             if (currentState === "maze") {
@@ -2875,7 +2978,7 @@ function handleGameOver() {
                 document.getElementById("maze_container").style.display = "block";
                 document.getElementById("game_hud").style.display = "block";
                 
-                // Recreate game state
+                 // Skapa om spelstatus
                 Maze = new MazeBuilder(40, 24);
                 Maze.placeKey();
                 Maze.display("maze_container");
@@ -2885,12 +2988,13 @@ function handleGameOver() {
                 monster.init();
                 updateHUD();
         
-                // Initialize startTime when reloading into the game screen
-                startTime = Date.now(); // Initialize startTime
-                startTimer(); // Start the countdown timer
+              // Initiera starttiden när spelet laddas
+                startTime = Date.now(); // Sätt starttiden
+                startTimer();// Starta nedräkningstimern
             }
         });
 
+        //om antalet försök är mindre än eller lika med 0, visa popup
         if (attempts <= 0) {
             const buyAttemptsButton = document.getElementById('buy-attempts-button');
             buyAttemptsButton.style.display = 'block';
@@ -2913,12 +3017,12 @@ function handleGameOver() {
         const leaderboardText = document.getElementById("leaderboard-text");
         const tiles = document.querySelectorAll(".leaderboard-tile");
         
-    
+        // Uppdatera visningen av leaderboard baserat på valt mode
         function updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, netvardeData) {
             leaderboardText.textContent = modes[currentMode].text;
     
             tiles.forEach((tile, index) => {
-                tile.innerHTML = "";  // Clear previous content
+                tile.innerHTML = "";   // Rensa tidigare innehåll
     
                 const container = document.createElement("div");
                 container.style.display = "flex";
@@ -2948,12 +3052,13 @@ function handleGameOver() {
                 innerTile.style.flexDirection = "column";
                 innerTile.style.justifyContent = "flex-start";
     
+                 // Hantera specifika fall beroende på valt mode
                 if (modes[currentMode].text === "Memory - Topplista") {
                     const memoryEndpoint = "http://samet-desktop.adm.huddinge.se:3000/memory";
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                     const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch all datasets
+                     // Hämta alla datasets parallellt med Promise.all
                     Promise.all([
                         fetch(memoryEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Memory data");
@@ -2970,7 +3075,7 @@ function handleGameOver() {
                     ])
                     .then(([memoryData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
-                            tile.innerHTML = ""; // Clear previous content
+                            tile.innerHTML = ""; // Rensa tidigare innehåll
                 
                             const container = document.createElement("div");
                             container.style.display = "flex";
@@ -3000,9 +3105,10 @@ function handleGameOver() {
                             innerTile.style.flexDirection = "column";
                             innerTile.style.justifyContent = "flex-start";
                 
-                            // Define column keys
+                             // Definiera kolumnnycklar för data
                             const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
-                            const columnKey = columnKeys[index] || "score"; // Ensure a valid key is used
+                            const columnKey = columnKeys[index] || "score";  // Använd en säker kolumnnyckel
+
                 
                             let dataToSort = [...memoryData];
                 
@@ -3012,27 +3118,27 @@ function handleGameOver() {
                             
                                     return {
                                         ...user,
-                                        level: poangUser && poangUser.Levels !== undefined ? poangUser.Levels : "N/A" // Default if not found
+                                        level: poangUser && poangUser.Levels !== undefined ? poangUser.Levels : "N/A"// Sätt till "N/A" om level inte finns
                                     };
                                 });
                             }
                             
                 
                             if (columnKey === "netvarde") {
-                                // Merge networth from ekonomi into memory data
+                                // Slå samman netvarde från ekonomi med användardata från memory
                                 dataToSort = memoryData.map(user => {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser && ekonomiUser.networth !== undefined ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser && ekonomiUser.networth !== undefined ? ekonomiUser.networth : 0 // Sätt netvarde till 0 om det inte finns
                                     };
                                 });
                             }
                 
-                            // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
+                            // Justera sorteringsordning: Stigande för tile 3 (index 2), fallande för övriga
                             const isAscending = index === 2;
                             dataToSort
-                                .filter(row => row[columnKey] !== undefined) // Ensure no undefined values
+                                .filter(row => row[columnKey] !== undefined) // Se till att det inte finns några undefined värden i kolumnen
                                 .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
                                 .forEach((row, rank) => {
                                     const div = document.createElement("div");
@@ -3070,7 +3176,7 @@ function handleGameOver() {
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                     const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch all datasets
+                   // Hämta alla datasets parallellt med Promise.all
                     Promise.all([
                         fetch(squigglegolfEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Squigglegolf data");
@@ -3087,7 +3193,7 @@ function handleGameOver() {
                     ])
                     .then(([squigglegolfData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
-                            tile.innerHTML = ""; // Clear previous content
+                            tile.innerHTML = ""; // Rensa tidigare innehåll
                             
                             const container = document.createElement("div");
                             container.style.display = "flex";
@@ -3117,25 +3223,25 @@ function handleGameOver() {
                             innerTile.style.flexDirection = "column";
                             innerTile.style.justifyContent = "flex-start";
                 
-                            // Define column keys
+                             // Definiera kolumnnycklar för data
                             const columnKeys = ["slag", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
                             const columnKey = columnKeys[index];
                 
                             let dataToSort = [...squigglegolfData];
                 
                             if (columnKey === "netvarde") {
-                                // Merge networth from ekonomi into squigglegolf data
+                                 // Slå samman netvarde från ekonomi med squigglegolf-data
                                 dataToSort = squigglegolfData.map(user => {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 //sätt netvärde till 0 om användaren inte finns i ekonomi-data
                                     };
                                 });
                             }
                 
                             if (columnKey === "level") {
-                                // Merge Levels from poängssystem using Namn
+                                    // Slå samman nivåer från poängsystemet med hjälp av Namn
                                 dataToSort = squigglegolfData.map(user => {
                                     const poangUser = poangssystemData.find(p => p.Namn === user.username);
                                     return {
@@ -3145,7 +3251,7 @@ function handleGameOver() {
                                 });
                             }
                 
-                            // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
+                            // Justera sorteringsordning: Stigande för tile 1 (index 0) och tile 3 (index 2), fallande för de andra
                             const isAscending = index === 0 || index === 2;
                             dataToSort
                                 .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
@@ -3185,7 +3291,7 @@ function handleGameOver() {
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                     const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch all datasets
+                    // Hämta alla datasets parallellt med Promise.all
                     Promise.all([
                         fetch(colourvisionEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Colourvision data");
@@ -3202,7 +3308,7 @@ function handleGameOver() {
                     ])
                     .then(([colourvisionData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
-                            tile.innerHTML = ""; // Clear previous content
+                            tile.innerHTML = "";// Rensa tidigare innehåll
                 
                             const container = document.createElement("div");
                             container.style.display = "flex";
@@ -3232,14 +3338,14 @@ function handleGameOver() {
                             innerTile.style.flexDirection = "column";
                             innerTile.style.justifyContent = "flex-start";
                 
-                            // Define column keys
+                             // Definiera kolumnnycklar för data
                             const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
                             const columnKey = columnKeys[index];
                 
                             let dataToSort = [...colourvisionData];
                 
                             if (columnKey === "netvarde") {
-                                // Merge networth from ekonomi into colourvision data
+                               // Slå samman netvarde från ekonomi med colourvision-data
                                 dataToSort = colourvisionData.map(user => {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
@@ -3250,7 +3356,7 @@ function handleGameOver() {
                             }
                 
                             if (columnKey === "level") {
-                                // Merge Levels from poängssystem using Namn
+                                // Slå samman nivåer från poängsystemet med hjälp av Namn
                                 dataToSort = colourvisionData.map(user => {
                                     const poangUser = poangssystemData.find(p => p.Namn === user.username);
                                     return {
@@ -3260,8 +3366,8 @@ function handleGameOver() {
                                 });
                             }
                 
-                            // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
-                            const isAscending = index === 2; // Ascending for "tid"
+                            // Justera sorteringsordning: Stigande för tile 3 (index 2), fallande för de andra
+                            const isAscending = index === 2; // Stigande för "tid" 
                             dataToSort
                                 .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
                                 .forEach((row, rank) => {
@@ -3300,7 +3406,7 @@ function handleGameOver() {
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                     const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch all datasets
+                   // Hämta alla datasets parallellt med Promise.all
                     Promise.all([
                         fetch(mazerunnerEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Mazerunner data");
@@ -3317,7 +3423,7 @@ function handleGameOver() {
                     ])
                     .then(([mazerunnerData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
-                            tile.innerHTML = ""; // Clear previous content
+                            tile.innerHTML = ""; // Rensa tidigare innehåll
                 
                             const container = document.createElement("div");
                             container.style.display = "flex";
@@ -3347,25 +3453,25 @@ function handleGameOver() {
                             innerTile.style.flexDirection = "column";
                             innerTile.style.justifyContent = "flex-start";
                 
-                            // Define column keys
+                           // Definiera kolumnnycklar för data
                             const columnKeys = ["nivå", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
                             const columnKey = columnKeys[index];
                 
                             let dataToSort = [...mazerunnerData];
                 
                             if (columnKey === "netvarde") {
-                                // Merge networth from ekonomi into mazerunner data
+                                // Slå samman netvarde från ekonomi med mazerunner-data
                                 dataToSort = mazerunnerData.map(user => {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Sätt netvarde till 0 om användaren inte finns i ekonomi-data
                                     };
                                 });
                             }
                 
                             if (columnKey === "level") {
-                                // Merge Levels from poängssystem using Namn
+                             // Slå samman nivådata från poängsystemet med användarnamn
                                 dataToSort = mazerunnerData.map(user => {
                                     const poangUser = poangssystemData.find(p => p.Namn === user.username);
                                     return {
@@ -3375,8 +3481,8 @@ function handleGameOver() {
                                 });
                             }
                 
-                            // Adjust sorting order: Ascending for tile 3 (index 2), Descending for others
-                            const isAscending = index === 2; // Ascending for "tid"
+                            // Justera sorteringsordning: stigande för "tid" (index 2), fallande för de andra
+                            const isAscending = index === 2; // Stigande för "tid"
                             dataToSort
                                 .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
                                 .forEach((row, rank) => {
@@ -3415,7 +3521,7 @@ function handleGameOver() {
                     const ekonomiEndpoint = "http://samet-desktop.adm.huddinge.se:3000/ekonomi";
                     const poangssystemEndpoint = "http://samet-desktop.adm.huddinge.se:3000/poangssystem";
                 
-                    // Fetch all datasets
+                    // Hämta alla datasets parallellt
                     Promise.all([
                         fetch(biljardEndpoint).then(response => {
                             if (!response.ok) throw new Error("Failed to fetch Biljard data");
@@ -3432,7 +3538,7 @@ function handleGameOver() {
                     ])
                     .then(([biljardData, ekonomiData, poangssystemData]) => {
                         tiles.forEach((tile, index) => {
-                            tile.innerHTML = ""; // Clear previous content
+                            tile.innerHTML = ""; // Rensa tidigare innehåll
                 
                             const container = document.createElement("div");
                             container.style.display = "flex";
@@ -3462,25 +3568,25 @@ function handleGameOver() {
                             innerTile.style.flexDirection = "column";
                             innerTile.style.justifyContent = "flex-start";
                 
-                            // Define column keys
+                            // Definiera kolumnnycklar
                             const columnKeys = ["slag", "level", "tid", "pengar_tjanat", "exp_tjanat", "netvarde"];
                             const columnKey = columnKeys[index];
                 
                             let dataToSort = [...biljardData];
                 
                             if (columnKey === "netvarde") {
-                                // Merge networth from ekonomi into biljard data
+                                // Slå samman netvarde från ekonomi med biljarddata
                                 dataToSort = biljardData.map(user => {
                                     const ekonomiUser = ekonomiData.find(e => e.username === user.username);
                                     return {
                                         ...user,
-                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Default to 0 if not found
+                                        netvarde: ekonomiUser ? ekonomiUser.networth : 0 // Sätt 0 om netvarde inte finns
                                     };
                                 });
                             }
                 
                             if (columnKey === "level") {
-                                // Merge Levels from poängssystem using Namn
+                                // Slå samman nivådata från poängsystemet med användarnamn
                                 dataToSort = biljardData.map(user => {
                                     const poangUser = poangssystemData.find(p => p.Namn === user.username);
                                     return {
@@ -3490,7 +3596,7 @@ function handleGameOver() {
                                 });
                             }
                 
-                            // Adjust sorting order: Ascending for tile 1 (index 0) and tile 3 (index 2), Descending for others
+                    // Justera sorteringsordningen: Stigande för tile 1 (index 0) och tile 3 (index 2), fallande för de andra
                             const isAscending = index === 0 || index === 2;
                             dataToSort
                                 .sort((a, b) => isAscending ? a[columnKey] - b[columnKey] : b[columnKey] - a[columnKey])
@@ -3526,6 +3632,7 @@ function handleGameOver() {
                         console.error("Error fetching Biljard data:", error);
                     });
                 } else {
+                        // Skapa tomma tiles om inga specifika data finns
                     const numberOfDivs = userCounts[modes[currentMode].text.toLowerCase().split(" - ")[0]] || 0;
                     for (let i = 1; i <= numberOfDivs; i++) {
                         const div = document.createElement("div");
@@ -3546,7 +3653,7 @@ function handleGameOver() {
             leftButton.disabled = currentMode === 0;
             rightButton.disabled = currentMode === modes.length - 1;
         }
-    
+    // Funktion för att hämta leaderboard-data från servern
         function fetchLeaderboardData() {
             Promise.all([
                 fetch("http://samet-desktop.adm.huddinge.se:3000/user-counts").then(res => {
@@ -3579,16 +3686,16 @@ function handleGameOver() {
                 })
             ])
             .then(([userCounts, memoryData, levelsData, tidData, pengarData, expData, ekonomiData]) => {
-                // Create a map from ekonomiData using username as key
+        // Skapa en karta från ekonomiData med användarnamn som nyckel
                 let ekonomiMap = new Map(ekonomiData.map(user => [user.username, user.networth]));
         
-                // Since memoryUsers is no longer fetched, you need to adjust this part
-                // Assuming memoryData contains the user list, you can use that instead
+                // Eftersom memoryUsers inte längre hämtas, använd istället memoryData
                 let updatedUsers = memoryData.map(user => ({
                     ...user,
                     networth: ekonomiMap.has(user.username) ? ekonomiMap.get(user.username) : 0
                 }));
         
+                 // Uppdatera leaderboarden med den hämtade och uppdaterade datan
                 updateMode(userCounts, memoryData, levelsData, tidData, pengarData, expData, updatedUsers);
             })
             .catch(error => {
@@ -3597,7 +3704,7 @@ function handleGameOver() {
         }
         
               
-    
+    // Lägg till eventlyssnare för vänster och högerknapp för att navigera mellan modes
         leftButton.addEventListener("click", () => {
             if (currentMode > 0) {
                 currentMode--;
@@ -3611,7 +3718,7 @@ function handleGameOver() {
                 fetchLeaderboardData();
             }
         });
-    
+    // Hämta initial leaderboard data vid sidans laddning
         fetchLeaderboardData();
     
         document.getElementById("logo").addEventListener("click", function () {
@@ -3619,10 +3726,12 @@ function handleGameOver() {
         });
     });
 
+    // Lägg till en eventlyssnare för logon som omdirigerar användaren till index-sidan
     document.getElementById("logo").addEventListener("click", function() {
         redirect('../index.php');
     });
     
+    // Öppnar en modal med en specifik URL beroende på spelet som klickades
     function openModal(gameId) {
         const gameUrls = {
             game1: "game_display.php?gameId=game1",
@@ -3632,25 +3741,30 @@ function handleGameOver() {
             game5: "game_display.php?gameId=game5"
         };
     
+            // Om spelet finns i URL-objektet, omdirigera till spelets sida
         if (gameUrls[gameId]) {
             window.location.href = gameUrls[gameId];
         } else {
-            
+            // Hantera fall där spelet inte finns definierat (kan lämnas tomt eller läggas till logik)
         }
     }
     
+    // Stänger modalen genom att animera bort overlay och modal
     function closeModal() {
         const overlay = document.getElementById("overlay");
         const modal = document.getElementById("modal");
+
+        // Lägg till animationer för att stänga modal och overlay
         overlay.style.animation = "fadeOut 0.5s ease-out forwards";
         modal.style.animation = "modalResizeOut 1s cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards";
     
+        // Efter animationen, dölja overlay
         setTimeout(() => {
             overlay.style.display = "none";
         }, 500);
     }
     
-    // Toggle Full-Screen Mode
+// Växlar mellan fullskärmsläge när användaren klickar på ikonen
     function toggleFullScreen(event) {
         event.stopPropagation();
         const modal = document.getElementById("modal");
@@ -3658,6 +3772,7 @@ function handleGameOver() {
         const exitIcon = document.getElementById("exit-fullscreen-icon");
         const gameIframe = document.getElementById("game-iframe");
     
+            // Om användaren inte är i fullskärm, aktivera fullskärm
         if (!document.fullscreenElement) {
             modal.requestFullscreen().then(() => {
                 modal.classList.add("full-screen-mode");
@@ -3665,6 +3780,7 @@ function handleGameOver() {
                 exitIcon.style.display = "inline";
             });
         } else {
+            // Om användaren är i fullskärm, stäng av fullskärm
             document.exitFullscreen().then(() => {
                 modal.classList.remove("full-screen-mode");
                 enterIcon.style.display = "inline";
@@ -3672,14 +3788,14 @@ function handleGameOver() {
             });
         }
     }
-    
+    // Växlar sidomenyns öppning och stängning
     function toggleSidebar() {
         var sidebar = document.getElementById("sidebar");
         var toggleButton = document.getElementById("sidebar-toggle");
     
         sidebar.classList.toggle("open");
     
-        // Check if sidebar is open and move the button accordingly
+    // Justera sidomenyknappens position beroende på om sidomenyn är öppen eller stängd
         if (sidebar.classList.contains("open")) {
             toggleButton.style.left = "260px"; // Sidebar width (250px) + 10px margin
         } else {
@@ -3688,19 +3804,19 @@ function handleGameOver() {
     }
     
     document.addEventListener("DOMContentLoaded", function() {
-        // Get the username from the data attribute
+    // Hämta användarnamnet från data-attributet i PHP-koden
         const username = document.getElementById("php-file-info").getAttribute("data-username");
     
-        // Print the username in the console
+    // Skriv ut användarnamnet i konsolen
         console.log("Logged in user:", username);
     
-        // If you want to display it somewhere on the page
+    // Om det finns ett element för att visa användarnamnet, sätt det
         const usernameElement = document.getElementById("display-username");
         if (usernameElement) {
             usernameElement.textContent = username;
         }
     
-        // Disable profile picture click for guests
+    // Om användaren är "guest", stäng av klickmöjligheten på profilbilden
         const profileCircle = document.querySelector(".profile-circle");
         if (username.toLowerCase() === "guest") {
             profileCircle.style.pointerEvents = "none";  // Disable clicks
@@ -3708,6 +3824,7 @@ function handleGameOver() {
         }
     });
     
+    // Funktion för att visa eller dölja profilrutan när man klickar på den
     function toggleProfile() {
         const profileSquare = document.getElementById('profileSquare');
     
@@ -3721,14 +3838,14 @@ function handleGameOver() {
         }
     }
     
-    // Function to close the profile square
+// Funktion för att stänga profilrutan
     function closeProfile() {
         const profileSquare = document.getElementById('profileSquare');
     
         profileSquare.style.opacity = '0';
         profileSquare.style.transform = 'translateY(0px)';
     
-        // Timeout to wait for the animation to finish before hiding
+    // Vänta på att animationen ska slutföras innan vi döljer den helt
         setTimeout(() => {
             profileSquare.classList.remove('active');
             profileSquare.style.display = 'none';
@@ -3738,12 +3855,12 @@ function handleGameOver() {
         document.removeEventListener('click', handleOutsideClick);
     }
     
-    // Handle clicks outside of the square
+// Hanterar klick utanför profilrutan för att stänga den
     function handleOutsideClick(event) {
         const profileSquare = document.getElementById('profileSquare');
         const searchProfileBtn = document.getElementById('searchProfileBtn');
         
-        // Check if the click is outside profileSquare and not on result-item or close-button
+    // Om klicket inte är på profilrutan, sökknappen, resultat eller meddelandeknappen, stäng profilen
         if (
             !profileSquare.contains(event.target) &&
             event.target !== searchProfileBtn &&
@@ -3757,10 +3874,11 @@ function handleGameOver() {
         }
     }
     
-    // Assuming searchProfiles is where you create and display search results
+// Söker efter användare baserat på input och visar resultaten
     function searchProfiles() {
         const searchInput = document.getElementById('searchInput').value.trim();
     
+        // Om sökfältet är tomt, rensa sökresultaten
         if (searchInput === '') {
             document.getElementById('searchResults').innerHTML = '';
             return;
@@ -3769,6 +3887,7 @@ function handleGameOver() {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', 'sida.php?search=' + encodeURIComponent(searchInput), true);
     
+        // När svaret från servern är klart
         xhr.onload = function() {
             if (xhr.status === 200) {
                 console.log(JSON.parse(xhr.responseText));
@@ -3776,18 +3895,21 @@ function handleGameOver() {
                 const searchResultsContainer = document.getElementById('searchResults');
                 searchResultsContainer.innerHTML = '';
         
+                // Om inga användare hittades, visa meddelandet
                 if (results.message) {
                     const noUserFound = document.createElement('div');
                     noUserFound.classList.add('result-item');
                     noUserFound.textContent = results.message;
                     searchResultsContainer.appendChild(noUserFound);
                 } else {
+
+                    // För varje användare, skapa ett resultat och visa info
                     results.forEach(function(user) {
                         const profileImage = user.Profil_bild || '../pfp/default.png';
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('result-item');
         
-                        // Set data attributes for level, exp, and exp threshold
+                     // Lägg till data för användarens nivå, EXP och EXP-gräns
                         resultItem.dataset.profileImage = profileImage;
                         resultItem.dataset.level = user.Levels;
                         resultItem.dataset.exp = user.EXP;
@@ -3801,7 +3923,7 @@ function handleGameOver() {
                         username.classList.add('username');
         
                         function capitalizeFirstLetter(str) {
-                            if (!str) return str; // Handle empty or falsy strings
+                            if (!str) return str; // Hantera tomma eller felaktiga strings
                             return str.charAt(0).toUpperCase() + str.slice(1);
                         }
         
@@ -3809,7 +3931,7 @@ function handleGameOver() {
                         username.style.color = "black";
         
                         resultItem.appendChild(img);
-                        resultItem.appendChild(username); // Append username correctly
+                        resultItem.appendChild(username); 
                         searchResultsContainer.appendChild(resultItem);
                     });
                 }
@@ -3820,131 +3942,131 @@ function handleGameOver() {
     }
 
     
-    function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
-        const searchResultsContainer = document.getElementById('searchResults');
+    // Funktion för att uppdatera profilinformationen i sökresultaten
+function updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold) {
+    const searchResultsContainer = document.getElementById('searchResults');
     
-        // Clear previous results
+    // Rensa tidigare resultat
+    searchResultsContainer.innerHTML = '';
+    
+    // Skapa en ny container för den valda profilen
+    const selectedProfileContainer = document.createElement('div');
+    selectedProfileContainer.style.display = 'flex';
+    selectedProfileContainer.style.alignItems = 'center';
+    selectedProfileContainer.style.flexDirection = 'column';
+    selectedProfileContainer.style.textAlign = 'center';
+    
+    // Lägg till profilbild och användarnamn
+    const profileCircle = document.createElement('img');
+    profileCircle.src = '../pfp/' + profileImageSrc;
+    profileCircle.classList.add('selected-profile-circle');
+    
+    const username = document.createElement('span');
+    username.classList.add('username2');
+    username.textContent = userName;
+    
+    // Skapa en sektion för level och EXP med detaljer som vanlig text
+    const levelSection = document.createElement('div');
+    levelSection.classList.add('level-section2');
+    levelSection.innerHTML = `
+        <h4>Level <span>${userLevel}</span></h4>
+        <div class="exp-bar2">
+            <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
+        </div>
+        <p>${userExp} / ${expThreshold} EXP</p>
+    `;
+    
+    // Lägg till elementen i den nya profilcontainern
+    selectedProfileContainer.appendChild(profileCircle);
+    selectedProfileContainer.appendChild(username);
+    selectedProfileContainer.appendChild(levelSection);
+    
+    // Lägg till den nya containern i sökresultatscontainern
+    searchResultsContainer.appendChild(selectedProfileContainer);
+    
+    // Lägg till en stäng-knapp
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'X';
+    closeButton.classList.add('close-button');
+    closeButton.addEventListener('click', function() {
+        // Rensa sökresultaten och visa sökrutan igen
         searchResultsContainer.innerHTML = '';
+        document.getElementById('searchInput').style.display = 'block'; // Visa sökrutan igen
+        searchProfiles(); // Ladda om sökresultaten
+    });
+    selectedProfileContainer.appendChild(closeButton);
+}
+
+// Funktion för att öppna meddelandekontainern
+function openMessageContainer() {
+    const searchResultsContainer = document.getElementById('searchResults');
+    searchResultsContainer.innerHTML = ''; // Rensa tidigare innehåll
     
-        // Create a new container for the selected profile
-        const selectedProfileContainer = document.createElement('div');
-        selectedProfileContainer.style.display = 'flex';
-        selectedProfileContainer.style.alignItems = 'center';
-        selectedProfileContainer.style.flexDirection = 'column';
-        selectedProfileContainer.style.textAlign = 'center';
-    
-        // Add profile picture and username
-        const profileCircle = document.createElement('img');
-        profileCircle.src = '../pfp/' + profileImageSrc;
-        profileCircle.classList.add('selected-profile-circle');
-    
-        const username = document.createElement('span');
-        username.classList.add('username2');
-        username.textContent = userName;
-        
-    
-        // Create the level section with EXP details as plain text
-        const levelSection = document.createElement('div');
-        levelSection.classList.add('level-section2');
-        levelSection.innerHTML = `
-            <h4>Level <span>${userLevel}</span></h4>
-            <div class="exp-bar2">
-                <div class="exp-progress2" style="width: ${(userExp / expThreshold) * 100}%;"></div>
-            </div>
-            <p>${userExp} / ${expThreshold} EXP</p>
-        `;
-    
-        // Append elements to the new profile container
-        selectedProfileContainer.appendChild(profileCircle);
-        selectedProfileContainer.appendChild(username);
-        selectedProfileContainer.appendChild(levelSection);
-    
-        // Append to the search results container
-        searchResultsContainer.appendChild(selectedProfileContainer);
-    
-        // Add the close button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'X';
-        closeButton.classList.add('close-button');
-        closeButton.addEventListener('click', function() {
-            searchResultsContainer.innerHTML = '';
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box again
-            searchProfiles(); // Reload the search results
-        });
-        selectedProfileContainer.appendChild(closeButton);
-    }
-    
-    function openMessageContainer() {
-        const searchResultsContainer = document.getElementById('searchResults');
-        searchResultsContainer.innerHTML = ''; // Clear any previous content
-    
-        // Create and configure the "Close" button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'X';
-        closeButton.classList.add('close-button');
-        closeButton.addEventListener('click', function() {
-            // Return to the search input and reload search results
-            document.getElementById('searchInput').style.display = 'block'; // Show the search box
-            searchResultsContainer.innerHTML = ''; // Clear the message container
-            searchProfiles(); // Reload the search results
-        });
-    
-        // Message display area
-        const messageDisplay = document.createElement('div');
-        messageDisplay.classList.add('message-display');
-    
-        // Input field for composing new messages
-        const messageInput = document.createElement('input');
-        messageInput.type = 'text';
-        messageInput.classList.add('message-input');
-        messageInput.placeholder = 'Write a message...';
-    
-        // "Send" button for sending messages
-        const sendButton = document.createElement('button');
-        sendButton.textContent = 'Send';
-        sendButton.classList.add('send-button');
-    
-        // Append elements to display the message UI
-        searchResultsContainer.classList.add('message-container'); // Apply styles for the message container
-        searchResultsContainer.appendChild(closeButton);
-        searchResultsContainer.appendChild(messageDisplay);
-        searchResultsContainer.appendChild(messageInput);
-        searchResultsContainer.appendChild(sendButton);
-    }
-    
-    
-    // Event listener for handling profile and message interactions
-    document.addEventListener('click', function(event) {
-        const searchResultsContainer = document.getElementById('searchResults');
-        const searchBox = document.getElementById('searchInput');
-    
-        // Check if a profile item or profile image is clicked
-        if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
-            const clickedItem = event.target.closest('.result-item');
-            const profileImageSrc = clickedItem.dataset.profileImage;
-            const userName = clickedItem.querySelector('.username').textContent;
-            const userLevel = clickedItem.dataset.level;
-            const userExp = clickedItem.dataset.exp;
-            const expThreshold = clickedItem.dataset.expThreshold;
-    
-            // Hide the search box
-            searchBox.style.display = 'none';
-    
-            // Display the selected profile with its details
-            updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
-        }
-    
-        // Check if the "Meddelande" (Message) button is clicked
-        if (event.target.classList.contains('messagebutton')) {
-            openMessageContainer();
-        }
+    // Skapa och konfigurera "Stäng"-knappen
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'X';
+    closeButton.classList.add('close-button');
+    closeButton.addEventListener('click', function() {
+        // Gå tillbaka till sökrutan och ladda om sökresultaten
+        document.getElementById('searchInput').style.display = 'block'; // Visa sökrutan
+        searchResultsContainer.innerHTML = ''; // Rensa meddelandekontainern
+        searchProfiles(); // Ladda om sökresultaten
     });
     
-    // Dismiss messages automatically after 5 seconds
-    setTimeout(() => {
-        document.querySelectorAll('.message').forEach(msg => {
-            msg.style.display = 'none';
-        });
-    }, 5000);
+    // Område för att visa meddelanden
+    const messageDisplay = document.createElement('div');
+    messageDisplay.classList.add('message-display');
     
+    // Inmatningsfält för att skriva nya meddelanden
+    const messageInput = document.createElement('input');
+    messageInput.type = 'text';
+    messageInput.classList.add('message-input');
+    messageInput.placeholder = 'Skriv ett meddelande...';
+    
+    // "Skicka"-knapp för att skicka meddelanden
+    const sendButton = document.createElement('button');
+    sendButton.textContent = 'Skicka';
+    sendButton.classList.add('send-button');
+    
+    // Lägg till elementen i meddelande-UI:n
+    searchResultsContainer.classList.add('message-container'); // Applicera stilar för meddelandekontainern
+    searchResultsContainer.appendChild(closeButton);
+    searchResultsContainer.appendChild(messageDisplay);
+    searchResultsContainer.appendChild(messageInput);
+    searchResultsContainer.appendChild(sendButton);
+}
+
+// Eventlyssnare för att hantera profil- och meddelandeinteraktioner
+document.addEventListener('click', function(event) {
+    const searchResultsContainer = document.getElementById('searchResults');
+    const searchBox = document.getElementById('searchInput');
+    
+    // Kontrollera om ett profilobjekt eller profilbild har klickats
+    if (event.target.classList.contains('result-item') || event.target.classList.contains('profile-image')) {
+        const clickedItem = event.target.closest('.result-item');
+        const profileImageSrc = clickedItem.dataset.profileImage;
+        const userName = clickedItem.querySelector('.username').textContent;
+        const userLevel = clickedItem.dataset.level;
+        const userExp = clickedItem.dataset.exp;
+        const expThreshold = clickedItem.dataset.expThreshold;
+    
+        // Dölja sökrutan
+        searchBox.style.display = 'none';
+    
+        // Visa den valda profilen med dess detaljer
+        updateProfile(profileImageSrc, userName, userLevel, userExp, expThreshold);
+    }
+    
+    // Kontrollera om "Meddelande"-knappen har klickats
+    if (event.target.classList.contains('messagebutton')) {
+        openMessageContainer();
+    }
+});
+
+// Stäng meddelanden automatiskt efter 5 sekunder
+setTimeout(() => {
+    document.querySelectorAll('.message').forEach(msg => {
+        msg.style.display = 'none';
+    });
+}, 5000);
 }

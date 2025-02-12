@@ -1,39 +1,42 @@
 <?php
-$username = 'Guest';
-$profile_picture = 'default.png'; // Replace with actual profile picture logic
-$level = 1;
-$current_exp = 0;
-$next_level_exp = 100;
-?>
+// Standardvärden för användarinformation
+$username = 'Guest'; // Standardanvändarnamn
+$profile_picture = 'default.png'; // Standardprofilbild (ersätt med logik för att hämta profilbild)
+$level = 1; // Standardlevel
+$current_exp = 0; // Nuvarande EXP
+$next_level_exp = 100; // EXP som krävs för nästa level
 
-<?php
+// Starta session för att hantera användarinloggning
 session_start();
 
+// Dölj felmeddelanden för användaren
 ini_set('display_errors', 0);
 
+// Inkludera databasanslutningsfilen
 include 'db.php';
 
+// Om användaren redan är inloggad, omdirigera till spel.php
 if (isset($_SESSION['username'])) {
     header("Location: spel.php");
     exit();
 }
 
-// Define status messages
+// Definiera statusmeddelanden
 $status = '';
 if (isset($_GET['status']) && $_GET['status'] === 'exists') {
-    $status = 'exists';
+    $status = 'exists'; // Status för att användarnamnet redan finns
 }
 
-// Handle form submission
+// Hantera formulärinskickning
 if (isset($_POST['submit'])) {
-    // Establish connection
+    // Upprätta anslutning till databasen
     $conn = Anvandarinformation();
 
-    // Lowercase username and password
+    // Konvertera användarnamn och lösenord till gemener
     $username = strtolower($_POST['username']);
     $password = strtolower($_POST['password']);
 
-    // Check if username already exists
+    // Kontrollera om användarnamnet redan finns
     $sql_check = "SELECT Namn FROM användare WHERE Namn = ?";
     if ($stmt = $conn->prepare($sql_check)) {
         $stmt->bind_param("s", $username);
@@ -41,23 +44,23 @@ if (isset($_POST['submit'])) {
         $stmt->store_result();
 
         if ($stmt->num_rows > 0) {
-            // Redirect with status: user already exists
+            // Omdirigera med status: användarnamnet finns redan
             header("Location: " . $_SERVER['PHP_SELF'] . "?status=exists");
             exit();
         } else {
-            // Hash the password
+            // Hasha lösenordet
             function hashString($input) {
                 return hash('sha256', $input, false);
             }
 
             $hashedCode = hashString($password);
 
-            // Insert new user
+            // Infoga ny användare
             $sql = "INSERT INTO användare (Namn, Lösenord, time) VALUES (?, ?, NOW())";
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("ss", $username, $hashedCode);
                 if ($stmt->execute()) {
-                    // Add user to ekonomi table
+                    // Lägg till användare i ekonomi-tabellen
                     $sql_ekonomi = "INSERT INTO ekonomi.ekonomi (username, value, spent, networth) VALUES (?, 0, 0, 0)";
                     if ($stmt_ekonomi = $conn->prepare($sql_ekonomi)) {
                         $stmt_ekonomi->bind_param("s", $username);
@@ -65,7 +68,7 @@ if (isset($_POST['submit'])) {
                         $stmt_ekonomi->close();
                     }
 
-                    // Add user to poängssystem table
+                    // Lägg till användare i poängssystem-tabellen
                     $sql_poang = "INSERT INTO poängssystem (Namn, Levels, EXP, EXP_GRÄNS) VALUES (?, 1, 0, 50)";
                     if ($stmt_poang = $conn->prepare($sql_poang)) {
                         $stmt_poang->bind_param("s", $username);
@@ -73,25 +76,23 @@ if (isset($_POST['submit'])) {
                         $stmt_poang->close();
                     }
 
-                    // Automatically log in the user
+                    // Logga automatiskt in användaren
                     $_SESSION['username'] = $username;
 
-                    // Redirect directly to spel.php
+                    // Omdirigera direkt till spel.php
                     header("Location: spel.php");
                     exit();
                 }
                 $stmt->close();
             }
-
         }
         $stmt->close();
     }
 
-    // Close connection
+    // Stäng anslutningen
     $conn->close();
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="sv" data-page="signup">
@@ -123,22 +124,22 @@ if (isset($_POST['submit'])) {
         </div>
     </header>
 
-
+    <!-- Sidebar för användarprofil och level/EXP -->
     <div id="sidebar-toggle" onclick="toggleSidebar()">☰</div>
     <div id="sidebar" class="sidebar">
-        <!-- Profile Picture Section -->
+        <!-- Profilbildssektion -->
         <div class="profile-section">
             <div class="username">
-            <div class="profile-circle" style="background-image: url('../pfp/<?php echo htmlspecialchars($profile_picture); ?>');" onclick="document.getElementById('profilePictureInput').click();"></div>
-            <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
+                <div class="profile-circle" style="background-image: url('../pfp/<?php echo htmlspecialchars($profile_picture); ?>');" onclick="document.getElementById('profilePictureInput').click();"></div>
+                <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
+            </div>
+            <!-- Formulär för att ladda upp en ny profilbild -->
+            <form id="profilePictureForm" method="POST" enctype="multipart/form-data" style="display: none;">
+                <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
+            </form>
         </div>
-        <!-- File input for profile picture upload -->
-        <form id="profilePictureForm" method="POST" enctype="multipart/form-data" style="display: none;">
-            <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
-        </form>
-    </div>
 
-        <!-- Level and EXP bar -->
+        <!-- Level och EXP-sektion -->
         <div class="level-section">
             <h4>Level <span id="level"><?php echo $level; ?></span></h4>
             <div class="exp-bar">
@@ -146,6 +147,7 @@ if (isset($_POST['submit'])) {
             </div>
             <p id="expText">
                 <?php
+                // Funktion för att formatera stora nummer (t.ex. 1000 till 1K)
                 function formatNumber($number) {
                     if ($number >= 1000000000) {
                         return round($number / 1000000000, 1) . 'G';
@@ -158,6 +160,7 @@ if (isset($_POST['submit'])) {
                     }
                 }
 
+                // Formatera nuvarande och nästa levels EXP
                 $formattedCurrentExp = formatNumber($current_exp);
                 $formattedNextLevelExp = formatNumber($next_level_exp);
 
@@ -167,6 +170,7 @@ if (isset($_POST['submit'])) {
         </div>
     </div>
 
+    <!-- Registreringsformulär -->
     <h2>Registrera</h2>
     <form action="" method="post">
         <input type="text" name="username" placeholder="Lägg in användernamn" required/>
@@ -174,14 +178,17 @@ if (isset($_POST['submit'])) {
         <input type="submit" name="submit" value="Registrera" />
     </form>
 
+    <!-- Länk till inloggningssidan -->
     <h2 id="text-register">Har du en konto? <a href="login.php" id="register-button">Logga in</a></h2>
 
+    <!-- Statusmeddelanden -->
     <?php if ($status === 'created'): ?>
         <p id="success-message" style="display: block;">Användarkonto skapat!</p>
     <?php elseif ($status === 'exists'): ?>
         <p id="error-message" style="display: block;">Användarnamnet finns redan!</p>
     <?php endif; ?>
 
+    <!-- Information om registrering -->
     <div id="signup-info">
         <h3>Välkommen till Arcade Point!</h3>
         <p>
@@ -191,6 +198,8 @@ if (isset($_POST['submit'])) {
             Är du redo för ditt nästa äventyr? Skapa ett konto och lås upp spelets alla hemligheter!
         </p>
     </div>
+
+    <!-- PHP-filinformation för JavaScript -->
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" data-username="<?php echo htmlspecialchars($username); ?>"></div>
     <script src="../script.js"></script>
 </body>

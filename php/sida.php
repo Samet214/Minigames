@@ -1,37 +1,37 @@
 <?php
-session_start();
+session_start(); // Startar en session för att hålla koll på användarinformation
 
-ini_set('display_errors', 0);
+ini_set('display_errors', 0); // Stänger av felmeddelanden för säkerhet och en renare upplevelse
 
-include 'db.php';
+include 'db.php'; // Inkluderar filen som hanterar databasanslutningen
 
-$conn = Anvandarinformation();
+$conn = Anvandarinformation(); // Skapar en anslutning till databasen
 
+// Kontrollera om användaren är inloggad
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: login.php"); // Om inte inloggad, omdirigera till login-sidan
     exit();
 }
 
-$username = $_SESSION['username'];
+$username = $_SESSION['username']; // Hämtar användarnamnet från sessionen
 
-// Handle file upload
+// Hantering av filuppladdning (profilbild)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
     $file = $_FILES['profile_picture'];
-    
-    // Check for errors
+
+    // Kontrollera om det finns några fel vid uppladdning
     if ($file['error'] === UPLOAD_ERR_OK) {
-        // Get file properties
-        $fileTmpPath = $file['tmp_name'];
-        $fileName = basename($file['name']);
-        $fileSize = $file['size'];
-        $fileType = pathinfo($fileName, PATHINFO_EXTENSION);
-        
-        // Define allowed file types and size
+        $fileTmpPath = $file['tmp_name']; // Temporär filväg
+        $fileName = basename($file['name']); // Filens ursprungliga namn
+        $fileSize = $file['size']; // Filstorlek
+        $fileType = pathinfo($fileName, PATHINFO_EXTENSION); // Filtyp (t.ex. jpg, png)
+
+        // Definiera tillåtna filtyper och maxstorlek
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-        $maxFileSize = 2 * 1024 * 1024; // 2MB
+        $maxFileSize = 2 * 1024 * 1024; // Maxstorlek: 2 MB
 
         if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
-            // Fetch current profile picture from the database
+            // Hämta aktuell profilbild från databasen
             $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
             $query->bind_param("s", $username);
             $query->execute();
@@ -39,40 +39,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
             $user = $result->fetch_assoc();
             $currentProfilePicture = $user['Profil_bild'];
 
-            // Only delete the current profile picture if it's not the default
+            // Radera den gamla profilbilden om den inte är standardbilden
             if ($currentProfilePicture && $currentProfilePicture !== 'default.png' && file_exists('../pfp/' . $currentProfilePicture)) {
-                unlink('../pfp/' . $currentProfilePicture); // Remove old profile picture
+                unlink('../pfp/' . $currentProfilePicture); // Radera den gamla bilden
             }
 
-            // Generate a unique name for the new uploaded file
+            // Skapa ett unikt namn för den nya filen
             $newFileName = uniqid() . '.' . $fileType;
             $uploadFileDir = '../pfp/';
             $destPath = $uploadFileDir . $newFileName;
 
-            // Move the file to the pfp directory
+            // Flytta filen till pfp-katalogen
             if (move_uploaded_file($fileTmpPath, $destPath)) {
-                // Update the database with the new file name
+                // Uppdatera databasen med det nya filnamnet
                 $updateQuery = $conn->prepare("UPDATE användare SET Profil_bild = ? WHERE Namn = ?");
                 $updateQuery->bind_param("ss", $newFileName, $username);
                 if ($updateQuery->execute()) {
-                    // File successfully uploaded and profile updated
+                    // Profilbilden har uppdaterats
                 } else {
-                    // Handle database update failure
+                    // Hantera misslyckad databasuppdatering
                 }
             } else {
-                // Handle file move failure
+                // Hantera misslyckat filflytt
             }
         } else {
-            // Handle invalid file type or size
+            // Hantera ogiltig filtyp eller storlek
         }
     } else {
-        // Handle file upload error
+        // Hantera filuppladdningsfel
     }
 }
 
-
-
-// Fetch user data from the poängssystem table
+// Hämta användarens data från poängssystem-tabellen
 $query = $conn->prepare("SELECT * FROM poängssystem WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -88,7 +86,7 @@ if ($result->num_rows === 1) {
     $_SESSION['EXP'] = $user['EXP'];
     $_SESSION['EXP_GRÄNS'] = $user['EXP_GRÄNS'];
 } else {
-    // Default values if the user doesn't exist in poängssystem
+    // Standardvärden om användaren inte finns i poängssystem
     $level = 1;
     $current_exp = 0;
     $next_level_exp = 50;
@@ -101,6 +99,7 @@ if ($result->num_rows === 1) {
     $_SESSION['EXP_GRÄNS'] = 50;
 }
 
+// Hämta profilbilden för användaren
 $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -110,38 +109,39 @@ if ($result->num_rows === 1) {
     $user = $result->fetch_assoc();
     $profile_picture = $user['Profil_bild'];
 
-    // If the profile picture is NULL or doesn't exist in the pfp folder, use default.png
+    // Använd standardbild om profilbilden är tom eller inte finns i pfp-katalogen
     if (empty($profile_picture) || !file_exists('../pfp/' . $profile_picture)) {
         $profile_picture = 'default.png';
     }
 } else {
-    // If the user doesn't exist in användare, use default profile picture
-    $profile_picture = 'default.png';
+    $profile_picture = 'default.png'; // Standardprofilbild om användaren inte finns
 }
 
-// Handle logout
+// Hantera utloggning
 if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
-    session_destroy();
-    header("Location: login.php");
+    session_destroy(); // Avsluta sessionen
+    header("Location: login.php"); // Omdirigera till login-sidan
     exit();
 }
 
-// Handle adding experience
+// Hantera tillägg av erfarenhetspoäng
 if (isset($_POST['add_exp'])) {
     $expToAdd = intval($_POST['exp_amount']);
     $current_exp += $expToAdd;
 
+    // Nivåuppgradering vid tillräcklig erfarenhet
     while ($current_exp >= $next_level_exp) {
         $current_exp -= $next_level_exp;
         $level += 1;
         $next_level_exp *= 2;
     }
 
-    // Update user data in the database
+    // Uppdatera användardata i databasen
     $update = $conn->prepare("UPDATE poängssystem SET Levels = ?, EXP = ?, EXP_GRÄNS = ? WHERE Namn = ?");
     $update->bind_param("iiis", $level, $current_exp, $next_level_exp, $username);
     $update->execute();
 
+    // Returnera uppdaterad data som JSON
     echo json_encode([
         'current_exp' => $current_exp,
         'level' => $level,
@@ -150,11 +150,11 @@ if (isset($_POST['add_exp'])) {
     exit();
 }
 
-// Add this at the top of sida.php to handle live search requests
+// Hantera live-sökning efter användare
 if (isset($_GET['search'])) {
     $searchTerm = $_GET['search'] . '%';
 
-    // Join användare and poängssystem tables to fetch profile and level data
+    // Sök efter användare och deras nivåinformation
     $searchQuery = $conn->prepare("SELECT användare.Namn, Profil_bild, Levels, EXP, EXP_GRÄNS 
                                     FROM användare 
                                     JOIN poängssystem ON användare.Namn = poängssystem.Namn 
@@ -174,20 +174,17 @@ if (isset($_GET['search'])) {
         ];
     }
 
+    // Returnera resultatet som JSON
     echo empty($data) ? json_encode(['message' => 'Inga användare']) : json_encode($data);
     exit();
 }
 
-?>
-
-<?php
+// Hämta nivå- och erfarenhetsinformation för användaren
 $conn = Anvandarinformation();
-
 $query = "SELECT Levels, EXP, EXP_GRÄNS FROM poängssystem WHERE Namn = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $username);
 $stmt->execute();
-
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
@@ -197,9 +194,9 @@ if ($result->num_rows > 0) {
         $exp_req = $row['EXP_GRÄNS'];
     }
 } else {
-    echo "No data found";
+    echo "No data found"; // Om ingen data hittas
 }
 
-$stmt->close();
-$conn->close();
+$stmt->close(); // Stänger statement
+$conn->close(); // Stänger databasanslutningen
 ?>

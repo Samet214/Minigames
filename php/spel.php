@@ -9,24 +9,24 @@ $conn = Anvandarinformation();
 
 $username = $_SESSION['username'];
 
-// Handle file upload
+// Hantera fil uppladning  
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
     $file = $_FILES['profile_picture'];
     
-    // Check for errors
+    // Kontroller för felmeddelanden
     if ($file['error'] === UPLOAD_ERR_OK) {
-        // Get file properties
+        // Hämta filens egenskaper
         $fileTmpPath = $file['tmp_name'];
         $fileName = basename($file['name']);
         $fileSize = $file['size'];
         $fileType = pathinfo($fileName, PATHINFO_EXTENSION);
         
-        // Define allowed file types and size
+        // Definiera tillåtna filtyper och maxstorlek
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
         $maxFileSize = 2 * 1024 * 1024; // 2MB
 
         if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
-            // Fetch current profile picture from the database
+            // Hämta nuvarande profilbild från databasen
             $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
             $query->bind_param("s", $username);
             $query->execute();
@@ -34,40 +34,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
             $user = $result->fetch_assoc();
             $currentProfilePicture = $user['Profil_bild'];
 
-            // Only delete the current profile picture if it's not the default
+            // Ta endast bort nuvarande profilbild om den inte är standard
             if ($currentProfilePicture && $currentProfilePicture !== 'default.png' && file_exists('../pfp/' . $currentProfilePicture)) {
                 unlink('../pfp/' . $currentProfilePicture); // Remove old profile picture
             }
 
-            // Generate a unique name for the new uploaded file
+            // Skapa ett unikt filnamn för den nya uppladdade filen
             $newFileName = uniqid() . '.' . $fileType;
             $uploadFileDir = '../pfp/';
             $destPath = $uploadFileDir . $newFileName;
 
-            // Move the file to the pfp directory
+            // Flytta filen till pfp-mappen
             if (move_uploaded_file($fileTmpPath, $destPath)) {
-                // Update the database with the new file name
+                // Uppdatera databasen med det nya filnamnet
                 $updateQuery = $conn->prepare("UPDATE användare SET Profil_bild = ? WHERE Namn = ?");
                 $updateQuery->bind_param("ss", $newFileName, $username);
                 if ($updateQuery->execute()) {
-                    // File successfully uploaded and profile updated
+                    // Filen har laddats upp och profilen har uppdaterats
                 } else {
-                    // Handle database update failure
+                    // Hantera fel vid uppdatering av databasen
                 }
             } else {
-                // Handle file move failure
+                // Hantera fel vid flytt av filen
             }
         } else {
-            // Handle invalid file type or size
+            // Hantera ogiltig filtyp eller storlek
         }
     } else {
-        // Handle file upload error
+        // Hantera filuppladdningsfel
     }
 }
 
 
 
-// Fetch user data from the poängssystem table
+// Hämta användardata från tabellen poängssystem
 $query = $conn->prepare("SELECT * FROM poängssystem WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -83,7 +83,7 @@ if ($result->num_rows === 1) {
     $_SESSION['EXP'] = $user['EXP'];
     $_SESSION['EXP_GRÄNS'] = $user['EXP_GRÄNS'];
 } else {
-    // Default values if the user doesn't exist in poängssystem
+    // Standardvärden om användaren inte finns i poängssystem
     $level = 1;
     $current_exp = 0;
     $next_level_exp = 50;
@@ -94,6 +94,7 @@ if ($result->num_rows === 1) {
     $_SESSION['EXP_GRÄNS'] = 50;
 }
 
+// Hämta profilbild från databasen
 $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -103,23 +104,23 @@ if ($result->num_rows === 1) {
     $user = $result->fetch_assoc();
     $profile_picture = $user['Profil_bild'];
 
-    // If the profile picture is NULL or doesn't exist in the pfp folder, use default.png
+    // Om profilbilden är NULL eller inte finns i pfp-mappen, använd default.png
     if (empty($profile_picture) || !file_exists('../pfp/' . $profile_picture)) {
         $profile_picture = 'default.png';
     }
 } else {
-    // If the user doesn't exist in användare, use default profile picture
+    // Om användaren inte finns i användare-tabellen, använd standardprofilbild
     $profile_picture = 'default.png';
 }
 
-// Handle logout
+// Hantera utloggning
 if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
     session_destroy();
     header("Location: login.php");
     exit();
 }
 
-// Handle adding experience
+// Hantera tillägg av erfarenhetspoäng (EXP)
 if (isset($_POST['add_exp'])) {
     $expToAdd = intval($_POST['exp_amount']);
     $current_exp += $expToAdd;
@@ -130,7 +131,7 @@ if (isset($_POST['add_exp'])) {
         $next_level_exp *= 2;
     }
 
-    // Update user data in the database
+    // Öka nivån om spelaren når gränsen
     $update = $conn->prepare("UPDATE poängssystem SET Levels = ?, EXP = ?, EXP_GRÄNS = ? WHERE Namn = ?");
     $update->bind_param("iiis", $level, $current_exp, $next_level_exp, $username);
     $update->execute();
@@ -143,11 +144,11 @@ if (isset($_POST['add_exp'])) {
     exit();
 }
 
-// Add this at the top of spel.php to handle live search requests
+// Hantera livesökning av användare
 if (isset($_GET['search'])) {
     $searchTerm = $_GET['search'] . '%';
 
-    // Join användare and poängssystem tables to fetch profile and level data
+    // Koppla samman tabellerna användare och poängssystem för att hämta profil- och nivådata
     $searchQuery = $conn->prepare("SELECT användare.Namn, Profil_bild, Levels, EXP, EXP_GRÄNS 
                                     FROM användare 
                                     JOIN poängssystem ON användare.Namn = poängssystem.Namn 
@@ -173,6 +174,7 @@ if (isset($_GET['search'])) {
 ?>
 
 <?php
+// Hämta nivå, erfarenhet och erfarenhetsgräns från databasen
 $conn = Anvandarinformation();
 
 $query = "SELECT Levels, EXP, EXP_GRÄNS FROM poängssystem WHERE Namn = ?";
@@ -188,7 +190,9 @@ if ($result->num_rows > 0) {
         $exp = $row['EXP'];
         $exp_req = $row['EXP_GRÄNS'];
     }
-} else {
+} else {  // Ingen data hittades, kan hanteras vid behov
+
+    
     
 }
 
@@ -245,7 +249,7 @@ $conn->close();
         </div>
     </header>
 
-    <!-- Game containers section -->
+    <!-- Spel sektion -->
     <main class="game-section">
         <div class="game-container">
             <h2>Memory</h2>
@@ -274,7 +278,7 @@ $conn->close();
         </div>
     </main>
 
-    <!-- Overlay and Modal -->
+    <!-- Overlay och Modal -->
     <div id="overlay" onclick="closeModal()">
         <div id="modal" onclick="event.stopPropagation()">
             <button id="full-screen-button" onclick="toggleFullScreen(event)">
@@ -299,19 +303,19 @@ $conn->close();
 
     <div id="sidebar-toggle" onclick="toggleSidebar()">☰</div>
     <div id="sidebar" class="sidebar">
-        <!-- Profile Picture Section -->
+        <!-- Profilbild sektion -->
         <div class="profile-section">
             <div class="username">
             <div class="profile-circle" style="background-image: url('../pfp/<?php echo htmlspecialchars($profile_picture); ?>');" onclick="document.getElementById('profilePictureInput').click();"></div>
             <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
         </div>
-        <!-- File input for profile picture upload -->
+        <!-- Filuppladdning för profilbild -->
         <form id="profilePictureForm" action="spel.php" method="POST" enctype="multipart/form-data" style="display: none;">
             <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
         </form>
     </div>
 
-        <!-- Level and EXP bar -->
+        <!-- Level och EXP bar -->
         <div class="level-section">
             <h4>Level <span id="level"><?php echo $level; ?></span></h4>
             <div class="exp-bar">

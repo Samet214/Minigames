@@ -1,11 +1,11 @@
 <?php
-session_start(); // Start the session (if not already started)
+session_start(); // Starta sessionen (om den inte redan är startad)
 
-// Check if the user is logged in and set the $username variable
+// Kontrollera om användaren är inloggad och sätt variabeln $username
 if (isset($_SESSION['username'])) {
-    $username = $_SESSION['username']; // Assuming the username is stored in the session
+    $username = $_SESSION['username']; // Antar att användarnamnet lagras i sessionen
 } else {
-    $username = null; // Set to null if the user is not logged in
+    $username = null; // Sätt till null om användaren inte är inloggad
 }
 ?>
 
@@ -26,21 +26,21 @@ if (isset($_SESSION['username'])) {
         <button id="start_button">Start!</button> 
     </div>
 
-    <!-- Game HUD (Initially hidden) -->
+    <!-- Spel-HUD (initialt dolt) -->
     <div id="game_hud" style="display: none;">
         <div id="hud_container">
-            <p>Level: <span id="level_counter">1</span></p>
-            <p>Time: <span id="time_counter">0</span> sec</p>
-            <p>Attempts: <span id="attempts_counter">0</span></p>
+            <p>Nivå: <span id="level_counter">1</span></p>
+            <p>Tid: <span id="time_counter">0</span> sek</p>
+            <p>Försök: <span id="attempts_counter">0</span></p>
         </div>
     </div>
 
     <div id="popup-overlay" class="hidden">
         <div id="popup">
             <button id="close-popup">&times;</button>
-            <h2>Level: <span id="popup-level"></span></h2>
+            <h2>Nivå: <span id="popup-level"></span></h2>
             <p>Tid: <span id="popup-tid"></span></p>
-            <p>Pengar tjänat: <span id="popup-pengar"></span></p>
+            <p>Pengar tjänade: <span id="popup-pengar"></span></p>
             <p>Exp tjänat: <span id="popup-exp"></span></p>
         </div>
     </div>

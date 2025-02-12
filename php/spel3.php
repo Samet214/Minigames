@@ -2,7 +2,7 @@
 <?php
 session_start();
 
-// Example: Check if the user is logged in
+// Kontrollera om användaren är inloggad
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 } else {
@@ -18,7 +18,7 @@ if (isset($_SESSION['username'])) {
     <title>Memory Game</title>
     <link href="../style.css" rel="stylesheet" type="text/css">
     <style>
-        /* Add custom styles for the buy attempts button */
+         /* Anpassad stil för knappen "Köp försök" */
         #buy-attempts-button {
             padding: 10px 20px;
             font-size: 14px;
@@ -36,7 +36,7 @@ if (isset($_SESSION['username'])) {
 </head>
 <body>
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" data-username="<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>"></div>
-    <!-- New wrapper div to keep level text above the game container -->
+     <!-- Ny wrapper-div för att hålla nivåtexten ovanför spelcontainern -->
     <div id="game-wrapper">
         <h2 id="level-info" style="display: none;">Level: 1</h2>
         <div id="game-container">
@@ -49,7 +49,7 @@ if (isset($_SESSION['username'])) {
         </div>
     </div>
 
-    <!-- New Popup Overlay -->
+     <!-- Nytt popup-fönster -->
     <div id="new-popup-overlay">
         <div id="new-game-over-popup">
             <button id="new-popup-close">X</button>

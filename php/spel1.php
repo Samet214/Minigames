@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Example: Check if the user is logged in
+//  Kontrollera om användaren är inloggad
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 } else {
@@ -17,7 +17,7 @@ if (isset($_SESSION['username'])) {
     <title>Memory Game</title>
     <link href="../style.css" rel="stylesheet" type="text/css">
     <style>
-        /* Add custom styles for the buy attempts button */
+          /* Anpassad stil för knappen "Köp försök" */
         #buy-attempts-button {
             padding: 10px 20px;
             font-size: 14px;
@@ -38,11 +38,11 @@ if (isset($_SESSION['username'])) {
     <div class="game-container">
         <div class="level">Level: <span id="level">1</span></div>
         <div class="grid" id="grid">
-            <!-- Boxes will be generated here -->
+             <!-- Rutor genereras här -->
         </div>
         <div class="button-switch-container">
             <div class="switch-container" id="switch-container">
-                <span id="switch-text">Random </span> <!-- Default text -->
+                <span id="switch-text">Random </span> <!-- Standardtext -->
                 <label class="switch">
                     <input type="checkbox" id="mode-switch">
                     <span class="slider"></span>
@@ -56,6 +56,7 @@ if (isset($_SESSION['username'])) {
         </div>
     </div>
 
+    <!-- Popup för "Game Over" -->
     <div class="overlay" id="overlay"></div>
     <div class="popup" id="popup">
         <button class="close-btn" id="close-popup">&times;</button>

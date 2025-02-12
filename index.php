@@ -1,32 +1,38 @@
 <?php
+// Startar en session för att kunna använda sessionsvariabler
 session_start();
 
+// Döljer felmeddelanden för användaren
 ini_set('display_errors', 0);
 
+// Inkluderar filen för databaskoppling
 include './php/db.php';
 
+// Skapar en anslutning till databasen
 $conn = Anvandarinformation();
 
+// Hämtar användarnamnet från sessionen
 $username = $_SESSION['username'];
 
-// Handle file upload
+// Hanterar uppladdning av profilbild
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
     $file = $_FILES['profile_picture'];
     
-    // Check for errors
+    // Kontrollerar om det finns några fel vid uppladdningen
     if ($file['error'] === UPLOAD_ERR_OK) {
-        // Get file properties
+        // Hämtar filens egenskaper
         $fileTmpPath = $file['tmp_name'];
         $fileName = basename($file['name']);
         $fileSize = $file['size'];
         $fileType = pathinfo($fileName, PATHINFO_EXTENSION);
         
-        // Define allowed file types and size
+        // Definierar tillåtna filtyper och max storlek
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
         $maxFileSize = 2 * 1024 * 1024; // 2MB
 
+        // Kontrollerar om filtypen och storleken är tillåten
         if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
-            // Fetch current profile picture from the database
+            // Hämtar nuvarande profilbild från databasen
             $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
             $query->bind_param("s", $username);
             $query->execute();
@@ -34,40 +40,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
             $user = $result->fetch_assoc();
             $currentProfilePicture = $user['Profil_bild'];
 
-            // Only delete the current profile picture if it's not the default
+            // Tar bort den nuvarande profilbilden om den inte är standardbilden
             if ($currentProfilePicture && $currentProfilePicture !== 'default.png' && file_exists('pfp/' . $currentProfilePicture)) {
-                unlink('pfp/' . $currentProfilePicture); // Remove old profile picture
+                unlink('pfp/' . $currentProfilePicture); // Tar bort den gamla profilbilden
             }
 
-            // Generate a unique name for the new uploaded file
+            // Genererar ett unikt namn för den nya uppladdade filen
             $newFileName = uniqid() . '.' . $fileType;
             $uploadFileDir = 'pfp/';
             $destPath = $uploadFileDir . $newFileName;
 
-            // Move the file to the pfp directory
+            // Flyttar filen till pfp-katalogen
             if (move_uploaded_file($fileTmpPath, $destPath)) {
-                // Update the database with the new file name
+                // Uppdaterar databasen med det nya filnamnet
                 $updateQuery = $conn->prepare("UPDATE användare SET Profil_bild = ? WHERE Namn = ?");
                 $updateQuery->bind_param("ss", $newFileName, $username);
                 if ($updateQuery->execute()) {
-                    // File successfully uploaded and profile updated
+                    // Filen har laddats upp och profilen har uppdaterats
                 } else {
-                    // Handle database update failure
+                    // Hanterar fel vid uppdatering av databasen
                 }
             } else {
-                // Handle file move failure
+                // Hanterar fel vid flytt av fil
             }
         } else {
-            // Handle invalid file type or size
+            // Hanterar ogiltig filtyp eller storlek
         }
     } else {
-        // Handle file upload error
+        // Hanterar fel vid uppladdning av fil
     }
 }
 
-
-
-// Fetch user data from the poängssystem table
+// Hämtar användardata från poängsystemtabellen
 $query = $conn->prepare("SELECT * FROM poängssystem WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -83,7 +87,7 @@ if ($result->num_rows === 1) {
     $_SESSION['EXP'] = $user['EXP'];
     $_SESSION['EXP_GRÄNS'] = $user['EXP_GRÄNS'];
 } else {
-    // Default values if the user doesn't exist in poängssystem
+    // Standardvärden om användaren inte finns i poängsystemtabellen
     $level = 1;
     $current_exp = 0;
     $next_level_exp = 50;
@@ -94,6 +98,7 @@ if ($result->num_rows === 1) {
     $_SESSION['EXP_GRÄNS'] = 50;
 }
 
+// Hämtar profilbilden från användartabellen
 $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -103,38 +108,40 @@ if ($result->num_rows === 1) {
     $user = $result->fetch_assoc();
     $profile_picture = $user['Profil_bild'];
 
-    // If the profile picture is NULL or doesn't exist in the pfp folder, use default.png
+    // Använder standardbilden om profilbilden är NULL eller inte finns i pfp-katalogen
     if (empty($profile_picture) || !file_exists('pfp/' . $profile_picture)) {
         $profile_picture = 'default.png';
     }
 } else {
-    // If the user doesn't exist in användare, use default profile picture
+    // Använder standardbilden om användaren inte finns i användartabellen
     $profile_picture = 'default.png';
 }
 
-// Handle logout
+// Hanterar utloggning
 if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
     session_destroy();
     header("Location: login.php");
     exit();
 }
 
-// Handle adding experience
+// Hanterar tillägg av erfarenhet (EXP)
 if (isset($_POST['add_exp'])) {
     $expToAdd = intval($_POST['exp_amount']);
     $current_exp += $expToAdd;
 
+    // Uppdaterar level och EXP om användaren når nästa nivå
     while ($current_exp >= $next_level_exp) {
         $current_exp -= $next_level_exp;
         $level += 1;
         $next_level_exp *= 2;
     }
 
-    // Update user data in the database
+    // Uppdaterar användardata i databasen
     $update = $conn->prepare("UPDATE poängssystem SET Levels = ?, EXP = ?, EXP_GRÄNS = ? WHERE Namn = ?");
     $update->bind_param("iiis", $level, $current_exp, $next_level_exp, $username);
     $update->execute();
 
+    // Returnerar JSON-svar med uppdaterad EXP, level och nästa nivås EXP
     echo json_encode([
         'current_exp' => $current_exp,
         'level' => $level,
@@ -143,11 +150,11 @@ if (isset($_POST['add_exp'])) {
     exit();
 }
 
-// Add this at the top of spel.php to handle live search requests
+// Hanterar live-sökning av användare
 if (isset($_GET['search'])) {
     $searchTerm = $_GET['search'] . '%';
 
-    // Join användare and poängssystem tables to fetch profile and level data
+    // Joinar användare och poängsystemtabeller för att hämta profil- och leveldata
     $searchQuery = $conn->prepare("SELECT användare.Namn, Profil_bild, Levels, EXP, EXP_GRÄNS 
                                     FROM användare 
                                     JOIN poängssystem ON användare.Namn = poängssystem.Namn 
@@ -167,6 +174,7 @@ if (isset($_GET['search'])) {
         ];
     }
 
+    // Returnerar JSON-svar med sökresultat eller ett meddelande om inga användare hittades
     echo empty($data) ? json_encode(['message' => 'Inga användare']) : json_encode($data);
     exit();
 }
@@ -174,8 +182,10 @@ if (isset($_GET['search'])) {
 
 <?php
 
+// Skapar en ny anslutning till databasen
 $conn = Anvandarinformation();
 
+// Hämtar level, EXP och EXP-krav från poängsystemtabellen
 $query = "SELECT Levels, EXP, EXP_GRÄNS FROM poängssystem WHERE Namn = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $username);
@@ -190,7 +200,7 @@ if ($result->num_rows > 0) {
         $exp_req = $row['EXP_GRÄNS'];
     }
 } else {
-    
+    // Hanterar fall där användaren inte finns i poängsystemtabellen
 }
 
 $stmt->close();
@@ -246,7 +256,7 @@ $conn->close();
         </div>
     </header>
 
-    <!-- Main Content Section -->
+    <!-- Huvudinnehållssektion -->
     <main>
         <section class="rectangle-container">
             <div class="rectangle-1">
@@ -276,6 +286,7 @@ $conn->close();
         <p>Senast uppdaterad: 2024-10-08</p>
     </footer>
 
+    <!-- Profilsökningsruta -->
     <div id="profileSquare" class="profile-square">
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Sök profiler..." onkeyup="searchProfiles()">
@@ -283,21 +294,22 @@ $conn->close();
         <div id="searchResults" class="search-results"></div>
     </div>
 
+    <!-- Sidofältsknapp -->
     <div id="sidebar-toggle" onclick="toggleSidebar()">☰</div>
     <div id="sidebar" class="sidebar">
-        <!-- Profile Picture Section -->
+        <!-- Profilbildssektion -->
         <div class="profile-section">
             <div class="username">
             <div class="profile-circle" style="background-image: url('pfp/<?php echo htmlspecialchars($profile_picture); ?>');" onclick="document.getElementById('profilePictureInput').click();"></div>
             <h3><?php echo htmlspecialchars(ucfirst($username)); ?></h3>
         </div>
-        <!-- File input for profile picture upload -->
+        <!-- Filuppladdningsformulär för profilbild -->
         <form id="profilePictureForm" action="index.php" method="POST" enctype="multipart/form-data" style="display: none;">
             <input type="file" name="profile_picture" id="profilePictureInput" accept="image/*" onchange="document.getElementById('profilePictureForm').submit();">
         </form>
     </div>
 
-        <!-- Level and EXP bar -->
+        <!-- Level och EXP-sektion -->
         <div class="level-section">
             <h4>Level <span id="level"><?php echo $level; ?></span></h4>
             <div class="exp-bar">
@@ -305,6 +317,7 @@ $conn->close();
             </div>
             <p id="expText">
                 <?php
+                // Funktion för att formatera stora nummer (t.ex. 1000 till 1K)
                 function formatNumber($number) {
                     if ($number >= 1000000000) {
                         return round($number / 1000000000, 1) . 'G';
@@ -317,6 +330,7 @@ $conn->close();
                     }
                 }
 
+                // Formaterar nuvarande EXP och nästa nivås EXP
                 $formattedCurrentExp = formatNumber($current_exp);
                 $formattedNextLevelExp = formatNumber($next_level_exp);
 

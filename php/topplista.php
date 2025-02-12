@@ -1,32 +1,32 @@
 <?php
-session_start();
+session_start(); // Starta sessionen för att hantera inloggning
 
-ini_set('display_errors', 0);
+ini_set('display_errors', 0); // Dölj felmeddelanden för att förbättra säkerheten
 
-include 'db.php';
+include 'db.php'; // Inkludera databasanslutningsfilen
 
-$conn = Anvandarinformation();
+$conn = Anvandarinformation(); // Hämta databaskopplingen
 
-$username = $_SESSION['username'];
+$username = $_SESSION['username']; // Hämta den inloggade användarens namn
 
-// Handle file upload
+// Hantera uppladdning av profilbild
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
     $file = $_FILES['profile_picture'];
-    
-    // Check for errors
+
+    // Kontrollera om det finns några fel vid uppladdningen
     if ($file['error'] === UPLOAD_ERR_OK) {
-        // Get file properties
+        // Hämta filens egenskaper
         $fileTmpPath = $file['tmp_name'];
         $fileName = basename($file['name']);
         $fileSize = $file['size'];
         $fileType = pathinfo($fileName, PATHINFO_EXTENSION);
         
-        // Define allowed file types and size
+        // Definiera tillåtna filtyper och maximal filstorlek
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-        $maxFileSize = 2 * 1024 * 1024; // 2MB
+        $maxFileSize = 2 * 1024 * 1024; // Max 2MB
 
         if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
-            // Fetch current profile picture from the database
+            // Hämta nuvarande profilbild från databasen
             $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
             $query->bind_param("s", $username);
             $query->execute();
@@ -34,40 +34,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['profile_picture'])) {
             $user = $result->fetch_assoc();
             $currentProfilePicture = $user['Profil_bild'];
 
-            // Only delete the current profile picture if it's not the default
+            // Radera den gamla profilbilden om den inte är standardbilden
             if ($currentProfilePicture && $currentProfilePicture !== 'default.png' && file_exists('../pfp/' . $currentProfilePicture)) {
-                unlink('../pfp/' . $currentProfilePicture); // Remove old profile picture
+                unlink('../pfp/' . $currentProfilePicture);
             }
 
-            // Generate a unique name for the new uploaded file
+            // Generera ett unikt filnamn för den nya uppladdade filen
             $newFileName = uniqid() . '.' . $fileType;
             $uploadFileDir = '../pfp/';
             $destPath = $uploadFileDir . $newFileName;
 
-            // Move the file to the pfp directory
+            // Flytta den uppladdade filen till pfp-mappen
             if (move_uploaded_file($fileTmpPath, $destPath)) {
-                // Update the database with the new file name
+                // Förbered SQL-fråga för att uppdatera databasen med det nya filnamnet
                 $updateQuery = $conn->prepare("UPDATE användare SET Profil_bild = ? WHERE Namn = ?");
                 $updateQuery->bind_param("ss", $newFileName, $username);
                 if ($updateQuery->execute()) {
-                    // File successfully uploaded and profile updated
+                    // Filen har laddats upp och profilen har uppdaterats framgångsrikt
                 } else {
-                    // Handle database update failure
+                    // Hantera fel vid uppdatering av databasen
                 }
             } else {
-                // Handle file move failure
+                // Hantera fel om filen inte kunde flyttas till pfp-mappen
             }
         } else {
-            // Handle invalid file type or size
+            // Hantera ogiltig filtyp eller filstorlek som överstiger gränsen
         }
     } else {
-        // Handle file upload error
+        // Hantera eventuella fel vid filuppladdning
     }
 }
 
 
 
-// Fetch user data from the poängssystem table
+// Hämta användardata från poängssystemstabellen
 $query = $conn->prepare("SELECT * FROM poängssystem WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -78,22 +78,26 @@ if ($result->num_rows === 1) {
     $level = $user['Levels'];
     $current_exp = $user['EXP'];
     $next_level_exp = $user['EXP_GRÄNS'];
+
+    // Spara användarens uppgifter i sessionen
     $_SESSION['Namn'] = $username;
-    $_SESSION['Levels'] = $user['Levels'];
-    $_SESSION['EXP'] = $user['EXP'];
-    $_SESSION['EXP_GRÄNS'] = $user['EXP_GRÄNS'];
+    $_SESSION['Levels'] = $level;
+    $_SESSION['EXP'] = $current_exp;
+    $_SESSION['EXP_GRÄNS'] = $next_level_exp;
 } else {
-    // Default values if the user doesn't exist in poängssystem
+    // Standardvärden om användaren inte finns i poängssystemet
     $level = 1;
     $current_exp = 0;
     $next_level_exp = 50;
     $username = 'Guest';
+
     $_SESSION['Namn'] = $username;
     $_SESSION['Levels'] = 1;
     $_SESSION['EXP'] = 0;
     $_SESSION['EXP_GRÄNS'] = 50;
 }
 
+// Hämta profilbild från databasen
 $query = $conn->prepare("SELECT Profil_bild FROM användare WHERE Namn = ?");
 $query->bind_param("s", $username);
 $query->execute();
@@ -103,38 +107,39 @@ if ($result->num_rows === 1) {
     $user = $result->fetch_assoc();
     $profile_picture = $user['Profil_bild'];
 
-    // If the profile picture is NULL or doesn't exist in the pfp folder, use default.png
+    // Om profilbilden saknas eller inte finns i mappen, använd standardbild
     if (empty($profile_picture) || !file_exists('../pfp/' . $profile_picture)) {
         $profile_picture = 'default.png';
     }
 } else {
-    // If the user doesn't exist in användare, use default profile picture
     $profile_picture = 'default.png';
 }
 
-// Handle logout
+// Hantera utloggning
 if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
-    session_destroy();
-    header("Location: login.php");
+    session_destroy(); // Förstör sessionen
+    header("Location: login.php"); // Omdirigera till inloggningssidan
     exit();
 }
 
-// Handle adding experience
+// Hantera tillägg av erfarenhetspoäng (EXP)
 if (isset($_POST['add_exp'])) {
     $expToAdd = intval($_POST['exp_amount']);
     $current_exp += $expToAdd;
 
+    // Öka nivån om EXP överstiger gränsen
     while ($current_exp >= $next_level_exp) {
         $current_exp -= $next_level_exp;
         $level += 1;
-        $next_level_exp *= 2;
+        $next_level_exp *= 2; // EXP-gränsen fördubblas vid varje nivå
     }
 
-    // Update user data in the database
+    // Uppdatera användarens data i databasen
     $update = $conn->prepare("UPDATE poängssystem SET Levels = ?, EXP = ?, EXP_GRÄNS = ? WHERE Namn = ?");
     $update->bind_param("iiis", $level, $current_exp, $next_level_exp, $username);
     $update->execute();
 
+    // Skicka uppdaterade värden som JSON-svar
     echo json_encode([
         'current_exp' => $current_exp,
         'level' => $level,
@@ -143,11 +148,11 @@ if (isset($_POST['add_exp'])) {
     exit();
 }
 
-// Add this at the top of spel.php to handle live search requests
+// Hantera live-sökning av profiler
 if (isset($_GET['search'])) {
     $searchTerm = $_GET['search'] . '%';
 
-    // Join användare and poängssystem tables to fetch profile and level data
+    // Hämta användare och deras nivådata från databasen
     $searchQuery = $conn->prepare("SELECT användare.Namn, Profil_bild, Levels, EXP, EXP_GRÄNS 
                                     FROM användare 
                                     JOIN poängssystem ON användare.Namn = poängssystem.Namn 
@@ -170,16 +175,12 @@ if (isset($_GET['search'])) {
     echo empty($data) ? json_encode(['message' => 'Inga användare']) : json_encode($data);
     exit();
 }
-?>
 
-<?php
-$conn = Anvandarinformation();
-
+// Hämta användarens nivå och erfarenhetspoäng
 $query = "SELECT Levels, EXP, EXP_GRÄNS FROM poängssystem WHERE Namn = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("s", $username);
 $stmt->execute();
-
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
@@ -188,8 +189,6 @@ if ($result->num_rows > 0) {
         $exp = $row['EXP'];
         $exp_req = $row['EXP_GRÄNS'];
     }
-} else {
-    
 }
 
 $stmt->close();
