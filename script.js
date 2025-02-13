@@ -16,7 +16,7 @@ async function fetchUserNetworth() {
         let response;
         // Välj rätt sökväg beroende på vilken PHP-fil som används
         if (currentPhpFile === "index.php") {
-            response = await fetch('../minigames/php/get_currency.php');
+            response = await fetch('../php/get_currency.php');
         } else {
             response = await fetch('../php/get_currency.php');
         }
@@ -378,7 +378,7 @@ if (currentPhpFile === "game_display.php") {
         }
         
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', '../minigames/php/sida.php?search=' + encodeURIComponent(searchInput), true);
+        xhr.open('GET', '../php/sida.php?search=' + encodeURIComponent(searchInput), true);
         
         xhr.onload = function() {
             if (xhr.status === 200) {
@@ -396,7 +396,7 @@ if (currentPhpFile === "game_display.php") {
                 } else {
                     // Skapa ett resultatobjekt för varje användare
                     results.forEach(function(user) {
-                        const profileImage = user.Profil_bild || '../minigames/pfp/default.png';
+                        const profileImage = user.Profil_bild || '../pfp/default.png';
                         const resultItem = document.createElement('div');
                         resultItem.classList.add('result-item');
                         
@@ -408,7 +408,7 @@ if (currentPhpFile === "game_display.php") {
                         
                         const img = document.createElement('img');
                         img.classList.add('profile-image');
-                        img.src = '../minigames/pfp/' + profileImage;
+                        img.src = '../pfp/' + profileImage;
                         
                         let username = document.createElement('span');
                         username.classList.add('username');

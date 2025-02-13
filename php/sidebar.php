@@ -49,7 +49,7 @@
     </div>
     <hr>
     <!-- Logga ut-länk -->
-    <a id="a-tag1" href="../minigames/php/logout.php">Logga ut</a>
+    <a id="a-tag1" href="../php/logout.php">Logga ut</a>
     <hr>
 </div>
 
