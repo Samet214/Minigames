@@ -258,7 +258,7 @@ $conn->close();
         </div>
         <div class="game-container">
             <h2>Squigglegolf</h2>
-            <p>Ha roligt med att köra golf och kontrollera bollen genom musen. Ha roligt med boll fysik och fina grafiska element på skrämen!</p>
+            <p>Ha roligt med att köra golf och kontrollera bollen genom musen. Ha roligt med boll fysik och fina grafiska element på skärmen!</p>
             <button class="open-modal-button" onclick="openModal('game2')">Spela Nu</button>
         </div>
         <div class="game-container">

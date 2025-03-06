@@ -3004,11 +3004,11 @@ function grantRewards() {
 } else if (currentPhpFile === "topplista.php") {
     document.addEventListener("DOMContentLoaded", function () {
         const modes = [
-            { text: "Memory - Topplista", tileTexts: ["Nivå", "Level", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Squigglegolf - Topplista", tileTexts: ["Mängden slag", "Level", "Total tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Colourvision - Topplista", tileTexts: ["Nivå", "Level", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Maze Runner - Topplista", tileTexts: ["Nivå", "Level", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
-            { text: "Biljard - Topplista", tileTexts: ["Mängden slag", "Level", "Total tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Memory - Topplista", tileTexts: ["Nivå", "Level (EXP)", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Squigglegolf - Topplista", tileTexts: ["Mängden slag", "Level (EXP)", "Total tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Colourvision - Topplista", tileTexts: ["Nivå", "Level (EXP)", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Maze Runner - Topplista", tileTexts: ["Nivå", "Level (EXP)", "Tid/Nivå", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
+            { text: "Biljard - Topplista", tileTexts: ["Mängden slag", "Level (EXP)", "Total tid", "Pengar tjänat i spel", "EXP tjänat i spel", "Netvärde"] },
         ];
     
         let currentMode = 0;

@@ -42,7 +42,7 @@ if (isset($_SESSION['username'])) {
         </div>
         <div class="button-switch-container">
             <div class="switch-container" id="switch-container">
-                <span id="switch-text">Random </span> <!-- Standardtext -->
+                <span id="switch-text">Slumpmässig</span> <!-- Standardtext -->
                 <label class="switch">
                     <input type="checkbox" id="mode-switch">
                     <span class="slider"></span>

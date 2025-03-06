@@ -14,6 +14,8 @@ if (isset($_SESSION['username'])) {
     <head>
         <meta charset="utf-8">
         <link rel="stylesheet" href="../style.css" type="text/css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     </head>
     <body>
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" <?php if ($username) echo 'data-username="' . htmlspecialchars($username, ENT_QUOTES, 'UTF-8') . '"'; ?>></div>
