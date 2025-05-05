@@ -11,7 +11,7 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username']; // Hämta användarnamnet från sessionen
 
 // Databasanslutningsuppgifter
-$host = "localhost"; // Ändra vid behov
+$host = "samet-server.adm.huddinge.se"; // Ändra vid behov
 $db_username = "samet";  // Databasens användarnamn
 $db_password = "samet";  // Databasens lösenord
 $dbname = "ekonomi"; // Databasens namn

@@ -229,19 +229,19 @@ $conn->close();
             <?php if (!isset($_SESSION['username'])): ?>
                 <nav style="margin-right: 500px;">
                     <ul>
-                        <li><a href="../php/spel.php">Spel</a></li>
-                        <li><a href="../php/topplista.php">Topplista</a></li>
+                        <li><a href="../Gymnasiearbete/php/spel.php">Spel</a></li>
+                        <li><a href="../Gymnasiearbete/php/topplista.php">Topplista</a></li>
                     </ul>
                 </nav>
                 <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
-                    <button id="signin" onclick="redirect('../php/signup.php')">Registrera</button>
-                    <button id="login" onclick="redirect('../php/login.php')">Logga in</button>
+                    <button id="signin" onclick="redirect('../Gymnasiearebte/php/signup.php')">Registrera</button>
+                    <button id="login" onclick="redirect('../Gymnasiearbete/php/login.php')">Logga in</button>
                 </div>
             <?php else: ?>
                 <nav style="margin-right: 600px;">
                     <ul>
-                        <li><a href="../php/spel.php">Spel</a></li>
-                        <li><a href="../php/topplista.php">Topplista</a></li>
+                        <li><a href="../Gymnasiearbete/php/spel.php">Spel</a></li>
+                        <li><a href="../Gymnasiearbete/php/topplista.php">Topplista</a></li>
                     </ul>
                 </nav>
                 <div class="search-profile-btn-container" style="display: flex; justify-content: space-between; gap: 15px;">
@@ -342,7 +342,7 @@ $conn->close();
 
         <?php else: ?>
             <hr>
-            <a id="a-tag1" href="../php/logout.php">Logga ut</a>
+            <a id="a-tag1" href="../Gymnasiearbete/php/logout.php">Logga ut</a>
             <hr>
         <?php endif; ?>
     <div id="php-file-info" data-php-file="<?php echo basename(__FILE__); ?>" data-username="<?php echo htmlspecialchars($username); ?>"></div>

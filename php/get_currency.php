@@ -12,7 +12,7 @@ $username = $_SESSION['username'];  // Hämtar det inloggade användarnamnet
 
 try {
     // Anslut till databasen (ändra vid behov)
-    $pdo = new PDO("mysql:host=localhost;dbname=ekonomi", "samet", "samet");
+    $pdo = new PDO("mysql:host=samet-server.adm.huddinge.se;dbname=ekonomi", "samet", "samet");
 
     // Hämta användarens värde från databasen
     $stmt = $pdo->prepare("SELECT value FROM ekonomi WHERE username = :username");

@@ -7,7 +7,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Databasanslutning
-$servername = "localhost";
+$servername = "samet-server.adm.huddinge.se";
 $db_username = "samet";
 $db_password = "samet";
 

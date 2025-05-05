@@ -21,7 +21,7 @@ if (!$action || $amount <= 0) {
 
 try {
     // Anslut till databasen (byt ut detaljer om det behövs)
-    $pdo = new PDO("mysql:host=localhost;dbname=ekonomi", "samet", "samet");
+    $pdo = new PDO("mysql:host=samet-server.adm.huddinge.se;dbname=ekonomi", "samet", "samet");
 
     // Hämta användarens information från tabellen 'ekonomi'
     $stmt = $pdo->prepare("SELECT * FROM ekonomi WHERE username = :username");
